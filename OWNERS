@@ -1,0 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+component: "Telco"
+subcomponent: "O-Cloud Hardware Manager Plugin"
+
+filters:
+  ".*":
+    reviewers:
+      - oran-hwmgr-plugin-reviewers
+    approvers:
+      - oran-hwmgr-plugin-approvers
