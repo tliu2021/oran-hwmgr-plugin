@@ -1,0 +1,42 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: oran-hwmgr-plugin.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: O-Cloud Hardware Manager Plugin
+  displayName: O-Cloud Hardware Manager Plugin
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - ORAN
+  - plugin
+  links:
+  - name: Oran Hwmgr Plugin
+    url: https://oran-hwmgr-plugin.domain
+  maintainers:
+  - email: dpenney@redhat.com
+    name: Don Penney
+  maturity: alpha
+  provider:
+    name: Red Hat
+  version: 0.0.0
