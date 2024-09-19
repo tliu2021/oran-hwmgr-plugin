@@ -11,4 +11,10 @@ plugins:
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: oran-hwmgr-plugin
 repo: github.com/openshift-kni/oran-hwmgr-plugin
+resources:
+- controller: true
+  domain: oran.openshift.io
+  group: o2ims-hardwaremanagement
+  kind: NodePool
+  version: v1alpha1
 version: "3"
