@@ -5,12 +5,33 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - o2ims-hardwaremanagement.oran.openshift.io
   resources:
   - nodepools
   verbs:
-  - create
-  - delete
   - get
   - list
   - patch
@@ -26,6 +47,32 @@ rules:
   - o2ims-hardwaremanagement.oran.openshift.io
   resources:
   - nodepools/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - o2ims-hardwaremanagement.oran.openshift.io
+  resources:
+  - nodes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - o2ims-hardwaremanagement.oran.openshift.io
+  resources:
+  - nodes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - o2ims-hardwaremanagement.oran.openshift.io
+  resources:
+  - nodes/status
   verbs:
   - get
   - patch

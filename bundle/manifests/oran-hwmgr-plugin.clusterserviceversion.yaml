@@ -21,12 +21,33 @@ spec:
       clusterPermissions:
       - rules:
         - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - create
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
           - o2ims-hardwaremanagement.oran.openshift.io
           resources:
           - nodepools
           verbs:
-          - create
-          - delete
           - get
           - list
           - patch
@@ -42,6 +63,32 @@ spec:
           - o2ims-hardwaremanagement.oran.openshift.io
           resources:
           - nodepools/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - o2ims-hardwaremanagement.oran.openshift.io
+          resources:
+          - nodes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - o2ims-hardwaremanagement.oran.openshift.io
+          resources:
+          - nodes/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - o2ims-hardwaremanagement.oran.openshift.io
+          resources:
+          - nodes/status
           verbs:
           - get
           - patch
@@ -112,6 +159,15 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
+                env:
+                - name: MY_POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: MY_POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
                 image: quay.io/openshift-kni/oran-hwmgr-plugin:0.0.1
                 livenessProbe:
                   httpGet:
