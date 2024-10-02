@@ -20,12 +20,15 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -179,6 +182,15 @@ func ExtractDataFromConfigMap[T any](cm *corev1.ConfigMap, key string) (T, error
 	return object, nil
 }
 
+func GetAdaptorIdFromHwMgrId(hwMgrId string) string {
+	fields := strings.Split(hwMgrId, ",")
+	if len(fields) == 0 {
+		return ""
+	} else {
+		return fields[0]
+	}
+}
+
 //
 // Reconciler utilities
 //
@@ -201,4 +213,21 @@ func RequeueWithShortInterval() ctrl.Result {
 
 func RequeueWithCustomInterval(interval time.Duration) ctrl.Result {
 	return ctrl.Result{RequeueAfter: interval}
+}
+
+func RequeueImmediately() ctrl.Result {
+	return ctrl.Result{Requeue: true}
+}
+
+//
+// Retry utilities
+//
+
+func isConflictOrRetriable(err error) bool {
+	return errors.IsConflict(err) || errors.IsInternalError(err) || errors.IsServiceUnavailable(err) || net.IsConnectionRefused(err)
+}
+
+func RetryOnConflictOrRetriable(backoff wait.Backoff, fn func() error) error {
+	// nolint: wrapcheck
+	return retry.OnError(backoff, isConflictOrRetriable, fn)
 }

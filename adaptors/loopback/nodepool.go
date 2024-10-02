@@ -57,25 +57,26 @@ func (a *LoopbackAdaptor) CheckNodePoolProgress(ctx context.Context, nodepool *h
 
 func (a *LoopbackAdaptor) HandleNodePoolCreate(
 	ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
+	conditionType := hwmgmtv1alpha1.Provisioned
+	var conditionReason hwmgmtv1alpha1.ConditionReason
+	var conditionStatus metav1.ConditionStatus
+	var message string
+
 	if err := a.ProcessNewNodePool(ctx, nodepool); err != nil {
 		a.logger.Error("failed createNodePool", "err", err)
-		utils.SetStatusCondition(&nodepool.Status.Conditions,
-			hwmgmtv1alpha1.Provisioned,
-			hwmgmtv1alpha1.Failed,
-			metav1.ConditionFalse,
-			"Creation request failed: "+err.Error())
+		conditionReason = hwmgmtv1alpha1.Failed
+		conditionStatus = metav1.ConditionFalse
+		message = "Creation request failed: " + err.Error()
 	} else {
-		// Update the condition
-		utils.SetStatusCondition(&nodepool.Status.Conditions,
-			hwmgmtv1alpha1.Provisioned,
-			hwmgmtv1alpha1.InProgress,
-			metav1.ConditionFalse,
-			"Handling creation")
+		conditionReason = hwmgmtv1alpha1.InProgress
+		conditionStatus = metav1.ConditionFalse
+		message = "Handling creation"
 	}
 
-	if updateErr := utils.UpdateK8sCRStatus(ctx, a.Client, nodepool); updateErr != nil {
+	if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
+		conditionType, conditionReason, conditionStatus, message); err != nil {
 		return utils.RequeueWithMediumInterval(),
-			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, updateErr)
+			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
 	}
 
 	return utils.DoNotRequeue(), nil
@@ -94,25 +95,26 @@ func (a *LoopbackAdaptor) HandleNodePoolProcessing(
 	}
 	nodepool.Status.Properties.NodeNames = allocatedNodes
 
+	if err := utils.UpdateNodePoolProperties(ctx, a.Client, nodepool); err != nil {
+		return utils.RequeueWithMediumInterval(),
+			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+	}
+
 	var result ctrl.Result
 
 	if full {
 		a.logger.InfoContext(ctx, "NodePool request is fully allocated, name="+nodepool.Name)
 
-		utils.SetStatusCondition(&nodepool.Status.Conditions,
-			hwmgmtv1alpha1.Provisioned,
-			hwmgmtv1alpha1.Completed,
-			metav1.ConditionTrue,
-			"Created")
+		if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
+			hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Completed, metav1.ConditionTrue, "Created"); err != nil {
+			return utils.RequeueWithMediumInterval(),
+				fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+		}
 
 		result = utils.DoNotRequeue()
 	} else {
 		a.logger.InfoContext(ctx, "NodePool request in progress, name="+nodepool.Name)
 		result = utils.RequeueWithShortInterval()
-	}
-
-	if updateErr := utils.UpdateK8sCRStatus(ctx, a.Client, nodepool); updateErr != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, updateErr)
 	}
 
 	return result, nil

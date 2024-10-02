@@ -18,6 +18,7 @@ package dellhwmgr
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
@@ -51,11 +52,12 @@ func (a *DellHwMgrAdaptor) HandleNodePool(ctx context.Context, nodepool *hwmgmtv
 	result := utils.DoNotRequeue()
 
 	a.logger.Error("DellHwMgr is not yet implemented")
-	utils.SetStatusCondition(&nodepool.Status.Conditions,
-		hwmgmtv1alpha1.Provisioned,
-		hwmgmtv1alpha1.Failed,
-		metav1.ConditionFalse,
-		"Unsupported hwmgr adaptor: dell-hwmgr is not yet implemented")
+	if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
+		hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
+		"Unsupported hwmgr adaptor: dell-hwmgr is not yet implemented"); err != nil {
+		return utils.RequeueWithMediumInterval(),
+			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+	}
 
 	return result, nil
 }

@@ -70,18 +70,20 @@ func NewHwMgrAdaptorController(client client.Client, logger *slog.Logger, namesp
 
 // HandleNodePool calls the applicable adaptor handler to process the NodePool CR
 func (c *HwMgrAdaptorController) HandleNodePool(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
-	// TODO: Get the adaptorID from the nodepool CR
-	adaptorID := LoopbackAdaptorID
+	adaptorID := utils.GetAdaptorIdFromHwMgrId(nodepool.Spec.HwMgrId)
 
 	// Validate the specified adaptor ID
 	adaptor, exists := c.adaptors[adaptorID]
 	if !exists {
 		c.Logger.Error("unsupported adaptor ID", "adaptorID", adaptorID)
-		utils.SetStatusCondition(&nodepool.Status.Conditions,
-			hwmgmtv1alpha1.Provisioned,
-			hwmgmtv1alpha1.Failed,
-			metav1.ConditionFalse,
-			"Unsupported adaptor ID specified: "+adaptorID)
+
+		if err := utils.UpdateNodePoolStatusCondition(ctx, c.Client, nodepool,
+			hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
+			"Unsupported adaptor ID specified: "+adaptorID); err != nil {
+			return utils.RequeueWithMediumInterval(),
+				fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+		}
+
 		return utils.DoNotRequeue(), nil
 	}
 
@@ -95,7 +97,7 @@ func (c *HwMgrAdaptorController) HandleNodePool(ctx context.Context, nodepool *h
 
 // HandleNodePool calls the applicable adaptor handler to process the NodePool CR deletion
 func (c *HwMgrAdaptorController) HandleNodePoolDeletion(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) error {
-	adaptorID := LoopbackAdaptorID
+	adaptorID := utils.GetAdaptorIdFromHwMgrId(nodepool.Spec.HwMgrId)
 
 	// Validate the specified adaptor ID
 	adaptor, exists := c.adaptors[adaptorID]
