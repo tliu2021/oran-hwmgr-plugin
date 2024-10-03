@@ -33,8 +33,6 @@ import (
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 )
 
-const pluginFinalizer = "oran-hwmgr-plugin.oran.openshift.io/nodepool-finalizer"
-
 // NodePoolReconciler reconciles a NodePool object
 type NodePoolReconciler struct {
 	client.Client
@@ -82,26 +80,27 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 
 	if nodepool.GetDeletionTimestamp() != nil {
 		// Handle deletion
-		if controllerutil.ContainsFinalizer(nodepool, pluginFinalizer) {
+		r.Logger.InfoContext(ctx, "Nodepool is being deleted", slog.String("name", nodepool.Name))
+		if controllerutil.ContainsFinalizer(nodepool, utils.NodepoolFinalizer) {
 			if err := r.hwmgr.HandleNodePoolDeletion(ctx, nodepool); err != nil {
 				return ctrl.Result{}, fmt.Errorf("finalizer failed: %w", err)
 			}
 
-			controllerutil.RemoveFinalizer(nodepool, pluginFinalizer)
-			if err := r.Update(ctx, nodepool); err != nil {
-				return ctrl.Result{}, fmt.Errorf("failed to update nodepool CR after removing finalizer: %w", err)
+			if err := utils.NodepoolRemoveFinalizer(ctx, r.Client, nodepool); err != nil {
+				return utils.RequeueImmediately(), fmt.Errorf("failed to remove finalizer from nodepool: %w", err)
 			}
 
-			return
+			return utils.DoNotRequeue(), nil
 		}
 		// TODO: Should return here?
 	}
 
-	if !controllerutil.ContainsFinalizer(nodepool, pluginFinalizer) {
-		controllerutil.AddFinalizer(nodepool, pluginFinalizer)
-		if err := r.Update(ctx, nodepool); err != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to update nodepool CR after adding finalizer: %w", err)
+	if !controllerutil.ContainsFinalizer(nodepool, utils.NodepoolFinalizer) {
+		r.Logger.InfoContext(ctx, "Adding finalizer to NodePool", "name", nodepool.Name)
+		if err := utils.NodepoolAddFinalizer(ctx, r.Client, nodepool); err != nil {
+			return utils.RequeueImmediately(), fmt.Errorf("failed to add finalizer to nodepool: %w", err)
 		}
+		return utils.RequeueImmediately(), nil
 	}
 
 	// Hand off the CR to the adaptor

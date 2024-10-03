@@ -7,7 +7,7 @@ toolchain go1.22.7
 require (
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
-	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20240919135721-b7460b4b24bf
+	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241001212933-0729dc2624ff
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.4
 	k8s.io/client-go v0.28.3
