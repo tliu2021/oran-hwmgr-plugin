@@ -26,7 +26,7 @@ function header {
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: nodelist
+  name: loopback-adaptor-nodelist
   namespace: oran-hwmgr-plugin
 data:
   resources: |
