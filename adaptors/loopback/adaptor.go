@@ -32,8 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Setup the Loopback Adaptor
-type LoopbackAdaptor struct {
+type Adaptor struct {
 	client.Client
 	Scheme    *runtime.Scheme
 	Logger    *slog.Logger
@@ -41,8 +40,8 @@ type LoopbackAdaptor struct {
 	AdaptorID pluginv1alpha1.HardwareManagerAdaptorID
 }
 
-func NewLoopbackAdaptor(client client.Client, scheme *runtime.Scheme, logger *slog.Logger, namespace string) *LoopbackAdaptor {
-	return &LoopbackAdaptor{
+func NewAdaptor(client client.Client, scheme *runtime.Scheme, logger *slog.Logger, namespace string) *Adaptor {
+	return &Adaptor{
 		Client:    client,
 		Scheme:    scheme,
 		Logger:    logger.With("adaptor", "loopback"),
@@ -50,7 +49,8 @@ func NewLoopbackAdaptor(client client.Client, scheme *runtime.Scheme, logger *sl
 	}
 }
 
-func (a *LoopbackAdaptor) SetupAdaptor(mgr ctrl.Manager) error {
+// SetupAdaptor sets up the Loopback adaptor
+func (a *Adaptor) SetupAdaptor(mgr ctrl.Manager) error {
 	a.Logger.Info("SetupAdaptor called for Loopback")
 
 	if err := (&controller.HardwareManagerReconciler{
@@ -66,7 +66,7 @@ func (a *LoopbackAdaptor) SetupAdaptor(mgr ctrl.Manager) error {
 }
 
 // Loopback Adaptor FSM
-type NodePoolFSMAction int
+type fsmAction int
 
 const (
 	NodePoolFSMCreate = iota
@@ -74,7 +74,7 @@ const (
 	NodePoolFSMNoop
 )
 
-func (a *LoopbackAdaptor) determineAction(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) NodePoolFSMAction {
+func (a *Adaptor) determineAction(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) fsmAction {
 	if len(nodepool.Status.Conditions) == 0 {
 		a.Logger.InfoContext(ctx, "Handling Create NodePool request, name="+nodepool.Name)
 		return NodePoolFSMCreate
@@ -95,7 +95,7 @@ func (a *LoopbackAdaptor) determineAction(ctx context.Context, nodepool *hwmgmtv
 	return NodePoolFSMNoop
 }
 
-func (a *LoopbackAdaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
+func (a *Adaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
 	result := utils.DoNotRequeue()
 
 	switch a.determineAction(ctx, nodepool) {
@@ -111,7 +111,7 @@ func (a *LoopbackAdaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alp
 	return result, nil
 }
 
-func (a *LoopbackAdaptor) HandleNodePoolDeletion(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) error {
+func (a *Adaptor) HandleNodePoolDeletion(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) error {
 	a.Logger.InfoContext(ctx, "Finalizing nodepool", "name", nodepool.Name)
 
 	if err := a.ReleaseNodePool(ctx, hwmgr, nodepool); err != nil {

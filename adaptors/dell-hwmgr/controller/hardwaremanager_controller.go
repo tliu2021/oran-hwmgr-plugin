@@ -23,6 +23,7 @@ import (
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -59,8 +60,8 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	result = utils.DoNotRequeue()
 
 	// Fetch the CR:
-	instance := &pluginv1alpha1.HardwareManager{}
-	if err = r.Client.Get(ctx, req.NamespacedName, instance); err != nil {
+	hwmgr := &pluginv1alpha1.HardwareManager{}
+	if err = r.Client.Get(ctx, req.NamespacedName, hwmgr); err != nil {
 		if errors.IsNotFound(err) {
 			// The NodePool has likely been deleted
 			err = nil
@@ -74,35 +75,54 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return
 	}
 
-	// Make sure this is an instance for this adaptor
-	if instance.Spec.AdaptorID != r.AdaptorID {
+	// Make sure this is an instance for this adaptor and that this generation hasn't already been handled
+	if hwmgr.Spec.AdaptorID != r.AdaptorID ||
+		hwmgr.Status.ObservedGeneration == hwmgr.Generation {
 		// Nothing to do
-		r.Logger.InfoContext(ctx, "[Dell HardwareManager] Not for me",
-			slog.String("name", instance.Name))
 		return
 	}
 
-	if instance.Spec.DellData == nil {
+	hwmgr.Status.ObservedGeneration = hwmgr.Generation
+
+	if hwmgr.Spec.DellData == nil {
 		// Invalid data
+		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
+			pluginv1alpha1.ConditionTypes.Validation,
+			pluginv1alpha1.ConditionReasons.Failed,
+			metav1.ConditionFalse,
+			"Missing dellData configuration field"); updateErr != nil {
+			err = fmt.Errorf("failed to update status for hardware manager (%s) with validation failure: %w", hwmgr.Name, updateErr)
+			return
+		}
+		r.Logger.Error("HardwareManager CR missing dellData configuration field", slog.String("name", hwmgr.Name))
 		return
+	} else {
+		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
+			pluginv1alpha1.ConditionTypes.Validation,
+			pluginv1alpha1.ConditionReasons.Completed,
+			metav1.ConditionTrue,
+			"Validated"); updateErr != nil {
+			err = fmt.Errorf("failed to update status for hardware manager (%s) with validation success: %w", hwmgr.Name, updateErr)
+			return
+		}
 	}
 
-	r.Logger.InfoContext(ctx, "[Dell HardwareManager] User: "+instance.Spec.DellData.User)
+	r.Logger.InfoContext(ctx, "[Dell HardwareManager] User: "+hwmgr.Spec.DellData.User)
 
 	return
 }
 
 func filterEvents(adaptorID pluginv1alpha1.HardwareManagerAdaptorID) predicate.Predicate {
 	return predicate.NewPredicateFuncs(func(object client.Object) bool {
-		instance := object.(*pluginv1alpha1.HardwareManager)
-		return (instance.Spec.AdaptorID == adaptorID)
+		hwmgr := object.(*pluginv1alpha1.HardwareManager)
+		return hwmgr.Spec.AdaptorID == adaptorID
 	})
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *HardwareManagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.AdaptorID = pluginv1alpha1.SupportedAdaptors.Dell
-	r.Logger.Info("Setting up Dell controller", slog.String("adaptor-id", string(r.AdaptorID)))
+	r.Logger.Info("Setting up Dell controller", slog.String("adaptorId", string(r.AdaptorID)))
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&pluginv1alpha1.HardwareManager{}).
 		WithEventFilter(filterEvents(r.AdaptorID)).

@@ -5,6 +5,4 @@ metadata:
   name: loopback-1
   namespace: oran-hwmgr-plugin
 spec:
-  adaptor-id: loopback
-  loopback-data:
-    additional-info: "This is a test string"
+  adaptorId: loopback

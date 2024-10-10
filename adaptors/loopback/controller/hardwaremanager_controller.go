@@ -23,6 +23,7 @@ import (
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -59,8 +60,8 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	result = utils.DoNotRequeue()
 
 	// Fetch the CR:
-	instance := &pluginv1alpha1.HardwareManager{}
-	if err = r.Client.Get(ctx, req.NamespacedName, instance); err != nil {
+	hwmgr := &pluginv1alpha1.HardwareManager{}
+	if err = r.Client.Get(ctx, req.NamespacedName, hwmgr); err != nil {
 		if errors.IsNotFound(err) {
 			// The NodePool has likely been deleted
 			err = nil
@@ -74,35 +75,41 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return
 	}
 
-	// Make sure this is an instance for this adaptor
-	if instance.Spec.AdaptorID != r.AdaptorID {
+	// Make sure this is an instance for this adaptor and that this generation hasn't already been handled
+	if hwmgr.Spec.AdaptorID != r.AdaptorID ||
+		hwmgr.Status.ObservedGeneration == hwmgr.Generation {
 		// Nothing to do
-		r.Logger.InfoContext(ctx, "[Loopback HardwareManager] Not for me",
-			slog.String("name", instance.Name))
 		return
 	}
 
-	if instance.Spec.LoopbackData == nil {
-		// Invalid data
+	hwmgr.Status.ObservedGeneration = hwmgr.Generation
+
+	// Configuration data is not currently mandatory for the loopback adaptor
+	if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
+		pluginv1alpha1.ConditionTypes.Validation,
+		pluginv1alpha1.ConditionReasons.Completed,
+		metav1.ConditionTrue,
+		"Validated"); updateErr != nil {
+		err = fmt.Errorf("failed to update status for hardware manager (%s) with validation success: %w", hwmgr.Name, updateErr)
 		return
 	}
 
-	r.Logger.InfoContext(ctx, "[Loopback HardwareManager] Additional Info: "+instance.Spec.LoopbackData.AddtionalInfo)
+	r.Logger.InfoContext(ctx, "[Loopback HardwareManager]", "loopbackData", hwmgr.Spec.LoopbackData)
 
 	return
 }
 
 func filterEvents(adaptorID pluginv1alpha1.HardwareManagerAdaptorID) predicate.Predicate {
 	return predicate.NewPredicateFuncs(func(object client.Object) bool {
-		instance := object.(*pluginv1alpha1.HardwareManager)
-		return (instance.Spec.AdaptorID == adaptorID)
+		hwmgr := object.(*pluginv1alpha1.HardwareManager)
+		return hwmgr.Spec.AdaptorID == adaptorID
 	})
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *HardwareManagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.AdaptorID = pluginv1alpha1.SupportedAdaptors.Loopback
-	r.Logger.Info("Setting up Loopback controller", slog.String("adaptor-id", string(r.AdaptorID)))
+	r.Logger.Info("Setting up Loopback controller", slog.String("adaptorId", string(r.AdaptorID)))
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&pluginv1alpha1.HardwareManager{}).
 		WithEventFilter(filterEvents(r.AdaptorID)).

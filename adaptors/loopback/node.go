@@ -32,7 +32,7 @@ import (
 )
 
 // AllocateNode processes a NodePool CR, allocating a free node for each specified nodegroup as needed
-func (a *LoopbackAdaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) error {
+func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) error {
 	cloudID := nodepool.Spec.CloudID
 
 	// Inject a delay before allocating node
@@ -112,7 +112,7 @@ func bmcSecretName(nodename string) string {
 }
 
 // CreateBMCSecret creates the bmc-secret for a node
-func (a *LoopbackAdaptor) CreateBMCSecret(ctx context.Context, nodename, usernameBase64, passwordBase64 string) error {
+func (a *Adaptor) CreateBMCSecret(ctx context.Context, nodename, usernameBase64, passwordBase64 string) error {
 	a.Logger.InfoContext(ctx, "Creating bmc-secret:", "nodename", nodename)
 
 	secretName := bmcSecretName(nodename)
@@ -146,7 +146,7 @@ func (a *LoopbackAdaptor) CreateBMCSecret(ctx context.Context, nodename, usernam
 }
 
 // DeleteBMCSecret deletes the bmc-secret for a node
-func (a *LoopbackAdaptor) DeleteBMCSecret(ctx context.Context, nodename string) error {
+func (a *Adaptor) DeleteBMCSecret(ctx context.Context, nodename string) error {
 	a.Logger.InfoContext(ctx, "Deleting bmc-secret:", "nodename", nodename)
 
 	secretName := bmcSecretName(nodename)
@@ -166,7 +166,7 @@ func (a *LoopbackAdaptor) DeleteBMCSecret(ctx context.Context, nodename string) 
 }
 
 // CreateNode creates a Node CR with specified attributes
-func (a *LoopbackAdaptor) CreateNode(ctx context.Context, cloudID, nodename, groupname, hwprofile string) error {
+func (a *Adaptor) CreateNode(ctx context.Context, cloudID, nodename, groupname, hwprofile string) error {
 
 	a.Logger.InfoContext(ctx, "Creating node:",
 		"cloudID", cloudID,
@@ -194,7 +194,7 @@ func (a *LoopbackAdaptor) CreateNode(ctx context.Context, cloudID, nodename, gro
 }
 
 // UpdateNodeStatus updates a Node CR status field with additional node information from the nodelist configmap
-func (a *LoopbackAdaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cmNodeInfo) error {
+func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cmNodeInfo) error {
 
 	a.Logger.InfoContext(ctx, "Updating node:",
 		"nodename", nodename,
@@ -215,8 +215,8 @@ func (a *LoopbackAdaptor) UpdateNodeStatus(ctx context.Context, nodename string,
 	node.Status.Interfaces = info.Interfaces
 
 	utils.SetStatusCondition(&node.Status.Conditions,
-		hwmgmtv1alpha1.Provisioned,
-		hwmgmtv1alpha1.Completed,
+		string(hwmgmtv1alpha1.Provisioned),
+		string(hwmgmtv1alpha1.Completed),
 		metav1.ConditionTrue,
 		"Provisioned")
 
@@ -228,7 +228,7 @@ func (a *LoopbackAdaptor) UpdateNodeStatus(ctx context.Context, nodename string,
 }
 
 // DeleteNode deletes a Node CR
-func (a *LoopbackAdaptor) DeleteNode(ctx context.Context, nodename string) error {
+func (a *Adaptor) DeleteNode(ctx context.Context, nodename string) error {
 
 	a.Logger.InfoContext(ctx, "Deleting node:",
 		"nodename", nodename,

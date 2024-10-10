@@ -54,8 +54,8 @@ type HwMgrAdaptorController struct {
 func (c *HwMgrAdaptorController) SetupWithManager(mgr ctrl.Manager) error {
 	// Setup the supported adaptors
 	c.adaptors = make(map[string]adaptorinterface.HwMgrAdaptorIntf)
-	c.adaptors[LoopbackAdaptorID] = loopback.NewLoopbackAdaptor(c.Client, c.Scheme, c.Logger, c.Namespace)
-	c.adaptors[DellHwMgrAdaptorID] = dellhwmgr.NewDellHwMgrAdaptor(c.Client, c.Scheme, c.Logger, c.Namespace)
+	c.adaptors[LoopbackAdaptorID] = loopback.NewAdaptor(c.Client, c.Scheme, c.Logger, c.Namespace)
+	c.adaptors[DellHwMgrAdaptorID] = dellhwmgr.NewAdaptor(c.Client, c.Scheme, c.Logger, c.Namespace)
 
 	for id, adaptor := range c.adaptors {
 		if err := adaptor.SetupAdaptor(mgr); err != nil {
@@ -81,14 +81,15 @@ func (c *HwMgrAdaptorController) getHwMgr(ctx context.Context, nodepool *hwmgmtv
 	switch hwmgr.Spec.AdaptorID {
 	case pluginv1alpha1.SupportedAdaptors.Loopback:
 		if hwmgr.Spec.LoopbackData == nil {
-			return nil, fmt.Errorf("required config data missing from HardwareManager: name=%s", hwmgr.Name)
+			// Configuration data is not currently mandatory for the loopback adaptor, so just log it
+			c.Logger.DebugContext(ctx, "config data missing from HardwareManager", "name", hwmgr.Name)
 		}
 	case pluginv1alpha1.SupportedAdaptors.Dell:
 		if hwmgr.Spec.DellData == nil {
 			return nil, fmt.Errorf("required config data missing from HardwareManager: name=%s", hwmgr.Name)
 		}
 	default:
-		return nil, fmt.Errorf("unsupported adaptor-id (%s) HardwareManager: name=%s", hwmgr.Spec.AdaptorID, hwmgr.Name)
+		return nil, fmt.Errorf("unsupported adaptorId (%s) HardwareManager: name=%s", hwmgr.Spec.AdaptorID, hwmgr.Name)
 	}
 
 	return hwmgr, nil

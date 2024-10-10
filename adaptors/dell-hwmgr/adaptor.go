@@ -32,8 +32,7 @@ import (
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 )
 
-// Setup the Loopback Adaptor
-type DellHwMgrAdaptor struct {
+type Adaptor struct {
 	client.Client
 	Scheme    *runtime.Scheme
 	Logger    *slog.Logger
@@ -41,8 +40,8 @@ type DellHwMgrAdaptor struct {
 	AdaptorID pluginv1alpha1.HardwareManagerAdaptorID
 }
 
-func NewDellHwMgrAdaptor(client client.Client, scheme *runtime.Scheme, logger *slog.Logger, namespace string) *DellHwMgrAdaptor {
-	return &DellHwMgrAdaptor{
+func NewAdaptor(client client.Client, scheme *runtime.Scheme, logger *slog.Logger, namespace string) *Adaptor {
+	return &Adaptor{
 		Client:    client,
 		Scheme:    scheme,
 		Logger:    logger.With("adaptor", "dell-hwmgr"),
@@ -50,7 +49,8 @@ func NewDellHwMgrAdaptor(client client.Client, scheme *runtime.Scheme, logger *s
 	}
 }
 
-func (a *DellHwMgrAdaptor) SetupAdaptor(mgr ctrl.Manager) error {
+// SetupAdaptor sets up the Dell Hardware Manager Adaptor
+func (a *Adaptor) SetupAdaptor(mgr ctrl.Manager) error {
 	a.Logger.Info("SetupAdaptor called for DellHwMgr")
 
 	if err := (&controller.HardwareManagerReconciler{
@@ -65,7 +65,7 @@ func (a *DellHwMgrAdaptor) SetupAdaptor(mgr ctrl.Manager) error {
 	return nil
 }
 
-func (a *DellHwMgrAdaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
+func (a *Adaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
 	result := utils.DoNotRequeue()
 
 	a.Logger.Error("DellHwMgr is not yet implemented")
@@ -79,7 +79,7 @@ func (a *DellHwMgrAdaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1al
 	return result, nil
 }
 
-func (a *DellHwMgrAdaptor) HandleNodePoolDeletion(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) error {
+func (a *Adaptor) HandleNodePoolDeletion(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) error {
 	a.Logger.InfoContext(ctx, "DellHwMgr HandleNodePoolDeletion", "name", nodepool.Name)
 
 	return nil

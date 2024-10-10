@@ -31,7 +31,7 @@ import (
 )
 
 // CheckNodePoolProgress checks to see if a NodePool is fully allocated, allocating additional resources as needed
-func (a *LoopbackAdaptor) CheckNodePoolProgress(
+func (a *Adaptor) CheckNodePoolProgress(
 	ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) (full bool, err error) {
@@ -61,7 +61,7 @@ func (a *LoopbackAdaptor) CheckNodePoolProgress(
 	return
 }
 
-func (a *LoopbackAdaptor) HandleNodePoolCreate(
+func (a *Adaptor) HandleNodePoolCreate(
 	ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
@@ -91,7 +91,7 @@ func (a *LoopbackAdaptor) HandleNodePoolCreate(
 	return utils.DoNotRequeue(), nil
 }
 
-func (a *LoopbackAdaptor) HandleNodePoolProcessing(
+func (a *Adaptor) HandleNodePoolProcessing(
 	ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
@@ -133,14 +133,14 @@ func (a *LoopbackAdaptor) HandleNodePoolProcessing(
 }
 
 // ProcessNewNodePool processes a new NodePool CR, verifying that there are enough free resources to satisfy the request
-func (a *LoopbackAdaptor) ProcessNewNodePool(ctx context.Context,
+func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) error {
 
 	cloudID := nodepool.Spec.CloudID
 
 	a.Logger.InfoContext(ctx, "Processing ProcessNewNodePool request:",
-		slog.String("loopback additional-info", hwmgr.Spec.LoopbackData.AddtionalInfo),
+		slog.Any("loopback additional-info", hwmgr.Spec.LoopbackData),
 		slog.String("cloudID", cloudID),
 	)
 
@@ -160,7 +160,7 @@ func (a *LoopbackAdaptor) ProcessNewNodePool(ctx context.Context,
 }
 
 // IsNodePoolFullyAllocated checks to see if a NodePool CR has been fully allocated
-func (a *LoopbackAdaptor) IsNodePoolFullyAllocated(ctx context.Context,
+func (a *Adaptor) IsNodePoolFullyAllocated(ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) (bool, error) {
 
@@ -206,7 +206,7 @@ func (a *LoopbackAdaptor) IsNodePoolFullyAllocated(ctx context.Context,
 }
 
 // ReleaseNodePool frees resources allocated to a NodePool
-func (a *LoopbackAdaptor) ReleaseNodePool(ctx context.Context,
+func (a *Adaptor) ReleaseNodePool(ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) error {
 
