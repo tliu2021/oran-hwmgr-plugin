@@ -9,3 +9,14 @@ filters:
       - oran-hwmgr-plugin-reviewers
     approvers:
       - oran-hwmgr-plugin-approvers
+  ^Dockerfile:
+    reviewers:
+      - oran-hwmgr-plugin-product-owners
+    approvers:
+      - oran-hwmgr-plugin-product-owners
+  ^bundle/manifests/oran-hwmgr-plugin.clusterserviceversion.yaml:
+    reviewers:
+      - oran-hwmgr-plugin-product-owners
+    approvers:
+      - oran-hwmgr-plugin-product-owners
+
