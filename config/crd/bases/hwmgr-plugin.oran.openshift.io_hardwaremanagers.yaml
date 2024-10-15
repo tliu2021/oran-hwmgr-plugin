@@ -77,7 +77,7 @@ spec:
               loopbackData:
                 description: Config data for an instance of the loopback adaptor
                 properties:
-                  additional-info:
+                  additionalInfo:
                     description: A test string
                     type: string
                 type: object

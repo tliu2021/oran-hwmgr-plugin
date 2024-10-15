@@ -140,7 +140,7 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	cloudID := nodepool.Spec.CloudID
 
 	a.Logger.InfoContext(ctx, "Processing ProcessNewNodePool request:",
-		slog.Any("loopback additional-info", hwmgr.Spec.LoopbackData),
+		slog.Any("loopback additionalInfo", hwmgr.Spec.LoopbackData),
 		slog.String("cloudID", cloudID),
 	)
 

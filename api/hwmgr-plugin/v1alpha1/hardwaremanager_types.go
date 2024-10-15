@@ -60,7 +60,7 @@ var SupportedAdaptors = struct {
 type LoopbackData struct {
 	// A test string
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	AddtionalInfo string `json:"additional-info,omitempty"`
+	AddtionalInfo string `json:"additionalInfo,omitempty"`
 }
 
 // DellData defines configuration data for dell-hwmgr adaptor instance

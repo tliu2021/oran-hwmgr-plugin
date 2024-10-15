@@ -77,7 +77,7 @@ spec:
         path: loopbackData
       - description: A test string
         displayName: Addtional Info
-        path: loopbackData.additional-info
+        path: loopbackData.additionalInfo
       statusDescriptors:
       - description: Conditions describe the state of the UpdateService resource.
         displayName: Conditions

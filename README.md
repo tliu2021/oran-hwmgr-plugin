@@ -33,7 +33,7 @@ metadata:
 spec:
   adaptorId: loopback
   loopbackData:
-    additional-info: "This is a test string"
+    additionalInfo: "This is a test string"
 ```
 
 ## Loopback Adaptor
