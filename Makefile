@@ -201,10 +201,12 @@ KUBECTL ?= $(LOCALBIN)/kubectl
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+OAPI_CODEGEN ?= $(LOCALBIN)/oapi-codegen
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.2.1
 CONTROLLER_TOOLS_VERSION ?= v0.15.0
+OAPI_CODEGEN_VERSION ?= v2.4.1
 
 .PHONY: kubectl
 kubectl: $(KUBECTL) ## Use envtest to download kubectl
@@ -250,6 +252,12 @@ ifneq ($(OPERATOR_SDK_VERSION),$(OPERATOR_SDK_VERSION_INSTALLED))
 		chmod +x $(OPERATOR_SDK) ;\
 	}
 endif
+
+.PHONY: oapi-codegen
+oapi-codegen: $(OAPI_CODEGEN) ## Download oapi-codegen locally if necessary. If wrong version is installed, it will be overwritten.
+$(OAPI_CODEGEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/oapi-codegen && $(LOCALBIN)/oapi-codegen --version | grep -q $(OAPI_CODEGEN_VERSION) || \
+	GOBIN=$(LOCALBIN) go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OAPI_CODEGEN_VERSION)
 
 .PHONY: bundle
 bundle: operator-sdk manifests kustomize kubectl ## Generate bundle manifests and metadata, then validate generated files.
@@ -361,3 +369,15 @@ ci-job: deps-update generate fmt vet lint test bundle-check
 scorecard-test: operator-sdk
 	@test -n "$(KUBECONFIG)" || (echo "The environment variable KUBECONFIG must not empty" && false)
 	$(OPERATOR_SDK) scorecard bundle -o text --kubeconfig "$(KUBECONFIG)" -n $(HWMGR_PLUGIN_NAMESPACE)
+
+## Adaptors
+DELL_ADAPTOR_DIR ?= adaptors/dell-hwmgr
+DELL_OPENAPI ?= $(DELL_ADAPTOR_DIR)/dell-oapi.json
+
+.PHONY: dell-api
+dell-api: oapi-codegen
+	@mkdir -p $(DELL_ADAPTOR_DIR)/generated
+	$(OAPI_CODEGEN) -package=api -generate types $(DELL_OPENAPI) >$(DELL_ADAPTOR_DIR)/generated/types.go
+	$(OAPI_CODEGEN) -package=api -generate client $(DELL_OPENAPI) >$(DELL_ADAPTOR_DIR)/generated/client.go
+	go mod tidy
+	go mod vendor
