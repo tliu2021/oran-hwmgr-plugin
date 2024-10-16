@@ -1,0 +1,8 @@
+---
+apiVersion: hwmgr-plugin.oran.openshift.io/v1alpha1
+kind: HardwareManager
+metadata:
+  name: dell-bad
+  namespace: oran-hwmgr-plugin
+spec:
+  adaptorId: dell-hwmgr

@@ -85,9 +85,9 @@ func getFreeNodesInProfile(resources cmResources, allocations cmAllocations, pro
 }
 
 // GetCurrentResources parses the nodelist configmap to get the current available and allocated resource lists
-func (a *LoopbackAdaptor) GetCurrentResources(ctx context.Context) (
+func (a *Adaptor) GetCurrentResources(ctx context.Context) (
 	cm *corev1.ConfigMap, resources cmResources, allocations cmAllocations, err error) {
-	cm, err = utils.GetConfigmap(ctx, a.Client, cmName, a.namespace)
+	cm, err = utils.GetConfigmap(ctx, a.Client, cmName, a.Namespace)
 	if err != nil {
 		err = fmt.Errorf("unable to get configmap: %w", err)
 		return
@@ -102,7 +102,7 @@ func (a *LoopbackAdaptor) GetCurrentResources(ctx context.Context) (
 	allocations, err = utils.ExtractDataFromConfigMap[cmAllocations](cm, allocationsKey)
 	if err != nil {
 		// Allocated node field may not be present
-		a.logger.InfoContext(ctx, "unable to parse allocations from configmap")
+		a.Logger.InfoContext(ctx, "unable to parse allocations from configmap")
 		err = nil
 	}
 
@@ -110,7 +110,7 @@ func (a *LoopbackAdaptor) GetCurrentResources(ctx context.Context) (
 }
 
 // GetAllocatedNodes gets a list of nodes allocated for the specified NodePool CR
-func (a *LoopbackAdaptor) GetAllocatedNodes(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (allocatedNodes []string, err error) {
+func (a *Adaptor) GetAllocatedNodes(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (allocatedNodes []string, err error) {
 	cloudID := nodepool.Spec.CloudID
 
 	_, _, allocations, err := a.GetCurrentResources(ctx)
