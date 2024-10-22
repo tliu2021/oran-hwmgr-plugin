@@ -96,18 +96,39 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		r.Logger.Error("HardwareManager CR missing dellData configuration field", slog.String("name", hwmgr.Name))
 		return
-	} else {
-		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
-			pluginv1alpha1.ConditionTypes.Validation,
-			pluginv1alpha1.ConditionReasons.Completed,
-			metav1.ConditionTrue,
-			"Validated"); updateErr != nil {
-			err = fmt.Errorf("failed to update status for hardware manager (%s) with validation success: %w", hwmgr.Name, updateErr)
-			return
-		}
 	}
 
-	r.Logger.InfoContext(ctx, "[Dell HardwareManager] User: "+hwmgr.Spec.DellData.User)
+	r.Logger.InfoContext(ctx, "[Dell HardwareManager] ApiUrl: "+hwmgr.Spec.DellData.ApiUrl)
+
+	authClient, clientErr := r.NewClientWithResponses(ctx, hwmgr)
+	if clientErr != nil {
+		r.Logger.InfoContext(ctx, "NewClientWithResponses error", "error", clientErr.Error())
+		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
+			pluginv1alpha1.ConditionTypes.Validation,
+			pluginv1alpha1.ConditionReasons.Failed,
+			metav1.ConditionFalse,
+			"Authentication failure - "+clientErr.Error()); updateErr != nil {
+			err = fmt.Errorf("failed to update status for hardware manager (%s) with authentication failure: %w", hwmgr.Name, updateErr)
+			return
+		}
+		r.Logger.Error("Failed to establish connection to hardware manager", slog.String("name", hwmgr.Name), slog.String("error", clientErr.Error()))
+		return
+	}
+
+	if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
+		pluginv1alpha1.ConditionTypes.Validation,
+		pluginv1alpha1.ConditionReasons.Completed,
+		metav1.ConditionTrue,
+		"Authentication passed"); updateErr != nil {
+		err = fmt.Errorf("failed to update status for hardware manager (%s) with validation success: %w", hwmgr.Name, updateErr)
+		return
+	}
+
+	// TEMPORARY: Testing the authenticated client
+	r.Logger.InfoContext(ctx, "Attempting hardcoded GetResourceGroup to test authenticated connection")
+	if clientErr := r.GetResourceGroup(ctx, authClient, "rg-nonexistent"); clientErr != nil {
+		r.Logger.InfoContext(ctx, "GetResourceGroup returned an error", slog.String("error", clientErr.Error()))
+	}
 
 	return
 }
@@ -126,6 +147,7 @@ func (r *HardwareManagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&pluginv1alpha1.HardwareManager{}).
 		WithEventFilter(filterEvents(r.AdaptorID)).
+		WithEventFilter(predicate.Or(predicate.GenerationChangedPredicate{}, predicate.LabelChangedPredicate{})).
 		Complete(r); err != nil {
 		return fmt.Errorf("failed to setup controller for %s: %w", r.AdaptorID, err)
 	}

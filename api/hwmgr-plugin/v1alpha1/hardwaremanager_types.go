@@ -69,7 +69,20 @@ type DellData struct {
 	// +kubebuilder:validation:Required
 	// +required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	User string `json:"user"`
+	ClientId string `json:"clientId"`
+
+	// +kubebuilder:validation:Required
+	// +required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	AuthSecret string `json:"authSecret"`
+
+	// +kubebuilder:validation:Required
+	// +required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ApiUrl string `json:"apiUrl"`
+
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	CertsConfigMap string `json:"certsConfigMap,omitempty"`
 }
 
 // HardwareManagerSpec defines the desired state of HardwareManager
@@ -108,6 +121,7 @@ type HardwareManagerStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=hardwaremanagers,scope=Namespaced
+// +kubebuilder:resource:shortName=hwmgr;hwmgrs
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the HardwareManager resource."
 // +kubebuilder:printcolumn:name="Adaptor ID",type="string",JSONPath=".status.adaptorId",description="The adaptor ID.",priority=1
 // +kubebuilder:printcolumn:name="Reason",type="string",JSONPath=".status.conditions[-1:].reason"

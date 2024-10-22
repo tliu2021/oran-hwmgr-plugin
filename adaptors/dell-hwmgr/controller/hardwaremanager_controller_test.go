@@ -54,7 +54,9 @@ var _ = Describe("HardwareManager Controller", func() {
 					Spec: hwmgrpluginoranopenshiftiov1alpha1.HardwareManagerSpec{
 						AdaptorID: "dell-hwmgr",
 						DellData: &hwmgrpluginoranopenshiftiov1alpha1.DellData{
-							User: "test",
+							ApiUrl:     "https://server/gui",
+							ClientId:   "test-client",
+							AuthSecret: "secret-name",
 						},
 					},
 				}
