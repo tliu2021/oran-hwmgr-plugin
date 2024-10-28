@@ -23,5 +23,5 @@ bin/
 go.work
 go.work.sum
 
-adaptors/dell-hwmgr/dell-oapi.json
+adaptors/dell-hwmgr/dell-oapi.*
 

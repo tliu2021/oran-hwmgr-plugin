@@ -372,7 +372,7 @@ scorecard-test: operator-sdk
 
 ## Adaptors
 DELL_ADAPTOR_DIR ?= adaptors/dell-hwmgr
-DELL_OPENAPI ?= $(DELL_ADAPTOR_DIR)/dell-oapi.json
+DELL_OPENAPI ?= $(DELL_ADAPTOR_DIR)/dell-oapi.yaml
 
 .PHONY: dell-api
 dell-api: oapi-codegen

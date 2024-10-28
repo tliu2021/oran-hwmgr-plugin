@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,8 +25,8 @@ import (
 	"github.com/oapi-codegen/oapi-codegen/v2/pkg/securityprovider"
 	hwmgrapi "github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/generated"
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
+	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // Struct definitions for the token response
@@ -44,29 +43,32 @@ type TokenResponse struct {
 
 // GetToken sends a request to the hardware manager to request an authentication token
 func (r *HardwareManagerReconciler) GetToken(ctx context.Context, client *hwmgrapi.ClientWithResponses, hwmgr *pluginv1alpha1.HardwareManager) (string, error) {
-	secret := &corev1.Secret{}
-	if err := r.Get(ctx, types.NamespacedName{Name: hwmgr.Spec.DellData.AuthSecret, Namespace: r.Namespace}, secret); err != nil {
-		return "", fmt.Errorf("failed to get secret for %s (%s): %w", hwmgr.Name, hwmgr.Spec.DellData.AuthSecret, err)
+	clientSecrets, err := utils.GetSecret(ctx, r.Client, hwmgr.Spec.DellData.AuthSecret, r.Namespace)
+	if err != nil {
+		return "", fmt.Errorf("failed to get client secret: %w", err)
 	}
 
-	username, exists := secret.Data[corev1.BasicAuthUsernameKey]
-	if !exists {
-		return "", fmt.Errorf("username not found in secret %s", hwmgr.Spec.DellData.AuthSecret)
+	clientId, err := utils.GetSecretField(clientSecrets, "client-id")
+	if err != nil {
+		return "", fmt.Errorf("failed to get client-id from secret: %s, %w", hwmgr.Spec.DellData.AuthSecret, err)
 	}
-	usernameStr := string(username)
 
-	password, exists := secret.Data[corev1.BasicAuthPasswordKey]
-	if !exists {
-		return "", fmt.Errorf("password not found in secret %s", hwmgr.Spec.DellData.AuthSecret)
+	username, err := utils.GetSecretField(clientSecrets, corev1.BasicAuthUsernameKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to get %s from secret: %s, %w", corev1.BasicAuthUsernameKey, hwmgr.Spec.DellData.AuthSecret, err)
 	}
-	passwordStr := string(password)
 
-	grant_type := "password"
+	password, err := utils.GetSecretField(clientSecrets, corev1.BasicAuthPasswordKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to get %s from secret: %s, %w", corev1.BasicAuthPasswordKey, hwmgr.Spec.DellData.AuthSecret, err)
+	}
+
+	grant_type := string(pluginv1alpha1.OAuthGrantTypes.Password)
 
 	req := hwmgrapi.GetTokenJSONRequestBody{
-		ClientId:  &hwmgr.Spec.DellData.ClientId,
-		Username:  &usernameStr,
-		Password:  &passwordStr,
+		ClientId:  &clientId,
+		Username:  &username,
+		Password:  &password,
 		GrantType: &grant_type,
 	}
 
@@ -90,9 +92,28 @@ func (r *HardwareManagerReconciler) GetToken(ctx context.Context, client *hwmgra
 
 // NewClientWithResponses creates an authenticated client connected to the hardware manager
 func (r *HardwareManagerReconciler) NewClientWithResponses(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager) (*hwmgrapi.ClientWithResponses, error) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // nolint: gosec
+	var caBundle string
+	if hwmgr.Spec.DellData.CaBundleName != nil {
+		cm, err := utils.GetConfigmap(ctx, r.Client, *hwmgr.Spec.DellData.CaBundleName, r.Namespace)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get configmap: %s", err.Error())
+		}
+
+		caBundle, err = utils.GetConfigMapField(cm, "ca-bundle.pem")
+		if err != nil {
+			return nil, fmt.Errorf("failed to get certificate bundle from configmap: %s", err.Error())
+		}
 	}
+
+	config := utils.OAuthClientConfig{
+		CaBundle: []byte(caBundle),
+	}
+
+	tr, err := utils.GetTransportWithCaBundle(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get http transport: %w", err)
+	}
+
 	httpClient := &http.Client{Transport: tr}
 
 	client, err := hwmgrapi.NewClientWithResponses(

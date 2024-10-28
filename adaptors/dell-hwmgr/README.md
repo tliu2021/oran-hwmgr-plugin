@@ -13,12 +13,11 @@ Plugin will interact with the hardware manager while processing a `NodePool` CR.
 
 The `dellData` of the `HardwareManager` CR provides the following information:
 
-- clientId: This is the client ID that will be specified when requesting a token from the hardware manager.
 - apiUrl: The address for the hardware manager.
 - authSecret: The name of the secret in the Plugin namespace that provides the username and password to be used when
   requesting a token.
 
-The secret follows the `kubernetes.io/basic-auth` type format, with `username` and `password` data fields.
+The secret follows the `kubernetes.io/basic-auth` type format, with `username` and `password` data fields, along with the `client-id` field.
 
 Example:
 
@@ -31,6 +30,7 @@ metadata:
   namespace: oran-hwmgr-plugin
 type: kubernetes.io/basic-auth
 data:
+  client-id: bXljbGllbnQ=
   username: YWRtaW4=
   password: bm90cmVhbA==
 ---
@@ -42,7 +42,6 @@ metadata:
 spec:
   adaptorId: dell-hwmgr
   dellData:
-    clientId: myclient
     authSecret: dell-1
     apiUrl: https://myserver.example.com:443/
 ```
