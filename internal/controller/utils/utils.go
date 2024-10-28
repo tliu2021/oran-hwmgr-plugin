@@ -166,20 +166,59 @@ func GetConfigmap(ctx context.Context, c client.Client, name, namespace string) 
 	return existingConfigmap, nil
 }
 
-func ExtractDataFromConfigMap[T any](cm *corev1.ConfigMap, key string) (T, error) {
-	var object T
-
-	data, exists := cm.Data[key]
-	if !exists {
-		return object, fmt.Errorf("unable to find %s data in configmap", key)
+// GetConfigMapField attempts to retrieve the value of the field using the provided field name
+func GetConfigMapField(cm *corev1.ConfigMap, fieldName string) (string, error) {
+	data, ok := cm.Data[fieldName]
+	if !ok {
+		return data, NewInputError("the ConfigMap '%s' does not contain a field named '%s'", cm.Name, fieldName)
 	}
 
-	err := yaml.Unmarshal([]byte(data), &object)
+	return data, nil
+}
+
+func ExtractDataFromConfigMap[T any](cm *corev1.ConfigMap, expectedKey string) (T, error) {
+	var validData T
+
+	// Find the expected key is present in the configmap data
+	defaults, err := GetConfigMapField(cm, expectedKey)
 	if err != nil {
-		return object, fmt.Errorf("unable to parse %s from configmap", key)
+		return validData, err
 	}
 
-	return object, nil
+	// Parse the YAML data into a map
+	err = yaml.Unmarshal([]byte(defaults), &validData)
+	if err != nil {
+		return validData, NewInputError(
+			"the value of key %s from ConfigMap %s is not in a valid YAML string: %s",
+			expectedKey, cm.GetName(), err.Error(),
+		)
+	}
+	return validData, nil
+}
+
+// GetSecret attempts to retrieve a Secret object for the given name
+func GetSecret(ctx context.Context, c client.Client, name, namespace string) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	exists, err := DoesK8SResourceExist(ctx, c, name, namespace, secret)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return nil, NewInputError(
+			"the Secret '%s' is not found in the namespace '%s'", name, namespace)
+	}
+	return secret, nil
+}
+
+// GetSecretField attempts to retrieve the value of the field using the provided field name
+func GetSecretField(secret *corev1.Secret, fieldName string) (string, error) {
+	encoded, ok := secret.Data[fieldName]
+	if !ok {
+		return "", NewInputError("the Secret '%s' does not contain a field named '%s'", secret.Name, fieldName)
+	}
+
+	return string(encoded), nil
 }
 
 func GetAdaptorIdFromHwMgrId(hwMgrId string) string {

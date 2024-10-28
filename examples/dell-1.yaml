@@ -1,4 +1,14 @@
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dell-1
+  namespace: oran-hwmgr-plugin
+type: kubernetes.io/basic-auth
+data:
+  username: YWRtaW4=
+  password: bm90cmVhbA==
+---
 apiVersion: hwmgr-plugin.oran.openshift.io/v1alpha1
 kind: HardwareManager
 metadata:
@@ -7,4 +17,6 @@ metadata:
 spec:
   adaptorId: dell-hwmgr
   dellData:
-    user: admin
+    clientId: myclient
+    authSecret: dell-1
+    apiUrl: https://myserver.example.com:443/

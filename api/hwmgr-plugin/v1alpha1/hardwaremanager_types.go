@@ -23,6 +23,15 @@ import (
 // HardwareManagerAdaptorID defines the type for the Hardware Manager Adaptor
 type HardwareManagerAdaptorID string
 
+// SupportedAdaptors defines the string values for valid stages
+var SupportedAdaptors = struct {
+	Loopback HardwareManagerAdaptorID
+	Dell     HardwareManagerAdaptorID
+}{
+	Loopback: "loopback",
+	Dell:     "dell-hwmgr",
+}
+
 // ConditionType is a string representing the condition's type
 type ConditionType string
 
@@ -47,13 +56,16 @@ var ConditionReasons = struct {
 	InProgress: "InProgress",
 }
 
-// SupportedAdaptors defines the string values for valid stages
-var SupportedAdaptors = struct {
-	Loopback HardwareManagerAdaptorID
-	Dell     HardwareManagerAdaptorID
+// OAuthGrantType is a string representing the OAuth2 grant type
+type OAuthGrantType string
+
+// OAuthGrantTypes define the different reasons that conditions will be set for
+var OAuthGrantTypes = struct {
+	ClientCredentials OAuthGrantType
+	Password          OAuthGrantType
 }{
-	Loopback: "loopback",
-	Dell:     "dell-hwmgr",
+	ClientCredentials: "client_credentials",
+	Password:          "password",
 }
 
 // LoopbackData defines configuration data for loopback adaptor instance
@@ -65,11 +77,21 @@ type LoopbackData struct {
 
 // DellData defines configuration data for dell-hwmgr adaptor instance
 type DellData struct {
-	// The username for connection to the Dell Hardware Manager
 	// +kubebuilder:validation:Required
 	// +required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	User string `json:"user"`
+	AuthSecret string `json:"authSecret"`
+
+	// +kubebuilder:validation:Required
+	// +required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec
+	ApiUrl string `json:"apiUrl"`
+
+	// CaBundleName references a config map that contains a set of custom CA certificates to be used when communicating
+	// with a hardware manager that has its TLS certificate signed by a non-public CA certificate.
+	// +optional
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Custom CA Certificates",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
+	CaBundleName *string `json:"caBundleName,omitempty"`
 }
 
 // HardwareManagerSpec defines the desired state of HardwareManager
@@ -108,6 +130,7 @@ type HardwareManagerStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=hardwaremanagers,scope=Namespaced
+// +kubebuilder:resource:shortName=hwmgr;hwmgrs
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the HardwareManager resource."
 // +kubebuilder:printcolumn:name="Adaptor ID",type="string",JSONPath=".status.adaptorId",description="The adaptor ID.",priority=1
 // +kubebuilder:printcolumn:name="Reason",type="string",JSONPath=".status.conditions[-1:].reason"

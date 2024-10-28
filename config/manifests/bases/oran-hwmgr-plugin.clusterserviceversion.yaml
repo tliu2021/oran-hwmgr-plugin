@@ -44,9 +44,17 @@ spec:
       - description: Config data for an instance of the dell-hwmgr adaptor
         displayName: Dell Data
         path: dellData
-      - description: The username for connection to the Dell Hardware Manager
-        displayName: User
-        path: dellData.user
+      - displayName: Api Url
+        path: dellData.apiUrl
+      - displayName: Auth Secret
+        path: dellData.authSecret
+      - description: |-
+          CaBundleName references a config map that contains a set of custom CA certificates to be used when communicating
+          with a hardware manager that has its TLS certificate signed by a non-public CA certificate.
+        displayName: Custom CA Certificates
+        path: dellData.caBundleName
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
       - description: Config data for an instance of the loopback adaptor
         displayName: Loopback Data
         path: loopbackData
