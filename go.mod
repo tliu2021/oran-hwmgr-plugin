@@ -10,7 +10,7 @@ require (
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
-	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241016162852-2b9561ef02c0
+	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241112182044-90330e7597a5
 	golang.org/x/oauth2 v0.12.0
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
