@@ -69,50 +69,21 @@ func UpdateNodePoolStatusCondition(
 		conditionStatus,
 		message)
 
-	// nolint: wrapcheck
-	err := RetryOnConflictOrRetriable(retry.DefaultRetry, func() error {
-		newNodepool := &hwmgmtv1alpha1.NodePool{}
-		if err := c.Get(ctx, client.ObjectKeyFromObject(nodepool), newNodepool); err != nil {
-			return err
-		}
-		SetStatusCondition(&newNodepool.Status.Conditions,
-			string(conditionType),
-			string(conditionReason),
-			conditionStatus,
-			message)
-		if err := c.Status().Update(ctx, newNodepool); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to update nodepool condition: %w", err)
+	if err := UpdateK8sCRStatus(ctx, c, nodepool); err != nil {
+		return fmt.Errorf("failed to update nodepool condition %s: %w", nodepool.Name, err)
 	}
 
 	return nil
 }
 
-func UpdateNodePoolProperties(
+func UpdateNodePoolPluginStatus(
 	ctx context.Context,
 	c client.Client,
 	nodepool *hwmgmtv1alpha1.NodePool) error {
 
-	// nolint: wrapcheck
-	err := RetryOnConflictOrRetriable(retry.DefaultRetry, func() error {
-		newNodepool := &hwmgmtv1alpha1.NodePool{}
-		if err := c.Get(ctx, client.ObjectKeyFromObject(nodepool), newNodepool); err != nil {
-			return err
-		}
-		newNodepool.Status.Properties = nodepool.Status.Properties
-		if err := c.Status().Update(ctx, newNodepool); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to update nodepool condition: %w", err)
+	nodepool.Status.HwMgrPlugin.ObservedGeneration = nodepool.ObjectMeta.Generation
+	if err := UpdateK8sCRStatus(ctx, c, nodepool); err != nil {
+		return fmt.Errorf("failed to update nodepool status %s: %w", nodepool.Name, err)
 	}
 
 	return nil

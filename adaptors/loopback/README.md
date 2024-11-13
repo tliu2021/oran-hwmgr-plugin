@@ -169,12 +169,12 @@ data:
         master:
         - dummy-sp-64g-1
   resources: |
-    hwprofiles:
-      - profile-spr-dual-processor-128G
-      - profile-spr-single-processor-64G
+    resourcepools:
+      - master
+      - worker
     nodes:
       dummy-dp-128g-0:
-        hwprofile: profile-spr-dual-processor-128G
+        poolID: worker
         bmc:
           address: "idrac-virtualmedia+https://192.168.1.0/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -185,7 +185,7 @@ data:
             macAddress: "c6:b6:13:a0:01:00"
         hostname: "dummy-dp-128g-0.localhost"
       dummy-dp-128g-1:
-        hwprofile: profile-spr-dual-processor-128G
+        poolID: worker
         bmc:
           address: "idrac-virtualmedia+https://192.168.1.1/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -196,7 +196,7 @@ data:
             macAddress: "c6:b6:13:a0:01:01"
         hostname: "dummy-dp-128g-1.localhost"
       dummy-dp-128g-2:
-        hwprofile: profile-spr-dual-processor-128G
+        poolID: worker
         bmc:
           address: "idrac-virtualmedia+https://192.168.1.2/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -207,7 +207,7 @@ data:
             macAddress: "c6:b6:13:a0:01:02"
         hostname: "dummy-dp-128g-2.localhost"
       dummy-sp-64g-0:
-        hwprofile: profile-spr-single-processor-64G
+        poolID: master
         bmc:
           address: "idrac-virtualmedia+https://192.168.2.0/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -218,7 +218,7 @@ data:
             macAddress: "c6:b6:13:a0:02:00"
         hostname: "dummy-sp-64g-0.localhost"
       dummy-sp-64g-1:
-        hwprofile: profile-spr-single-processor-64G
+        poolID: master
         bmc:
           address: "idrac-virtualmedia+https://192.168.2.1/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -229,7 +229,7 @@ data:
             macAddress: "c6:b6:13:a0:02:01"
         hostname: "dummy-sp-64g-1.localhost"
       dummy-sp-64g-2:
-        hwprofile: profile-spr-single-processor-64G
+        poolID: master
         bmc:
           address: "idrac-virtualmedia+https://192.168.2.2/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -240,7 +240,7 @@ data:
             macAddress: "c6:b6:13:a0:02:02"
         hostname: "dummy-sp-64g-2.localhost"
       dummy-sp-64g-3:
-        hwprofile: profile-spr-single-processor-64G
+        poolID: master
         bmc:
           address: "idrac-virtualmedia+https://192.168.2.3/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=
@@ -251,7 +251,7 @@ data:
             macAddress: "c6:b6:13:a0:02:03"
         hostname: "dummy-sp-64g-3.localhost"
       dummy-sp-64g-4:
-        hwprofile: profile-spr-single-processor-64G
+        poolID: master
         bmc:
           address: "idrac-virtualmedia+https://192.168.2.4/redfish/v1/Systems/System.Embedded.1"
           username-base64: YWRtaW4=

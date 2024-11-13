@@ -234,7 +234,9 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
+ifeq ($(shell uname -s),Linux)
 	@chmod -R u+w $(LOCALBIN)
+endif
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 .PHONY: operator-sdk
@@ -336,7 +338,9 @@ catalog-push: ## Push a catalog image.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
+ifeq ($(shell uname -s),Linux)
 	@chmod -R u+w $(LOCALBIN)
+endif
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test $$(go list ./... | grep -v /e2e) -coverprofile cover.out
 
 # Utilize Kind or modify the e2e tests to load the image locally, enabling compatibility with other vendors.
