@@ -17,21 +17,27 @@ limitations under the License.
 package utils
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 
+	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 	"k8s.io/apimachinery/pkg/util/net"
 
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 )
+
+var utilsLog = slog.New(logging.NewLoggingContextHandler()).With("module", "utils")
 
 // OAuthClientConfig defines the parameters required to establish an HTTP Client capable of acquiring an OAuth Token
 // from an OAuth capable authorization server.
@@ -80,8 +86,7 @@ func GetTLSSkipVerify() bool {
 
 	result, err := strconv.ParseBool(value)
 	if err != nil {
-		utilsLog.Error(err, fmt.Sprintf("Error parsing '%s' variable value '%s'",
-			TLSSkipVerifyEnvName, value))
+		utilsLog.Error("Error parsing TLSSkipVerify env variable", slog.String(TLSSkipVerifyEnvName, value))
 		return TLSSkipVerifyDefaultValue
 	}
 
@@ -167,7 +172,77 @@ func GetTransportWithCaBundle(config OAuthClientConfig) (http.RoundTripper, erro
 		}
 	}
 
-	return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
+	// nolint:gocritic
+	// return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
+	return LoggingRoundTripper{TLSClientConfig: tlsConfig}, nil
+}
+
+// TODO: Determine whether to remove the message tracing altogether.
+// Currently this writes debug logs, but the level is hardcoded. Seeing these debug logs requires
+// setting the loglevel of the utilsLog logger, so this needs some work here.
+type LoggingRoundTripper struct {
+	TLSClientConfig *tls.Config
+}
+
+func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	var reqStr string
+	var respStr string
+
+	if req.Body != nil {
+		reqbuf, e := io.ReadAll(req.Body)
+		if e != nil {
+			utilsLog.Debug("Reading http request from RoundTrip injector error", slog.String("error", e.Error()))
+		} else {
+			reqrdr1 := io.NopCloser(bytes.NewBuffer(reqbuf))
+			reqrdr2 := io.NopCloser(bytes.NewBuffer(reqbuf))
+			req.Body = reqrdr2
+			// read resp.Body to string
+			breq, errreq := io.ReadAll(reqrdr1)
+			if errreq != nil {
+				utilsLog.Debug("Reading http request from RoundTrip injector error", slog.String("error", errreq.Error()))
+			} else {
+				reqStr = string(breq)
+			}
+		}
+	}
+
+	// Do work before the request is sent
+	rt := http.Transport{
+		TLSClientConfig: t.TLSClientConfig}
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
+		return resp, err // nolint: wrapcheck
+	}
+
+	if resp.Body != nil {
+		respbuf, e := io.ReadAll(resp.Body)
+		if e != nil {
+			utilsLog.Debug("Reading http response from RoundTrip injector error", slog.String("error", e.Error()))
+		} else {
+			resprdr2 := io.NopCloser(bytes.NewBuffer(respbuf))
+			resp.Body = resprdr2
+			resprdr1 := io.NopCloser(bytes.NewBuffer(respbuf))
+			// read resp.Body to string
+			b, errresp := io.ReadAll(resprdr1)
+			if errresp != nil {
+				utilsLog.Debug("Reading http response from RoundTrip injector error", slog.String("error", errresp.Error()))
+			} else {
+				respStr = string(b)
+			}
+		}
+	}
+
+	// Do work after the response is received
+	utilsLog.Debug(fmt.Sprintf("REQUEST(%s) %s, Headers: %+v, Body: %s, RESPONSE(%d), Headers: %+v, Body: %s",
+		req.Method,
+		req.URL.Path,
+		req.Header,
+		reqStr,
+		resp.StatusCode,
+		resp.Header,
+		respStr))
+
+	return resp, err // nolint: wrapcheck
 }
 
 // SetupOAuthClient creates an HTTP client capable of acquiring an OAuth token used to authorize client requests.  If

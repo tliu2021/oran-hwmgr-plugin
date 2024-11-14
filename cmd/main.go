@@ -28,6 +28,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors"
+	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -150,7 +151,7 @@ func main() {
 	hwmgrAdaptor := &adaptors.HwMgrAdaptorController{
 		Client:    mgr.GetClient(),
 		Scheme:    mgr.GetScheme(),
-		Logger:    slog.With("controller", "adaptors"),
+		Logger:    slog.New(logging.NewLoggingContextHandler()).With("controller", "adaptors"),
 		Namespace: myNamespace,
 	}
 	if err = hwmgrAdaptor.SetupWithManager(mgr); err != nil {
@@ -161,7 +162,7 @@ func main() {
 	if err = (&o2imshardwaremanagementcontroller.NodePoolReconciler{
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
-		Logger:       slog.With("controller", "NodePool"),
+		Logger:       slog.New(logging.NewLoggingContextHandler()).With("controller", "NodePool"),
 		Namespace:    myNamespace,
 		HwMgrAdaptor: hwmgrAdaptor,
 	}).SetupWithManager(mgr); err != nil {

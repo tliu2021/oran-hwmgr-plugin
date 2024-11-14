@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/hwmgrclient"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,11 +99,11 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return
 	}
 
-	r.Logger.InfoContext(ctx, "[Dell HardwareManager] ApiUrl: "+hwmgr.Spec.DellData.ApiUrl)
+	r.Logger.InfoContext(ctx, "Validating client connection", slog.String("apiUrl", hwmgr.Spec.DellData.ApiUrl))
 
-	authClient, clientErr := r.NewClientWithResponses(ctx, hwmgr)
+	_, clientErr := hwmgrclient.NewClientWithResponses(ctx, r.Logger, r.Client, hwmgr)
 	if clientErr != nil {
-		r.Logger.InfoContext(ctx, "NewClientWithResponses error", "error", clientErr.Error())
+		r.Logger.InfoContext(ctx, "NewClientWithResponses error", slog.String("error", clientErr.Error()))
 		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
 			pluginv1alpha1.ConditionTypes.Validation,
 			pluginv1alpha1.ConditionReasons.Failed,
@@ -122,12 +123,6 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		"Authentication passed"); updateErr != nil {
 		err = fmt.Errorf("failed to update status for hardware manager (%s) with validation success: %w", hwmgr.Name, updateErr)
 		return
-	}
-
-	// TEMPORARY: Testing the authenticated client
-	r.Logger.InfoContext(ctx, "Attempting hardcoded GetResourceGroup to test authenticated connection")
-	if clientErr := r.GetResourceGroup(ctx, authClient, "rg-nonexistent"); clientErr != nil {
-		r.Logger.InfoContext(ctx, "GetResourceGroup returned an error", slog.String("error", clientErr.Error()))
 	}
 
 	return
