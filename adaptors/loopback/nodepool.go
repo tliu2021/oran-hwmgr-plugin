@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
+	"time"
 
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
 
@@ -82,6 +84,7 @@ func (a *Adaptor) HandleNodePoolCreate(
 		message = "Handling creation"
 	}
 
+	nodepool.Status.HwMgrPlugin.ObservedGeneration = nodepool.ObjectMeta.Generation
 	if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
 		conditionType, conditionReason, conditionStatus, message); err != nil {
 		return utils.RequeueWithMediumInterval(),
@@ -107,7 +110,7 @@ func (a *Adaptor) HandleNodePoolProcessing(
 	}
 	nodepool.Status.Properties.NodeNames = allocatedNodes
 
-	if err := utils.UpdateNodePoolProperties(ctx, a.Client, nodepool); err != nil {
+	if err := utils.UpdateK8sCRStatus(ctx, a.Client, nodepool); err != nil {
 		return utils.RequeueWithMediumInterval(),
 			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
 	}
@@ -132,13 +135,127 @@ func (a *Adaptor) HandleNodePoolProcessing(
 	return result, nil
 }
 
+func (a *Adaptor) checkNodeUpgradeProcess(
+	ctx context.Context,
+	allocatedNodes []string) ([]*hwmgmtv1alpha1.Node, []*hwmgmtv1alpha1.Node, error) {
+
+	var upgradedNodes []*hwmgmtv1alpha1.Node
+	var nodesStillUpgrading []*hwmgmtv1alpha1.Node
+
+	for _, name := range allocatedNodes {
+		// Fetch the latest version of each node to ensure up-to-date status
+		updatedNode, err := a.GetNode(ctx, name)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get node %s: %w", name, err)
+		}
+
+		if updatedNode.Status.HwProfile == updatedNode.Spec.HwProfile {
+			// Node has completed the upgrade
+			upgradedNodes = append(upgradedNodes, updatedNode)
+		} else {
+			updatedNode.Status.HwProfile = updatedNode.Spec.HwProfile
+			if err := utils.UpdateK8sCRStatus(ctx, a.Client, updatedNode); err != nil {
+				return nil, nil, fmt.Errorf("failed to update status for node %s: %w", updatedNode.Name, err)
+			}
+			nodesStillUpgrading = append(nodesStillUpgrading, updatedNode)
+		}
+	}
+
+	return upgradedNodes, nodesStillUpgrading, nil
+}
+
+func (a *Adaptor) handleNodePoolConfiguring(
+	ctx context.Context,
+	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
+
+	var nodesToCheck []*hwmgmtv1alpha1.Node // To track nodes that we actually attempted to upgrade
+	var result ctrl.Result
+
+	a.Logger.InfoContext(ctx, "Handling Node Pool Configuring, name="+nodepool.Name)
+
+	allocatedNodes, err := a.GetAllocatedNodes(ctx, nodepool)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to get allocated nodes for %s: %w", nodepool.Name, err)
+	}
+
+	// Stage 1: Initiate upgrades by updating node.Spec.HwProfile as necessary
+	for _, name := range allocatedNodes {
+		node, err := a.GetNode(ctx, name)
+		if err != nil {
+			return utils.RequeueWithShortInterval(), err
+		}
+		// Check each node against each nodegroup in the node pool spec
+		for _, nodegroup := range nodepool.Spec.NodeGroup {
+			if node.Spec.GroupName != nodegroup.Name || node.Spec.HwProfile == nodegroup.HwProfile {
+				continue
+			}
+			// Node needs an upgrade, so update Spec.HwProfile
+			patch := client.MergeFrom(node.DeepCopy())
+			node.Spec.HwProfile = nodegroup.HwProfile
+			if err = a.Client.Patch(ctx, node, patch); err != nil {
+				return utils.RequeueWithShortInterval(), fmt.Errorf("failed to patch Node %s in namespace %s: %w", node.Name, node.Namespace, err)
+			}
+			nodesToCheck = append(nodesToCheck, node) // Track nodes we attempted to upgrade
+			break
+		}
+	}
+
+	// Requeue if there are nodes to check
+	if len(nodesToCheck) > 0 {
+		return utils.RequeueWithCustomInterval(30 * time.Second), nil
+	}
+
+	// Stage 2: Verify and track completion of upgrades
+	_, nodesStillUpgrading, err := a.checkNodeUpgradeProcess(ctx, allocatedNodes)
+	if err != nil {
+		return utils.RequeueWithShortInterval(), fmt.Errorf("failed to check upgrade status for nodes: %w", err)
+	}
+
+	// Update NodePool status if all nodes are upgraded
+	if len(nodesStillUpgrading) == 0 {
+		if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
+			hwmgmtv1alpha1.Configured, hwmgmtv1alpha1.ConfigApplied, metav1.ConditionTrue, string(hwmgmtv1alpha1.ConfigSuccess)); err != nil {
+			return utils.RequeueWithShortInterval(), fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+		}
+		// Update the Node Pool hwMgrPlugin status
+		if err = utils.UpdateNodePoolPluginStatus(ctx, a.Client, nodepool); err != nil {
+			return utils.RequeueWithShortInterval(), fmt.Errorf("failed UpdateNodePoolPluginStatus: %w", err)
+		}
+	} else {
+		// Requeue if there are still nodes upgrading
+		return utils.RequeueWithMediumInterval(), nil
+	}
+
+	return result, nil
+}
+
+func (a *Adaptor) HandleNodePoolSpecChanged(
+	ctx context.Context,
+	hwmgr *pluginv1alpha1.HardwareManager,
+	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
+
+	if err := utils.UpdateNodePoolStatusCondition(
+		ctx,
+		a.Client,
+		nodepool,
+		hwmgmtv1alpha1.Configured,
+		hwmgmtv1alpha1.ConfigUpdate,
+		metav1.ConditionFalse,
+		string(hwmgmtv1alpha1.AwaitConfig)); err != nil {
+		return utils.RequeueWithMediumInterval(),
+			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+	}
+
+	return a.handleNodePoolConfiguring(ctx, nodepool)
+}
+
 // ProcessNewNodePool processes a new NodePool CR, verifying that there are enough free resources to satisfy the request
 func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) error {
 
 	cloudID := nodepool.Spec.CloudID
-
+	nodepool.Status.HwMgrPlugin.ObservedGeneration = nodepool.ObjectMeta.Generation
 	a.Logger.InfoContext(ctx, "Processing ProcessNewNodePool request:",
 		slog.Any("loopback additionalInfo", hwmgr.Spec.LoopbackData),
 		slog.String("cloudID", cloudID),
@@ -150,9 +267,9 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	}
 
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		freenodes := getFreeNodesInProfile(resources, allocations, nodegroup.HwProfile)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
 		if nodegroup.Size > len(freenodes) {
-			return fmt.Errorf("not enough free resources in group %s: freenodes=%d", nodegroup.HwProfile, len(freenodes))
+			return fmt.Errorf("not enough free resources in resource pool %s: freenodes=%d", nodegroup.Name, len(freenodes))
 		}
 	}
 
@@ -193,9 +310,9 @@ func (a *Adaptor) IsNodePoolFullyAllocated(ctx context.Context,
 			continue
 		}
 
-		freenodes := getFreeNodesInProfile(resources, allocations, nodegroup.HwProfile)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
 		if remaining > len(freenodes) {
-			return false, fmt.Errorf("not enough free resources remaining in group %s", nodegroup.HwProfile)
+			return false, fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.Name)
 		}
 
 		// Cloud is not fully allocated, and there are resources available

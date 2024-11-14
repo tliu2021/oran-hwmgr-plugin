@@ -71,6 +71,7 @@ type fsmAction int
 const (
 	NodePoolFSMCreate = iota
 	NodePoolFSMProcessing
+	NodePoolFSMSpecChanged
 	NodePoolFSMNoop
 )
 
@@ -85,6 +86,11 @@ func (a *Adaptor) determineAction(ctx context.Context, nodepool *hwmgmtv1alpha1.
 		string(hwmgmtv1alpha1.Provisioned))
 	if provisionedCondition != nil {
 		if provisionedCondition.Status == metav1.ConditionTrue {
+			// Check if the generation has changed
+			if nodepool.ObjectMeta.Generation != nodepool.Status.HwMgrPlugin.ObservedGeneration {
+				a.Logger.InfoContext(ctx, "Handling NodePool Spec change, name="+nodepool.Name)
+				return NodePoolFSMSpecChanged
+			}
 			a.Logger.InfoContext(ctx, "NodePool request in Provisioned state, name="+nodepool.Name)
 			return NodePoolFSMNoop
 		}
@@ -103,6 +109,8 @@ func (a *Adaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alpha1.Hard
 		return a.HandleNodePoolCreate(ctx, hwmgr, nodepool)
 	case NodePoolFSMProcessing:
 		return a.HandleNodePoolProcessing(ctx, hwmgr, nodepool)
+	case NodePoolFSMSpecChanged:
+		return a.HandleNodePoolSpecChanged(ctx, hwmgr, nodepool)
 	case NodePoolFSMNoop:
 		// Nothing to do
 		return result, nil

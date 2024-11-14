@@ -67,9 +67,9 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			continue
 		}
 
-		freenodes := getFreeNodesInProfile(resources, allocations, nodegroup.HwProfile)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
 		if remaining > len(freenodes) {
-			return fmt.Errorf("not enough free resources remaining in group %s", nodegroup.HwProfile)
+			return fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.Name)
 		}
 
 		// Grab the first node
@@ -100,7 +100,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("failed to create allocated node (%s): %w", nodename, err)
 		}
 
-		if err := a.UpdateNodeStatus(ctx, nodename, nodeinfo); err != nil {
+		if err := a.UpdateNodeStatus(ctx, nodename, nodeinfo, nodegroup.HwProfile); err != nil {
 			return fmt.Errorf("failed to update node status (%s): %w", nodename, err)
 		}
 	}
@@ -195,7 +195,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, cloudID, nodename, groupname, 
 }
 
 // UpdateNodeStatus updates a Node CR status field with additional node information from the nodelist configmap
-func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cmNodeInfo) error {
+func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cmNodeInfo, hwprofile string) error {
 
 	a.Logger.InfoContext(ctx, "Updating node:",
 		"nodename", nodename,
@@ -222,7 +222,7 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cm
 		string(hwmgmtv1alpha1.Completed),
 		metav1.ConditionTrue,
 		"Provisioned")
-
+	node.Status.HwProfile = hwprofile
 	if err := utils.UpdateK8sCRStatus(ctx, a.Client, node); err != nil {
 		return fmt.Errorf("failed to update status for node %s: %w", nodename, err)
 	}
@@ -249,4 +249,21 @@ func (a *Adaptor) DeleteNode(ctx context.Context, nodename string) error {
 	}
 
 	return nil
+}
+
+// GetNode get a node resource for a provided name
+func (a *Adaptor) GetNode(ctx context.Context, nodename string) (*hwmgmtv1alpha1.Node, error) {
+
+	a.Logger.InfoContext(ctx, "Getting node:",
+		"nodename", nodename,
+	)
+
+	node := &hwmgmtv1alpha1.Node{}
+
+	if err := utils.RetryOnConflictOrRetriableOrNotFound(retry.DefaultRetry, func() error {
+		return a.Get(ctx, types.NamespacedName{Name: nodename, Namespace: a.Namespace}, node)
+	}); err != nil {
+		return node, fmt.Errorf("failed to get Node for update: %w", err)
+	}
+	return node, nil
 }

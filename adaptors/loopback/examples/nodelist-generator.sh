@@ -2,7 +2,7 @@
 #
 
 PROG=$(basename "$0")
-declare -A PROFILES=()
+declare -A POOLS=()
 
 USERNAME_BASE64=$(echo -n "admin" | base64)
 PASSWORD_BASE64=$(echo -n "mypass" | base64)
@@ -11,11 +11,11 @@ function usage {
     cat <<EOF
 Usage: ${PROG} ...
 Parameters:
-    --profile <name:prefix:size>
+    --resourcepool <name:prefix:size>
 
 Example:
 
-${0} --profile profile-spr-single-processor-64G:dummy-sp-64g:5 --profile profile-spr-dual-processor-128G:dummy-dp-128g:3
+${0} --resourcepool master:dummy-sp-64g:5 --resourcepool worker:dummy-dp-128g:3
 
 EOF
     exit 1
@@ -33,20 +33,20 @@ data:
 EOF
 }
 
-function hwprofiles {
-    echo "    hwprofiles:"
-    mapfile -t sorted_profiles < <( IFS=$'\n'; sort -u <<<"${!PROFILES[*]}" )
-    for profile in "${sorted_profiles[@]}"; do
-        echo "      - ${profile}"
+function resourcepools {
+    echo "    resourcepools:"
+    mapfile -t sorted_pools < <( IFS=$'\n'; sort -u <<<"${!POOLS[*]}" )
+    for pool in "${sorted_pools[@]}"; do
+        echo "      - ${pool}"
     done
 }
 
 function nodes {
     echo "    nodes:"
     group=0
-    mapfile -t sorted_profiles < <( IFS=$'\n'; sort -u <<<"${!PROFILES[*]}" )
-    for profile in "${sorted_profiles[@]}"; do
-        value="${PROFILES[${profile}]}"
+    mapfile -t sorted_pools < <( IFS=$'\n'; sort -u <<<"${!POOLS[*]}" )
+    for pool in "${sorted_pools[@]}"; do
+        value="${POOLS[${pool}]}"
         prefix=$(echo "${value}" | awk -F: '{print $1}')
         size=$(echo "${value}" | awk -F: '{print $2}')
         group=$((group+1))
@@ -58,7 +58,7 @@ function nodes {
 
             cat <<EOF
       ${nodename}:
-        hwprofile: ${profile}
+        poolID: ${pool}
         bmc:
           address: "idrac-virtualmedia+https://${ip}/redfish/v1/Systems/System.Embedded.1"
           username-base64: ${USERNAME_BASE64}
@@ -79,7 +79,7 @@ EOF
 
 longopts=(
     "help"
-    "profile:"
+    "resourcepool:"
 )
 
 longopts_str=$(IFS=,; echo "${longopts[*]}")
@@ -93,12 +93,12 @@ eval set -- "${OPTS}"
 
 while :; do
     case "$1" in
-        -p|--profile)
+        -p|--resourcepool)
             value="$2"
             name=$(echo "${value}" | awk -F: '{print $1}')
             prefix=$(echo "${value}" | awk -F: '{print $2}')
             size=$(echo "${value}" | awk -F: '{print $3}')
-            PROFILES+=(["${name}"]="${prefix}:${size}")
+            POOLS+=(["${name}"]="${prefix}:${size}")
             shift 2
             ;;
         --)
@@ -113,11 +113,11 @@ while :; do
     esac
 done
 
-if [ "${#PROFILES[@]}" -eq 0 ]; then
+if [ "${#POOLS[@]}" -eq 0 ]; then
     usage
 fi
 
 header
-hwprofiles
+resourcepools
 nodes
 

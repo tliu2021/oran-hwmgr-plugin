@@ -34,15 +34,15 @@ type cmBmcInfo struct {
 }
 
 type cmNodeInfo struct {
-	HwProfile  string                      `json:"hwprofile" yaml:"hwprofile"`
-	BMC        *cmBmcInfo                  `json:"bmc,omitempty"`
-	Interfaces []*hwmgmtv1alpha1.Interface `json:"interfaces,omitempty"`
-	Hostname   string                      `json:"hostname,omitempty"`
+	ResourcePoolID string                      `json:"poolID,omitempty"`
+	BMC            *cmBmcInfo                  `json:"bmc,omitempty"`
+	Interfaces     []*hwmgmtv1alpha1.Interface `json:"interfaces,omitempty"`
+	Hostname       string                      `json:"hostname,omitempty"`
 }
 
 type cmResources struct {
-	HwProfiles []string              `json:"hwprofiles" yaml:"hwprofiles"`
-	Nodes      map[string]cmNodeInfo `json:"nodes" yaml:"nodes"`
+	ResourcePools []string              `json:"resourcepools" yaml:"resourcepools"`
+	Nodes         map[string]cmNodeInfo `json:"nodes" yaml:"nodes"`
 }
 
 type cmAllocatedCloud struct {
@@ -60,8 +60,8 @@ const (
 	cmName         = "loopback-adaptor-nodelist"
 )
 
-// getFreeNodesInProfile compares the parsed configmap data to get the list of free nodes for a given hardware profile
-func getFreeNodesInProfile(resources cmResources, allocations cmAllocations, profname string) (freenodes []string) {
+// getFreeNodesInPool compares the parsed configmap data to get the list of free nodes for a given resource pool
+func getFreeNodesInPool(resources cmResources, allocations cmAllocations, poolID string) (freenodes []string) {
 	inuse := make(map[string]bool)
 	for _, cloud := range allocations.Clouds {
 		for groupname := range cloud.Nodegroups {
@@ -72,12 +72,12 @@ func getFreeNodesInProfile(resources cmResources, allocations cmAllocations, pro
 	}
 
 	for nodename, node := range resources.Nodes {
-		if node.HwProfile != profname {
-			continue
-		}
-
-		if _, used := inuse[nodename]; !used {
-			freenodes = append(freenodes, nodename)
+		// Check if the node belongs to the specified resource pool
+		if node.ResourcePoolID == poolID {
+			// Only add to the freenodes if not in use
+			if _, used := inuse[nodename]; !used {
+				freenodes = append(freenodes, nodename)
+			}
 		}
 	}
 
