@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -60,6 +61,8 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 	_ = log.FromContext(ctx)
 	result = utils.DoNotRequeue()
 
+	ctx = logging.AppendCtx(ctx, slog.String("nodepool", req.Name))
+
 	// Fetch the nodepool:
 	nodepool := &hwmgmtv1alpha1.NodePool{}
 	if err = r.Client.Get(ctx, req.NamespacedName, nodepool); err != nil {
@@ -76,14 +79,17 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 		return
 	}
 
-	r.Logger.InfoContext(ctx, "[NodePool] "+nodepool.Name)
+	ctx = logging.AppendCtx(ctx, slog.String("CloudID", nodepool.Spec.CloudID))
+
+	r.Logger.InfoContext(ctx, "Reconciling NodePool")
 
 	if nodepool.GetDeletionTimestamp() != nil {
 		// Handle deletion
-		r.Logger.InfoContext(ctx, "Nodepool is being deleted", slog.String("name", nodepool.Name))
+		r.Logger.InfoContext(ctx, "Nodepool is being deleted")
 		if controllerutil.ContainsFinalizer(nodepool, utils.NodepoolFinalizer) {
 			if err := r.HwMgrAdaptor.HandleNodePoolDeletion(ctx, nodepool); err != nil {
-				return ctrl.Result{}, fmt.Errorf("finalizer failed: %w", err)
+				// Log the failure and continue, to remove the finalizer and allow the deletion
+				r.Logger.InfoContext(ctx, "Failed HandleNodePoolDeletion", slog.String("error", err.Error()))
 			}
 
 			if err := utils.NodepoolRemoveFinalizer(ctx, r.Client, nodepool); err != nil {
@@ -92,15 +98,7 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 
 			return utils.DoNotRequeue(), nil
 		}
-		// TODO: Should return here?
-	}
-
-	if !controllerutil.ContainsFinalizer(nodepool, utils.NodepoolFinalizer) {
-		r.Logger.InfoContext(ctx, "Adding finalizer to NodePool", "name", nodepool.Name)
-		if err := utils.NodepoolAddFinalizer(ctx, r.Client, nodepool); err != nil {
-			return utils.RequeueImmediately(), fmt.Errorf("failed to add finalizer to nodepool: %w", err)
-		}
-		return utils.RequeueImmediately(), nil
+		return utils.DoNotRequeue(), nil
 	}
 
 	// Hand off the CR to the adaptor

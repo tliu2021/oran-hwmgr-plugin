@@ -24,12 +24,14 @@ import (
 	adaptorinterface "github.com/openshift-kni/oran-hwmgr-plugin/adaptors/adaptor-interface"
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
+	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	// Import the adaptors
 	dellhwmgr "github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr"
@@ -97,11 +99,10 @@ func (c *HwMgrAdaptorController) getHwMgr(ctx context.Context, nodepool *hwmgmtv
 
 // HandleNodePool calls the applicable adaptor handler to process the NodePool CR
 func (c *HwMgrAdaptorController) HandleNodePool(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
+	ctx = logging.AppendCtx(ctx, slog.String("hwmgr", nodepool.Spec.HwMgrId))
 	hwmgr, err := c.getHwMgr(ctx, nodepool)
 	if err != nil {
-		c.Logger.Error("failed to get adaptor instance",
-			slog.String("hwMgrId", nodepool.Spec.HwMgrId),
-			slog.String("error", err.Error()))
+		c.Logger.Error("failed to get adaptor instance", slog.String("error", err.Error()))
 
 		if err := utils.UpdateNodePoolStatusCondition(ctx, c.Client, nodepool,
 			hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
@@ -133,6 +134,13 @@ func (c *HwMgrAdaptorController) HandleNodePool(ctx context.Context, nodepool *h
 	result, err := adaptor.HandleNodePool(ctx, hwmgr, nodepool)
 	if err != nil {
 		return result, fmt.Errorf("failed HandleNodePool for adaptorID %s: %w", adaptorID, err)
+	}
+
+	if !controllerutil.ContainsFinalizer(nodepool, utils.NodepoolFinalizer) {
+		c.Logger.InfoContext(ctx, "Adding finalizer to NodePool")
+		if err := utils.NodepoolAddFinalizer(ctx, c.Client, nodepool); err != nil {
+			return utils.RequeueImmediately(), fmt.Errorf("failed to add finalizer to nodepool: %w", err)
+		}
 	}
 
 	return result, nil

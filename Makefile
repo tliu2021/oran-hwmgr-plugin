@@ -336,8 +336,8 @@ catalog-build: opm ## Build a catalog image.
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
-.PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
+.PHONY: test tests
+test tests: manifests generate fmt vet envtest ## Run tests.
 ifeq ($(shell uname -s),Linux)
 	@chmod -R u+w $(LOCALBIN)
 endif

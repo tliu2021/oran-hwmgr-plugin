@@ -94,40 +94,19 @@ type ClientInterface interface {
 
 	GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// VerifyRequestStatusWithBody request with any body
-	VerifyRequestStatusWithBody(ctx context.Context, jobid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	VerifyRequestStatus(ctx context.Context, jobid string, body VerifyRequestStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// VerifyRequestStatus request
+	VerifyRequestStatus(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateResourceGroupWithBody request with any body
 	CreateResourceGroupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateResourceGroup(ctx context.Context, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteResourceGroupWithBody request with any body
-	DeleteResourceGroupWithBody(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteResourceGroup request
+	DeleteResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	DeleteResourceGroup(ctx context.Context, resourceGroupId string, body DeleteResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetResourceGroupWithBody request with any body
-	GetResourceGroupWithBody(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	GetResourceGroup(ctx context.Context, resourceGroupId string, body GetResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateResourcePoolWithBody request with any body
-	CreateResourcePoolWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateResourcePool(ctx context.Context, body CreateResourcePoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// OnboardServerWithBody request with any body
-	OnboardServerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	OnboardServer(ctx context.Context, body OnboardServerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreatesecretsWithBody request with any body
-	CreatesecretsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	Createsecrets(ctx context.Context, body CreatesecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetResourceGroup request
+	GetResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -154,20 +133,8 @@ func (c *Client) GetToken(ctx context.Context, body GetTokenJSONRequestBody, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) VerifyRequestStatusWithBody(ctx context.Context, jobid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVerifyRequestStatusRequestWithBody(c.Server, jobid, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) VerifyRequestStatus(ctx context.Context, jobid string, body VerifyRequestStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVerifyRequestStatusRequest(c.Server, jobid, body)
+func (c *Client) VerifyRequestStatus(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVerifyRequestStatusRequest(c.Server, jobid)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +169,8 @@ func (c *Client) CreateResourceGroup(ctx context.Context, body CreateResourceGro
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteResourceGroupWithBody(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteResourceGroupRequestWithBody(c.Server, resourceGroupId, contentType, body)
+func (c *Client) DeleteResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteResourceGroupRequest(c.Server, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -214,104 +181,8 @@ func (c *Client) DeleteResourceGroupWithBody(ctx context.Context, resourceGroupI
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteResourceGroup(ctx context.Context, resourceGroupId string, body DeleteResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteResourceGroupRequest(c.Server, resourceGroupId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetResourceGroupWithBody(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetResourceGroupRequestWithBody(c.Server, resourceGroupId, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetResourceGroup(ctx context.Context, resourceGroupId string, body GetResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetResourceGroupRequest(c.Server, resourceGroupId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateResourcePoolWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateResourcePoolRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateResourcePool(ctx context.Context, body CreateResourcePoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateResourcePoolRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) OnboardServerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewOnboardServerRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) OnboardServer(ctx context.Context, body OnboardServerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewOnboardServerRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreatesecretsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreatesecretsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) Createsecrets(ctx context.Context, body CreatesecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreatesecretsRequest(c.Server, body)
+func (c *Client) GetResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourceGroupRequest(c.Server, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -362,19 +233,8 @@ func NewGetTokenRequestWithBody(server string, contentType string, body io.Reade
 	return req, nil
 }
 
-// NewVerifyRequestStatusRequest calls the generic VerifyRequestStatus builder with application/json body
-func NewVerifyRequestStatusRequest(server string, jobid string, body VerifyRequestStatusJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewVerifyRequestStatusRequestWithBody(server, jobid, "application/json", bodyReader)
-}
-
-// NewVerifyRequestStatusRequestWithBody generates requests for VerifyRequestStatus with any type of body
-func NewVerifyRequestStatusRequestWithBody(server string, jobid string, contentType string, body io.Reader) (*http.Request, error) {
+// NewVerifyRequestStatusRequest generates requests for VerifyRequestStatus
+func NewVerifyRequestStatusRequest(server string, jobid string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -399,12 +259,10 @@ func NewVerifyRequestStatusRequestWithBody(server string, jobid string, contentT
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", queryURL.String(), body)
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -449,19 +307,8 @@ func NewCreateResourceGroupRequestWithBody(server string, contentType string, bo
 	return req, nil
 }
 
-// NewDeleteResourceGroupRequest calls the generic DeleteResourceGroup builder with application/json body
-func NewDeleteResourceGroupRequest(server string, resourceGroupId string, body DeleteResourceGroupJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewDeleteResourceGroupRequestWithBody(server, resourceGroupId, "application/json", bodyReader)
-}
-
-// NewDeleteResourceGroupRequestWithBody generates requests for DeleteResourceGroup with any type of body
-func NewDeleteResourceGroupRequestWithBody(server string, resourceGroupId string, contentType string, body io.Reader) (*http.Request, error) {
+// NewDeleteResourceGroupRequest generates requests for DeleteResourceGroup
+func NewDeleteResourceGroupRequest(server string, resourceGroupId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -486,29 +333,16 @@ func NewDeleteResourceGroupRequestWithBody(server string, resourceGroupId string
 		return nil, err
 	}
 
-	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
 
-// NewGetResourceGroupRequest calls the generic GetResourceGroup builder with application/json body
-func NewGetResourceGroupRequest(server string, resourceGroupId string, body GetResourceGroupJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewGetResourceGroupRequestWithBody(server, resourceGroupId, "application/json", bodyReader)
-}
-
-// NewGetResourceGroupRequestWithBody generates requests for GetResourceGroup with any type of body
-func NewGetResourceGroupRequestWithBody(server string, resourceGroupId string, contentType string, body io.Reader) (*http.Request, error) {
+// NewGetResourceGroupRequest generates requests for GetResourceGroup
+func NewGetResourceGroupRequest(server string, resourceGroupId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -533,132 +367,10 @@ func NewGetResourceGroupRequestWithBody(server string, resourceGroupId string, c
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", queryURL.String(), body)
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewCreateResourcePoolRequest calls the generic CreateResourcePool builder with application/json body
-func NewCreateResourcePoolRequest(server string, body CreateResourcePoolJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateResourcePoolRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreateResourcePoolRequestWithBody generates requests for CreateResourcePool with any type of body
-func NewCreateResourcePoolRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/resourcepools")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewOnboardServerRequest calls the generic OnboardServer builder with application/json body
-func NewOnboardServerRequest(server string, body OnboardServerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewOnboardServerRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewOnboardServerRequestWithBody generates requests for OnboardServer with any type of body
-func NewOnboardServerRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/resources")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewCreatesecretsRequest calls the generic Createsecrets builder with application/json body
-func NewCreatesecretsRequest(server string, body CreatesecretsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreatesecretsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreatesecretsRequestWithBody generates requests for Createsecrets with any type of body
-func NewCreatesecretsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/secrets")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -711,45 +423,26 @@ type ClientWithResponsesInterface interface {
 
 	GetTokenWithResponse(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetTokenResponse, error)
 
-	// VerifyRequestStatusWithBodyWithResponse request with any body
-	VerifyRequestStatusWithBodyWithResponse(ctx context.Context, jobid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error)
-
-	VerifyRequestStatusWithResponse(ctx context.Context, jobid string, body VerifyRequestStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error)
+	// VerifyRequestStatusWithResponse request
+	VerifyRequestStatusWithResponse(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error)
 
 	// CreateResourceGroupWithBodyWithResponse request with any body
 	CreateResourceGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
 
 	CreateResourceGroupWithResponse(ctx context.Context, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
 
-	// DeleteResourceGroupWithBodyWithResponse request with any body
-	DeleteResourceGroupWithBodyWithResponse(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error)
+	// DeleteResourceGroupWithResponse request
+	DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error)
 
-	DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, body DeleteResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error)
-
-	// GetResourceGroupWithBodyWithResponse request with any body
-	GetResourceGroupWithBodyWithResponse(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error)
-
-	GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, body GetResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error)
-
-	// CreateResourcePoolWithBodyWithResponse request with any body
-	CreateResourcePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourcePoolResponse, error)
-
-	CreateResourcePoolWithResponse(ctx context.Context, body CreateResourcePoolJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourcePoolResponse, error)
-
-	// OnboardServerWithBodyWithResponse request with any body
-	OnboardServerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*OnboardServerResponse, error)
-
-	OnboardServerWithResponse(ctx context.Context, body OnboardServerJSONRequestBody, reqEditors ...RequestEditorFn) (*OnboardServerResponse, error)
-
-	// CreatesecretsWithBodyWithResponse request with any body
-	CreatesecretsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatesecretsResponse, error)
-
-	CreatesecretsWithResponse(ctx context.Context, body CreatesecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatesecretsResponse, error)
+	// GetResourceGroupWithResponse request
+	GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error)
 }
 
 type GetTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *RhprotoGetTokenResponseBody
+	JSONDefault  *RhprotoGooglerpcStatus
 }
 
 // Status returns HTTPResponse.Status
@@ -771,6 +464,8 @@ func (r GetTokenResponse) StatusCode() int {
 type VerifyRequestStatusResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *RhprotoJobStatus
+	JSONDefault  *RhprotoGooglerpcStatus
 }
 
 // Status returns HTTPResponse.Status
@@ -792,6 +487,8 @@ func (r VerifyRequestStatusResponse) StatusCode() int {
 type CreateResourceGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *ApiprotoResponse
+	JSONDefault  *GooglerpcStatus
 }
 
 // Status returns HTTPResponse.Status
@@ -813,6 +510,8 @@ func (r CreateResourceGroupResponse) StatusCode() int {
 type DeleteResourceGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *ApiprotoResponse
+	JSONDefault  *GooglerpcStatus
 }
 
 // Status returns HTTPResponse.Status
@@ -834,6 +533,8 @@ func (r DeleteResourceGroupResponse) StatusCode() int {
 type GetResourceGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *RhprotoResourceGroupObjectGetResponseBody
+	JSONDefault  *GooglerpcStatus
 }
 
 // Status returns HTTPResponse.Status
@@ -846,69 +547,6 @@ func (r GetResourceGroupResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetResourceGroupResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateResourcePoolResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateResourcePoolResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateResourcePoolResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type OnboardServerResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r OnboardServerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r OnboardServerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreatesecretsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r CreatesecretsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreatesecretsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -932,17 +570,9 @@ func (c *ClientWithResponses) GetTokenWithResponse(ctx context.Context, body Get
 	return ParseGetTokenResponse(rsp)
 }
 
-// VerifyRequestStatusWithBodyWithResponse request with arbitrary body returning *VerifyRequestStatusResponse
-func (c *ClientWithResponses) VerifyRequestStatusWithBodyWithResponse(ctx context.Context, jobid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error) {
-	rsp, err := c.VerifyRequestStatusWithBody(ctx, jobid, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseVerifyRequestStatusResponse(rsp)
-}
-
-func (c *ClientWithResponses) VerifyRequestStatusWithResponse(ctx context.Context, jobid string, body VerifyRequestStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error) {
-	rsp, err := c.VerifyRequestStatus(ctx, jobid, body, reqEditors...)
+// VerifyRequestStatusWithResponse request returning *VerifyRequestStatusResponse
+func (c *ClientWithResponses) VerifyRequestStatusWithResponse(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error) {
+	rsp, err := c.VerifyRequestStatus(ctx, jobid, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -966,89 +596,22 @@ func (c *ClientWithResponses) CreateResourceGroupWithResponse(ctx context.Contex
 	return ParseCreateResourceGroupResponse(rsp)
 }
 
-// DeleteResourceGroupWithBodyWithResponse request with arbitrary body returning *DeleteResourceGroupResponse
-func (c *ClientWithResponses) DeleteResourceGroupWithBodyWithResponse(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error) {
-	rsp, err := c.DeleteResourceGroupWithBody(ctx, resourceGroupId, contentType, body, reqEditors...)
+// DeleteResourceGroupWithResponse request returning *DeleteResourceGroupResponse
+func (c *ClientWithResponses) DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error) {
+	rsp, err := c.DeleteResourceGroup(ctx, resourceGroupId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseDeleteResourceGroupResponse(rsp)
 }
 
-func (c *ClientWithResponses) DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, body DeleteResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error) {
-	rsp, err := c.DeleteResourceGroup(ctx, resourceGroupId, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteResourceGroupResponse(rsp)
-}
-
-// GetResourceGroupWithBodyWithResponse request with arbitrary body returning *GetResourceGroupResponse
-func (c *ClientWithResponses) GetResourceGroupWithBodyWithResponse(ctx context.Context, resourceGroupId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error) {
-	rsp, err := c.GetResourceGroupWithBody(ctx, resourceGroupId, contentType, body, reqEditors...)
+// GetResourceGroupWithResponse request returning *GetResourceGroupResponse
+func (c *ClientWithResponses) GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error) {
+	rsp, err := c.GetResourceGroup(ctx, resourceGroupId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseGetResourceGroupResponse(rsp)
-}
-
-func (c *ClientWithResponses) GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, body GetResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error) {
-	rsp, err := c.GetResourceGroup(ctx, resourceGroupId, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetResourceGroupResponse(rsp)
-}
-
-// CreateResourcePoolWithBodyWithResponse request with arbitrary body returning *CreateResourcePoolResponse
-func (c *ClientWithResponses) CreateResourcePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourcePoolResponse, error) {
-	rsp, err := c.CreateResourcePoolWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateResourcePoolResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateResourcePoolWithResponse(ctx context.Context, body CreateResourcePoolJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourcePoolResponse, error) {
-	rsp, err := c.CreateResourcePool(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateResourcePoolResponse(rsp)
-}
-
-// OnboardServerWithBodyWithResponse request with arbitrary body returning *OnboardServerResponse
-func (c *ClientWithResponses) OnboardServerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*OnboardServerResponse, error) {
-	rsp, err := c.OnboardServerWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseOnboardServerResponse(rsp)
-}
-
-func (c *ClientWithResponses) OnboardServerWithResponse(ctx context.Context, body OnboardServerJSONRequestBody, reqEditors ...RequestEditorFn) (*OnboardServerResponse, error) {
-	rsp, err := c.OnboardServer(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseOnboardServerResponse(rsp)
-}
-
-// CreatesecretsWithBodyWithResponse request with arbitrary body returning *CreatesecretsResponse
-func (c *ClientWithResponses) CreatesecretsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatesecretsResponse, error) {
-	rsp, err := c.CreatesecretsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreatesecretsResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreatesecretsWithResponse(ctx context.Context, body CreatesecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatesecretsResponse, error) {
-	rsp, err := c.Createsecrets(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreatesecretsResponse(rsp)
 }
 
 // ParseGetTokenResponse parses an HTTP response from a GetTokenWithResponse call
@@ -1062,6 +625,23 @@ func ParseGetTokenResponse(rsp *http.Response) (*GetTokenResponse, error) {
 	response := &GetTokenResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RhprotoGetTokenResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest RhprotoGooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1080,6 +660,23 @@ func ParseVerifyRequestStatusResponse(rsp *http.Response) (*VerifyRequestStatusR
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RhprotoJobStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest RhprotoGooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -1094,6 +691,23 @@ func ParseCreateResourceGroupResponse(rsp *http.Response) (*CreateResourceGroupR
 	response := &CreateResourceGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1112,6 +726,23 @@ func ParseDeleteResourceGroupResponse(rsp *http.Response) (*DeleteResourceGroupR
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -1128,52 +759,21 @@ func ParseGetResourceGroupResponse(rsp *http.Response) (*GetResourceGroupRespons
 		HTTPResponse: rsp,
 	}
 
-	return response, nil
-}
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RhprotoResourceGroupObjectGetResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
-// ParseCreateResourcePoolResponse parses an HTTP response from a CreateResourcePoolWithResponse call
-func ParseCreateResourcePoolResponse(rsp *http.Response) (*CreateResourcePoolResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
-	response := &CreateResourcePoolResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseOnboardServerResponse parses an HTTP response from a OnboardServerWithResponse call
-func ParseOnboardServerResponse(rsp *http.Response) (*OnboardServerResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &OnboardServerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseCreatesecretsResponse parses an HTTP response from a CreatesecretsWithResponse call
-func ParseCreatesecretsResponse(rsp *http.Response) (*CreatesecretsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreatesecretsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
 	}
 
 	return response, nil

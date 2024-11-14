@@ -22,8 +22,10 @@ import (
 	"log/slog"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/controller"
+	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/hwmgrclient"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -65,22 +67,76 @@ func (a *Adaptor) SetupAdaptor(mgr ctrl.Manager) error {
 	return nil
 }
 
+type fsmAction int
+
+const (
+	NodePoolFSMCreate = iota
+	NodePoolFSMProcessing
+	NodePoolFSMNoop
+)
+
+func (a *Adaptor) determineAction(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) fsmAction {
+	if len(nodepool.Status.Conditions) == 0 {
+		a.Logger.InfoContext(ctx, "Handling Create NodePool request")
+		return NodePoolFSMCreate
+	}
+
+	provisionedCondition := meta.FindStatusCondition(
+		nodepool.Status.Conditions,
+		string(hwmgmtv1alpha1.Provisioned))
+	if provisionedCondition != nil {
+		if provisionedCondition.Reason == string(hwmgmtv1alpha1.Failed) {
+			a.Logger.InfoContext(ctx, "NodePool request in Failed state")
+			return NodePoolFSMNoop
+		}
+
+		if provisionedCondition.Status == metav1.ConditionTrue {
+			a.Logger.InfoContext(ctx, "NodePool request in Provisioned state")
+			return NodePoolFSMNoop
+		}
+
+		return NodePoolFSMProcessing
+	}
+
+	return NodePoolFSMNoop
+}
+
 func (a *Adaptor) HandleNodePool(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
 	result := utils.DoNotRequeue()
 
-	a.Logger.Error("DellHwMgr is not yet implemented")
-	if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
-		hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
-		"Unsupported hwmgr adaptor: dell-hwmgr is not yet implemented"); err != nil {
-		return utils.RequeueWithMediumInterval(),
-			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+	hwmgrClient, clientErr := hwmgrclient.NewClientWithResponses(ctx, a.Logger, a.Client, hwmgr)
+	if clientErr != nil {
+		// TODO: Improve client error handling to distinguish between connectivity errors, auth, etc
+		a.Logger.InfoContext(ctx, "NewClientWithResponses error", slog.String("error", clientErr.Error()))
+		return result, fmt.Errorf("failed to setup hwmgr client: %w", clientErr)
+	}
+
+	switch a.determineAction(ctx, nodepool) {
+	case NodePoolFSMCreate:
+		return a.HandleNodePoolCreate(ctx, hwmgrClient, hwmgr, nodepool)
+	case NodePoolFSMProcessing:
+		return a.HandleNodePoolProcessing(ctx, hwmgrClient, hwmgr, nodepool)
+	case NodePoolFSMNoop:
+		// Nothing to do
+		return result, nil
 	}
 
 	return result, nil
 }
 
 func (a *Adaptor) HandleNodePoolDeletion(ctx context.Context, hwmgr *pluginv1alpha1.HardwareManager, nodepool *hwmgmtv1alpha1.NodePool) error {
-	a.Logger.InfoContext(ctx, "DellHwMgr HandleNodePoolDeletion", "name", nodepool.Name)
+	a.Logger.InfoContext(ctx, "Finalizing nodepool")
+
+	hwmgrClient, clientErr := hwmgrclient.NewClientWithResponses(ctx, a.Logger, a.Client, hwmgr)
+	if clientErr != nil {
+		// TODO: Improve client error handling to distinguish between connectivity errors, auth, etc
+		a.Logger.InfoContext(ctx, "NewClientWithResponses error", slog.String("error", clientErr.Error()))
+		return fmt.Errorf("failed to setup hwmgr client: %w", clientErr)
+	}
+
+	if err := a.ReleaseNodePool(ctx, hwmgrClient, hwmgr, nodepool); err != nil {
+		return fmt.Errorf("failed to release nodepool %s: %w", nodepool.Name, err)
+	}
 
 	return nil
 }
