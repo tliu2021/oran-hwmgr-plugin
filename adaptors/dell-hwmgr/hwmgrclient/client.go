@@ -182,7 +182,7 @@ func (c *HardwareManagerClient) GetResourceGroup(ctx context.Context, nodepool *
 	rg := ResourceGroupFromNodePool(nodepool)
 	rgId := *rg.ResourceGroup.Id
 
-	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, rgId)
+	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, Tenant, rgId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource group %s: response: %v, err: %w", rgId, response, err)
 	}
@@ -267,7 +267,7 @@ func (c *HardwareManagerClient) CreateResourceGroup(ctx context.Context, nodepoo
 	rgId := *rg.ResourceGroup.Id
 
 	// First check whether the resource group already exists
-	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, rgId)
+	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, Tenant, rgId)
 	if err != nil {
 		return "", fmt.Errorf("failed to query for resource group %s: response: %v, err: %w", rgId, response, err)
 	}
@@ -277,7 +277,7 @@ func (c *HardwareManagerClient) CreateResourceGroup(ctx context.Context, nodepoo
 	}
 
 	// Send a request to the hardware manager to create the resource group
-	rgResponse, err := c.HwmgrClient.CreateResourceGroupWithResponse(ctx, *rg)
+	rgResponse, err := c.HwmgrClient.CreateResourceGroupWithResponse(ctx, Tenant, *rg)
 	if err != nil {
 		return "", fmt.Errorf("failed to create resource group %s, api failure: response: %v, err: %w", rgId, response, err)
 	}
@@ -294,7 +294,7 @@ func (c *HardwareManagerClient) CreateResourceGroup(ctx context.Context, nodepoo
 
 // CheckResourceGroupRequest queries the hardware manager for the status of a job
 func (c *HardwareManagerClient) CheckResourceGroupRequest(ctx context.Context, jobId string) (*hwmgrapi.RhprotoJobStatus, error) {
-	response, err := c.HwmgrClient.VerifyRequestStatusWithResponse(ctx, jobId)
+	response, err := c.HwmgrClient.VerifyRequestStatusWithResponse(ctx, Tenant, jobId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for resource group job status: id: %s, response: %v, err: %w", jobId, response, err)
 	}
@@ -310,7 +310,7 @@ func (c *HardwareManagerClient) CheckResourceGroupRequest(ctx context.Context, j
 func (c *HardwareManagerClient) DeleteResourceGroup(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (string, error) {
 	rgId := ResourceGroupIdFromNodePool(nodepool)
 
-	response, err := c.HwmgrClient.DeleteResourceGroupWithResponse(ctx, rgId)
+	response, err := c.HwmgrClient.DeleteResourceGroupWithResponse(ctx, Tenant, rgId)
 	if err != nil || response.StatusCode() != http.StatusOK {
 		return "", fmt.Errorf("failed to delete resource group %s: response: %v, err: %w", rgId, response, err)
 	}

@@ -95,18 +95,18 @@ type ClientInterface interface {
 	GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// VerifyRequestStatus request
-	VerifyRequestStatus(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	VerifyRequestStatus(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateResourceGroupWithBody request with any body
-	CreateResourceGroupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateResourceGroupWithBody(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateResourceGroup(ctx context.Context, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateResourceGroup(ctx context.Context, tenant string, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteResourceGroup request
-	DeleteResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteResourceGroup(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetResourceGroup request
-	GetResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetResourceGroup(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -133,8 +133,8 @@ func (c *Client) GetToken(ctx context.Context, body GetTokenJSONRequestBody, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) VerifyRequestStatus(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVerifyRequestStatusRequest(c.Server, jobid)
+func (c *Client) VerifyRequestStatus(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVerifyRequestStatusRequest(c.Server, tenant, jobid)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +145,8 @@ func (c *Client) VerifyRequestStatus(ctx context.Context, jobid string, reqEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateResourceGroupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateResourceGroupRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateResourceGroupWithBody(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateResourceGroupRequestWithBody(c.Server, tenant, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -157,8 +157,8 @@ func (c *Client) CreateResourceGroupWithBody(ctx context.Context, contentType st
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateResourceGroup(ctx context.Context, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateResourceGroupRequest(c.Server, body)
+func (c *Client) CreateResourceGroup(ctx context.Context, tenant string, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateResourceGroupRequest(c.Server, tenant, body)
 	if err != nil {
 		return nil, err
 	}
@@ -169,8 +169,8 @@ func (c *Client) CreateResourceGroup(ctx context.Context, body CreateResourceGro
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteResourceGroupRequest(c.Server, resourceGroupId)
+func (c *Client) DeleteResourceGroup(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteResourceGroupRequest(c.Server, tenant, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -181,8 +181,8 @@ func (c *Client) DeleteResourceGroup(ctx context.Context, resourceGroupId string
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetResourceGroup(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetResourceGroupRequest(c.Server, resourceGroupId)
+func (c *Client) GetResourceGroup(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourceGroupRequest(c.Server, tenant, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -234,12 +234,19 @@ func NewGetTokenRequestWithBody(server string, contentType string, body io.Reade
 }
 
 // NewVerifyRequestStatusRequest generates requests for VerifyRequestStatus
-func NewVerifyRequestStatusRequest(server string, jobid string) (*http.Request, error) {
+func NewVerifyRequestStatusRequest(server string, tenant string, jobid string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "jobid", runtime.ParamLocationPath, jobid)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "jobid", runtime.ParamLocationPath, jobid)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +256,7 @@ func NewVerifyRequestStatusRequest(server string, jobid string) (*http.Request, 
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/jobs/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/tenants/%s/jobs/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -268,26 +275,33 @@ func NewVerifyRequestStatusRequest(server string, jobid string) (*http.Request, 
 }
 
 // NewCreateResourceGroupRequest calls the generic CreateResourceGroup builder with application/json body
-func NewCreateResourceGroupRequest(server string, body CreateResourceGroupJSONRequestBody) (*http.Request, error) {
+func NewCreateResourceGroupRequest(server string, tenant string, body CreateResourceGroupJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateResourceGroupRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateResourceGroupRequestWithBody(server, tenant, "application/json", bodyReader)
 }
 
 // NewCreateResourceGroupRequestWithBody generates requests for CreateResourceGroup with any type of body
-func NewCreateResourceGroupRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateResourceGroupRequestWithBody(server string, tenant string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/resourcegroups")
+	operationPath := fmt.Sprintf("/v1/tenants/%s/resourcegroups", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -308,12 +322,19 @@ func NewCreateResourceGroupRequestWithBody(server string, contentType string, bo
 }
 
 // NewDeleteResourceGroupRequest generates requests for DeleteResourceGroup
-func NewDeleteResourceGroupRequest(server string, resourceGroupId string) (*http.Request, error) {
+func NewDeleteResourceGroupRequest(server string, tenant string, resourceGroupId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource-group-id", runtime.ParamLocationPath, resourceGroupId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "resource-group-id", runtime.ParamLocationPath, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +344,7 @@ func NewDeleteResourceGroupRequest(server string, resourceGroupId string) (*http
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/resourcegroups/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/tenants/%s/resourcegroups/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -342,12 +363,19 @@ func NewDeleteResourceGroupRequest(server string, resourceGroupId string) (*http
 }
 
 // NewGetResourceGroupRequest generates requests for GetResourceGroup
-func NewGetResourceGroupRequest(server string, resourceGroupId string) (*http.Request, error) {
+func NewGetResourceGroupRequest(server string, tenant string, resourceGroupId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource-group-id", runtime.ParamLocationPath, resourceGroupId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "resource-group-id", runtime.ParamLocationPath, resourceGroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +385,7 @@ func NewGetResourceGroupRequest(server string, resourceGroupId string) (*http.Re
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/tenants/default_tenant/resourcegroups/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/tenants/%s/resourcegroups/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -424,18 +452,18 @@ type ClientWithResponsesInterface interface {
 	GetTokenWithResponse(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetTokenResponse, error)
 
 	// VerifyRequestStatusWithResponse request
-	VerifyRequestStatusWithResponse(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error)
+	VerifyRequestStatusWithResponse(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error)
 
 	// CreateResourceGroupWithBodyWithResponse request with any body
-	CreateResourceGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
+	CreateResourceGroupWithBodyWithResponse(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
 
-	CreateResourceGroupWithResponse(ctx context.Context, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
+	CreateResourceGroupWithResponse(ctx context.Context, tenant string, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
 
 	// DeleteResourceGroupWithResponse request
-	DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error)
+	DeleteResourceGroupWithResponse(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error)
 
 	// GetResourceGroupWithResponse request
-	GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error)
+	GetResourceGroupWithResponse(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error)
 }
 
 type GetTokenResponse struct {
@@ -571,8 +599,8 @@ func (c *ClientWithResponses) GetTokenWithResponse(ctx context.Context, body Get
 }
 
 // VerifyRequestStatusWithResponse request returning *VerifyRequestStatusResponse
-func (c *ClientWithResponses) VerifyRequestStatusWithResponse(ctx context.Context, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error) {
-	rsp, err := c.VerifyRequestStatus(ctx, jobid, reqEditors...)
+func (c *ClientWithResponses) VerifyRequestStatusWithResponse(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error) {
+	rsp, err := c.VerifyRequestStatus(ctx, tenant, jobid, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -580,16 +608,16 @@ func (c *ClientWithResponses) VerifyRequestStatusWithResponse(ctx context.Contex
 }
 
 // CreateResourceGroupWithBodyWithResponse request with arbitrary body returning *CreateResourceGroupResponse
-func (c *ClientWithResponses) CreateResourceGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
-	rsp, err := c.CreateResourceGroupWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateResourceGroupWithBodyWithResponse(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
+	rsp, err := c.CreateResourceGroupWithBody(ctx, tenant, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateResourceGroupResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateResourceGroupWithResponse(ctx context.Context, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
-	rsp, err := c.CreateResourceGroup(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateResourceGroupWithResponse(ctx context.Context, tenant string, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
+	rsp, err := c.CreateResourceGroup(ctx, tenant, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -597,8 +625,8 @@ func (c *ClientWithResponses) CreateResourceGroupWithResponse(ctx context.Contex
 }
 
 // DeleteResourceGroupWithResponse request returning *DeleteResourceGroupResponse
-func (c *ClientWithResponses) DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error) {
-	rsp, err := c.DeleteResourceGroup(ctx, resourceGroupId, reqEditors...)
+func (c *ClientWithResponses) DeleteResourceGroupWithResponse(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error) {
+	rsp, err := c.DeleteResourceGroup(ctx, tenant, resourceGroupId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -606,8 +634,8 @@ func (c *ClientWithResponses) DeleteResourceGroupWithResponse(ctx context.Contex
 }
 
 // GetResourceGroupWithResponse request returning *GetResourceGroupResponse
-func (c *ClientWithResponses) GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error) {
-	rsp, err := c.GetResourceGroup(ctx, resourceGroupId, reqEditors...)
+func (c *ClientWithResponses) GetResourceGroupWithResponse(ctx context.Context, tenant string, resourceGroupId string, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error) {
+	rsp, err := c.GetResourceGroup(ctx, tenant, resourceGroupId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
