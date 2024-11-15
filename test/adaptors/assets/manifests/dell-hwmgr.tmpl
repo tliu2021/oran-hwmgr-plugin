@@ -1,0 +1,10 @@
+apiVersion: hwmgr-plugin.oran.openshift.io/v1alpha1
+kind: HardwareManager
+metadata:
+  name: dell-1
+  namespace: default
+spec:
+  adaptorId: dell-hwmgr
+  dellData:
+    authSecret: dell-1
+    apiUrl: {{ .Url }}

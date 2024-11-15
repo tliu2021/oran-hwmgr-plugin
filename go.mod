@@ -6,11 +6,16 @@ toolchain go1.22.7
 
 require (
 	github.com/go-git/go-git/v5 v5.12.0
+	github.com/gorilla/mux v1.8.1
+	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
 	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241119221834-27fcd2507c33
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+	github.com/sethvargo/go-retry v0.3.0
+	golang.org/x/mod v0.17.0
 	golang.org/x/oauth2 v0.12.0
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
@@ -73,7 +78,6 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
-	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect

@@ -13,9 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 //nolint:all
-package reconcile
+package loopback
 
 import (
 	"context"
@@ -23,7 +22,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	hwmgrpluginoranopenshiftiov1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
-	"github.com/openshift-kni/oran-hwmgr-plugin/test/reconcile/assets"
+	"github.com/openshift-kni/oran-hwmgr-plugin/test/adaptors/assets"
 	imsv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,31 +40,31 @@ var _ = Describe("reconcile via the loopback adaptor", func() {
 		ctx := context.Background()
 
 		BeforeEach(func() {
-			// Create the loopback cm instance
+			// create the loopback cm instance
 			var err error
 			cm, err = assets.GetConfigmapFromFile("manifests/loopback-nodelist-cm.yaml")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k8sClient.Create(ctx, cm)).To(Succeed())
 
-			// Create the HardwareManager cr instance
-			hwmgr, err = assets.GetHardwareManageFromFile("manifests/loopback-hm.yaml")
+			// create the HardwareManager cr instance
+			hwmgr, err = assets.GetHardwareManagerFromFile("manifests/loopback-hwmgr.yaml")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k8sClient.Create(ctx, hwmgr)).To(Succeed())
 
-			// Create the Nodepool cr instance
-			np, err = assets.GetNodePoolFromFile("manifests/np1.yaml")
+			// create the Nodepool cr instance
+			np, err = assets.GetNodePoolFromFile("manifests/np1-np.yaml")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k8sClient.Create(ctx, np)).To(Succeed())
 		})
 
 		AfterEach(func() {
-			// Delete the loopback cm instance
+			// delete the loopback cm instance
 			Expect(k8sClient.Delete(ctx, cm)).To(Succeed())
 
-			// Delete the HardwareManager cr instance
+			// delete the HardwareManager cr instance
 			Expect(k8sClient.Delete(ctx, hwmgr)).To(Succeed())
 
-			// Delete the Nodepool cr instance
+			// delete the Nodepool cr instance
 			Expect(k8sClient.Delete(ctx, np)).To(Succeed())
 
 		})

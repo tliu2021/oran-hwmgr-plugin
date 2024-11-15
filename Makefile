@@ -377,11 +377,14 @@ scorecard-test: operator-sdk
 ## Adaptors
 DELL_ADAPTOR_DIR ?= adaptors/dell-hwmgr
 DELL_OPENAPI ?= $(DELL_ADAPTOR_DIR)/dell-oapi.yaml
+DELL_TEST_ADAPTOR_DIR ?= test/adaptors/dell-hwmgr/dell-server
 
 .PHONY: dell-api
 dell-api: oapi-codegen
 	@mkdir -p $(DELL_ADAPTOR_DIR)/generated
 	$(OAPI_CODEGEN) -package=api -generate types $(DELL_OPENAPI) >$(DELL_ADAPTOR_DIR)/generated/types.go
 	$(OAPI_CODEGEN) -package=api -generate client $(DELL_OPENAPI) >$(DELL_ADAPTOR_DIR)/generated/client.go
+	@mkdir -p $(DELL_TEST_ADAPTOR_DIR)/generated
+	$(OAPI_CODEGEN) -package=api -generate types,gorilla $(DELL_OPENAPI) >$(DELL_TEST_ADAPTOR_DIR)/generated/server.go
 	go mod tidy
 	go mod vendor
