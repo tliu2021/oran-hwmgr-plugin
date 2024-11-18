@@ -51,7 +51,6 @@ func (a *Adaptor) CheckNodePoolProgress(
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
 		a.Logger.InfoContext(ctx, "Allocating node for CheckNodePoolProgress request:",
 			"cloudID", cloudID,
-			"nodegroup name", nodegroup.Name,
 			"nodegroup resourcePoolId", nodegroup.ResourcePoolId,
 		)
 

@@ -59,17 +59,17 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 
 	// Check available resources
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		used := cloud.Nodegroups[nodegroup.Name]
+		used := cloud.Nodegroups[nodegroup.ResourcePoolId]
 		remaining := nodegroup.Size - len(used)
 		if remaining <= 0 {
 			// This group is allocated
-			a.Logger.InfoContext(ctx, "nodegroup is fully allocated", "nodegroup", nodegroup.Name)
+			a.Logger.InfoContext(ctx, "nodegroup is fully allocated", "nodegroup", nodegroup.ResourcePoolId)
 			continue
 		}
 
-		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.ResourcePoolId)
 		if remaining > len(freenodes) {
-			return fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.Name)
+			return fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.ResourcePoolId)
 		}
 
 		// Grab the first node
@@ -84,7 +84,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
 		}
 
-		cloud.Nodegroups[nodegroup.Name] = append(cloud.Nodegroups[nodegroup.Name], nodename)
+		cloud.Nodegroups[nodegroup.ResourcePoolId] = append(cloud.Nodegroups[nodegroup.ResourcePoolId], nodename)
 
 		// Update the configmap
 		yamlString, err := yaml.Marshal(&allocations)
@@ -96,7 +96,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("failed to update configmap: %w", err)
 		}
 
-		if err := a.CreateNode(ctx, cloudID, nodename, nodegroup.Name, nodegroup.HwProfile); err != nil {
+		if err := a.CreateNode(ctx, cloudID, nodename, nodegroup.ResourcePoolId, nodegroup.HwProfile); err != nil {
 			return fmt.Errorf("failed to create allocated node (%s): %w", nodename, err)
 		}
 
