@@ -52,6 +52,7 @@ func (a *Adaptor) CheckNodePoolProgress(
 		a.Logger.InfoContext(ctx, "Allocating node for CheckNodePoolProgress request:",
 			"cloudID", cloudID,
 			"nodegroup name", nodegroup.Name,
+			"nodegroup resourcePoolId", nodegroup.ResourcePoolId,
 		)
 
 		if err = a.AllocateNode(ctx, nodepool); err != nil {
@@ -186,7 +187,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		}
 		// Check each node against each nodegroup in the node pool spec
 		for _, nodegroup := range nodepool.Spec.NodeGroup {
-			if node.Spec.GroupName != nodegroup.Name || node.Spec.HwProfile == nodegroup.HwProfile {
+			if node.Spec.GroupName != nodegroup.ResourcePoolId || node.Spec.HwProfile == nodegroup.HwProfile {
 				continue
 			}
 			// Node needs an upgrade, so update Spec.HwProfile
@@ -267,9 +268,9 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	}
 
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.ResourcePoolId)
 		if nodegroup.Size > len(freenodes) {
-			return fmt.Errorf("not enough free resources in resource pool %s: freenodes=%d", nodegroup.Name, len(freenodes))
+			return fmt.Errorf("not enough free resources in resource pool %s: freenodes=%d", nodegroup.ResourcePoolId, len(freenodes))
 		}
 	}
 
@@ -302,17 +303,17 @@ func (a *Adaptor) IsNodePoolFullyAllocated(ctx context.Context,
 
 	// Check allocated resources
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		used := cloud.Nodegroups[nodegroup.Name]
+		used := cloud.Nodegroups[nodegroup.ResourcePoolId]
 		remaining := nodegroup.Size - len(used)
 		if remaining <= 0 {
 			// This group is allocated
-			a.Logger.InfoContext(ctx, "nodegroup is fully allocated", "nodegroup", nodegroup.Name)
+			a.Logger.InfoContext(ctx, "nodegroup is fully allocated", "nodegroup", nodegroup.ResourcePoolId)
 			continue
 		}
 
-		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.ResourcePoolId)
 		if remaining > len(freenodes) {
-			return false, fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.Name)
+			return false, fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.ResourcePoolId)
 		}
 
 		// Cloud is not fully allocated, and there are resources available
