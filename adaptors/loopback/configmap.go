@@ -133,7 +133,7 @@ func (a *Adaptor) GetAllocatedNodes(ctx context.Context, nodepool *hwmgmtv1alpha
 
 	// Get allocated resources
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		allocatedNodes = append(allocatedNodes, cloud.Nodegroups[nodegroup.ResourcePoolId]...)
+		allocatedNodes = append(allocatedNodes, cloud.Nodegroups[nodegroup.Name]...)
 	}
 
 	slices.Sort(allocatedNodes)
