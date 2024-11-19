@@ -59,7 +59,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 
 	// Check available resources
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		used := cloud.Nodegroups[nodegroup.ResourcePoolId]
+		used := cloud.Nodegroups[nodegroup.Name]
 		remaining := nodegroup.Size - len(used)
 		if remaining <= 0 {
 			// This group is allocated
