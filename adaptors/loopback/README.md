@@ -93,11 +93,15 @@ spec:
   location: ottawa
   nodeGroup:
   - hwProfile: profile-spr-single-processor-64G
-    name: master
+    name: controller
     size: 1
+    resourcePoolId: xyz-master
+    role: master
   - hwProfile: profile-spr-dual-processor-128G
     name: worker
     size: 0
+    resourcePoolId: xyz-worker
+    role: worker
   site: building-1
 status:
   conditions:

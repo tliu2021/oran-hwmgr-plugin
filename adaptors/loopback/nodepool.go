@@ -267,9 +267,9 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	}
 
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.ResourcePoolId)
 		if nodegroup.Size > len(freenodes) {
-			return fmt.Errorf("not enough free resources in resource pool %s: freenodes=%d", nodegroup.Name, len(freenodes))
+			return fmt.Errorf("not enough free resources in resource pool %s: freenodes=%d", nodegroup.ResourcePoolId, len(freenodes))
 		}
 	}
 
@@ -310,9 +310,9 @@ func (a *Adaptor) IsNodePoolFullyAllocated(ctx context.Context,
 			continue
 		}
 
-		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.Name)
+		freenodes := getFreeNodesInPool(resources, allocations, nodegroup.ResourcePoolId)
 		if remaining > len(freenodes) {
-			return false, fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.Name)
+			return false, fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.ResourcePoolId)
 		}
 
 		// Cloud is not fully allocated, and there are resources available
