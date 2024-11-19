@@ -38,8 +38,9 @@ const (
 
 // ValidateNodePool performs basic validation of the nodepool data
 func (a *Adaptor) ValidateNodePool(nodepool *hwmgmtv1alpha1.NodePool) error {
-	if len(nodepool.Spec.NodeGroup) != 2 {
-		return fmt.Errorf("nodepool %s invalid: Expected 2 entries in .spec.nodeGroup, got %d", nodepool.Name, len(nodepool.Spec.NodeGroup))
+	resourceTypeId := utils.GetResourceTypeId(nodepool)
+	if resourceTypeId == "" {
+		return fmt.Errorf("nodepool %s is missing resourceTypeId in spec", nodepool.Name)
 	}
 
 	return nil
@@ -185,13 +186,13 @@ func (a *Adaptor) HandleNodePoolProcessing(
 	// TODO: Need to add validation to ensure the rg satisfies the nodepool
 
 	// Create the Node CRs corresponding to the allocated resources
-	for _, resourceSelector := range *rg.ResourceSelectors {
+	for nodegroupName, resourceSelector := range *rg.ResourceSelectors {
 		for _, node := range *resourceSelector.Resources {
 			if slices.Contains(nodepool.Status.Properties.NodeNames, *node.Id) {
 				a.Logger.InfoContext(ctx, "Node is already added", slog.String("nodename", *node.Id))
 				continue
 			}
-			if nodename, err := a.AllocateNode(ctx, nodepool, node); err != nil {
+			if nodename, err := a.AllocateNode(ctx, nodepool, node, nodegroupName); err != nil {
 				a.Logger.InfoContext(ctx, "Failed allocating node", slog.String("err", err.Error()))
 				if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
 					hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,

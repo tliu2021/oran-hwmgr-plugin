@@ -28,7 +28,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const NodepoolFinalizer = "oran-hwmgr-plugin/nodepool-finalizer"
+const (
+	NodepoolFinalizer = "oran-hwmgr-plugin/nodepool-finalizer"
+	ResourceTypeIdKey = "resourceTypeId"
+)
+
+func GetResourceTypeId(nodepool *hwmgmtv1alpha1.NodePool) string {
+	return nodepool.Spec.Extensions[ResourceTypeIdKey]
+}
 
 func GetNodePoolProvisionedCondition(nodepool *hwmgmtv1alpha1.NodePool) *metav1.Condition {
 	return meta.FindStatusCondition(

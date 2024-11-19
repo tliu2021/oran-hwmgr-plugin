@@ -32,16 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TODO: Define how these labels are specified. New field in NodePool?
-// For now, we'll use an enum and label and hardcode a correlation to the nodegroup list order
-const (
-	ResourceSelectorControllerIdx = iota
-	ResourceSelectorWorkerIdx
-
-	ResourceSelectorControllerLabel = "controller" // TODO:
-	ResourceSelectorWorkerLabel     = "worker"
-)
-
 const (
 	RoleKey = "role"
 	Tenant  = "default_tenant" // TODO: Hardcoded, for now
@@ -204,56 +194,39 @@ func ResourceGroupIdFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) string {
 func ResourceGroupFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) *hwmgrapi.CreateResourceGroupJSONRequestBody {
 	rgId := ResourceGroupIdFromNodePool(nodepool)
 	tenant := Tenant
-	// TODO: Get these values appropriately
-	resourceTypeId := "ResourceGroup~2.1.1"
+	resourceTypeId := utils.GetResourceTypeId(nodepool)
 	description := "Resource Group managed by O-Cloud Hardware Manager Plugin"
 	excludes := make(map[string]interface{})
 	roleKey := RoleKey
-	// TODO: What should the roles be?
-	controllerRole := ResourceSelectorControllerLabel
-	workerRole := ResourceSelectorWorkerLabel
+
+	resourceSelectors := make(map[string]hwmgrapi.RhprotoResourceSelectorRequest)
+	for _, nodegroup := range nodepool.Spec.NodeGroup {
+		resourceSelectors[nodegroup.Name] = hwmgrapi.RhprotoResourceSelectorRequest{
+			RpId:              &nodegroup.ResourcePoolId,
+			ResourceProfileId: &nodegroup.HwProfile,
+			NumResources:      &nodegroup.Size,
+			Filters: &hwmgrapi.RhprotoResourceSelectorFilter{
+				Include: &hwmgrapi.RhprotoResourceSelectorFilterInclude{
+					Labels: &[]hwmgrapi.RhprotoResourceSelectorFilterIncludeLabel{
+						{
+							Key:   &roleKey,
+							Value: &nodegroup.Name, // TODO: This should be nodegroup.Role, but has to be nodegroup.Name for now
+						},
+					},
+				},
+				Exclude: &excludes,
+			},
+		}
+	}
 
 	rg := hwmgrapi.CreateResourceGroupJSONRequestBody{
 		Tenant: &tenant,
 		ResourceGroup: &hwmgrapi.RhprotoResourceGroupObjectRequest{
-			Description:    &description,
-			Id:             &rgId,
-			Name:           &rgId,
-			ResourceTypeId: &resourceTypeId,
-			ResourceSelectors: &map[string]hwmgrapi.RhprotoResourceSelectorRequest{
-				ResourceSelectorControllerLabel: {
-					RpId:              &nodepool.Spec.NodeGroup[ResourceSelectorControllerIdx].Name,
-					ResourceProfileId: &nodepool.Spec.NodeGroup[ResourceSelectorControllerIdx].HwProfile,
-					NumResources:      &nodepool.Spec.NodeGroup[ResourceSelectorControllerIdx].Size,
-					Filters: &hwmgrapi.RhprotoResourceSelectorFilter{
-						Include: &hwmgrapi.RhprotoResourceSelectorFilterInclude{
-							Labels: &[]hwmgrapi.RhprotoResourceSelectorFilterIncludeLabel{
-								{
-									Key:   &roleKey,
-									Value: &controllerRole,
-								},
-							},
-						},
-						Exclude: &excludes,
-					},
-				},
-				ResourceSelectorWorkerLabel: {
-					RpId:              &nodepool.Spec.NodeGroup[ResourceSelectorWorkerIdx].Name,
-					ResourceProfileId: &nodepool.Spec.NodeGroup[ResourceSelectorWorkerIdx].HwProfile,
-					NumResources:      &nodepool.Spec.NodeGroup[ResourceSelectorWorkerIdx].Size,
-					Filters: &hwmgrapi.RhprotoResourceSelectorFilter{
-						Include: &hwmgrapi.RhprotoResourceSelectorFilterInclude{
-							Labels: &[]hwmgrapi.RhprotoResourceSelectorFilterIncludeLabel{
-								{
-									Key:   &roleKey,
-									Value: &workerRole,
-								},
-							},
-						},
-						Exclude: &excludes,
-					},
-				},
-			},
+			Description:       &description,
+			Id:                &rgId,
+			Name:              &rgId,
+			ResourceTypeId:    &resourceTypeId,
+			ResourceSelectors: &resourceSelectors,
 		},
 	}
 
