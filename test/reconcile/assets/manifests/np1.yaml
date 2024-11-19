@@ -9,6 +9,8 @@ spec:
   location: ottawa
   nodeGroup:
   - hwProfile: profile-spr-single-processor-64G
-    name: master
+    name: controller
     size: 1
+    role: master
+    resourcePoolId: xyz-master
   site: building-1
