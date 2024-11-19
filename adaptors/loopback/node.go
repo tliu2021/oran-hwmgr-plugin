@@ -63,7 +63,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 		remaining := nodegroup.Size - len(used)
 		if remaining <= 0 {
 			// This group is allocated
-			a.Logger.InfoContext(ctx, "nodegroup is fully allocated", "nodegroup", nodegroup.ResourcePoolId)
+			a.Logger.InfoContext(ctx, "nodegroup is fully allocated", "nodegroup", nodegroup.Name)
 			continue
 		}
 
