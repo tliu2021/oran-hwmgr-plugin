@@ -186,7 +186,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		}
 		// Check each node against each nodegroup in the node pool spec
 		for _, nodegroup := range nodepool.Spec.NodeGroup {
-			if node.Spec.GroupName != nodegroup.ResourcePoolId || node.Spec.HwProfile == nodegroup.HwProfile {
+			if node.Spec.GroupName != nodegroup.Name|| node.Spec.HwProfile == nodegroup.HwProfile {
 				continue
 			}
 			// Node needs an upgrade, so update Spec.HwProfile
