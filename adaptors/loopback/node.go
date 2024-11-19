@@ -84,7 +84,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
 		}
 
-		cloud.Nodegroups[nodegroup.ResourcePoolId] = append(cloud.Nodegroups[nodegroup.ResourcePoolId], nodename)
+		cloud.Nodegroups[nodegroup.Name] = append(cloud.Nodegroups[nodegroup.Name], nodename)
 
 		// Update the configmap
 		yamlString, err := yaml.Marshal(&allocations)
