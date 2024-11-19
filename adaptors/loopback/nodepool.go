@@ -302,7 +302,7 @@ func (a *Adaptor) IsNodePoolFullyAllocated(ctx context.Context,
 
 	// Check allocated resources
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		used := cloud.Nodegroups[nodegroup.ResourcePoolId]
+		used := cloud.Nodegroups[nodegroup.Name]
 		remaining := nodegroup.Size - len(used)
 		if remaining <= 0 {
 			// This group is allocated
