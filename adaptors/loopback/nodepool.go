@@ -51,7 +51,7 @@ func (a *Adaptor) CheckNodePoolProgress(
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
 		a.Logger.InfoContext(ctx, "Allocating node for CheckNodePoolProgress request:",
 			"cloudID", cloudID,
-			"nodegroup resourcePoolId", nodegroup.ResourcePoolId,
+			"nodegroup name", nodegroup.Name,
 		)
 
 		if err = a.AllocateNode(ctx, nodepool); err != nil {
