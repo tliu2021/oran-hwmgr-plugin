@@ -290,3 +290,19 @@ func (c *HardwareManagerClient) DeleteResourceGroup(ctx context.Context, nodepoo
 
 	return *response.JSON200.Jobid, nil
 }
+
+// GetResourceGroup queries the hardware manager to get the resource group data
+func (c *HardwareManagerClient) GetResourcePools(ctx context.Context) (*hwmgrapi.ApiprotoResourcePoolsResp, error) {
+	body := hwmgrapi.GetResourcePoolsJSONRequestBody{}
+	response, err := c.HwmgrClient.GetResourcePoolsWithResponse(ctx, Tenant, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource pools: response: %v, err: %w", response, err)
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("resource group get failed with status %s (%d), message=%s",
+			response.Status(), response.StatusCode(), string(response.Body))
+	}
+
+	return response.JSON200, nil
+}

@@ -4,197 +4,54 @@
 package api
 
 import (
-	"encoding/json"
-	"fmt"
+	"time"
 )
 
 const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
-// Defines values for CloudCloudType.
-const (
-	CLOUDTYPEDEF CloudCloudType = "CLOUDTYPE_DEF"
-	KUBERNETES   CloudCloudType = "KUBERNETES"
-	RHOCP        CloudCloudType = "RHOCP"
-)
-
-// Defines values for ComputeKind.
-const (
-	KINDDEF  ComputeKind = "KIND_DEF"
-	LOGICAL  ComputeKind = "LOGICAL"
-	PHYSICAL ComputeKind = "PHYSICAL"
-)
-
-// Defines values for ComputeRealTime.
-const (
-	ComputeRealTimeFALSE ComputeRealTime = "FALSE"
-	ComputeRealTimeRTDEF ComputeRealTime = "RT_DEF"
-	ComputeRealTimeTRUE  ComputeRealTime = "TRUE"
-)
-
-// Defines values for ResourceAdminState.
-const (
-	LOCKED            ResourceAdminState = "LOCKED"
-	SHUTTINGDOWN      ResourceAdminState = "SHUTTING_DOWN"
-	UNKNOWNADMINSTATE ResourceAdminState = "UNKNOWN_ADMINSTATE"
-	UNLOCKED          ResourceAdminState = "UNLOCKED"
-)
-
-// Defines values for ResourceAdminStatus.
-const (
-	ALARMOUTSTANDING   ResourceAdminStatus = "ALARM_OUTSTANDING"
-	CLEAR              ResourceAdminStatus = "CLEAR"
-	CRITICAL           ResourceAdminStatus = "CRITICAL"
-	MAJOR              ResourceAdminStatus = "MAJOR"
-	MINOR              ResourceAdminStatus = "MINOR"
-	UNDERREPAIR        ResourceAdminStatus = "UNDER_REPAIR"
-	UNKNOWNADMINSTATUS ResourceAdminStatus = "UNKNOWN_ADMINSTATUS"
-)
-
-// Defines values for ResourceAvStatus.
-const (
-	ResourceAvStatusDEGRADED        ResourceAvStatus = "DEGRADED"
-	ResourceAvStatusDEPENDANCY      ResourceAvStatus = "DEPENDANCY"
-	ResourceAvStatusFAILED          ResourceAvStatus = "FAILED"
-	ResourceAvStatusINTEST          ResourceAvStatus = "IN_TEST"
-	ResourceAvStatusLOGFULL         ResourceAvStatus = "LOG_FULL"
-	ResourceAvStatusNOTINSTALLED    ResourceAvStatus = "NOT_INSTALLED"
-	ResourceAvStatusOFFDUTY         ResourceAvStatus = "OFF_DUTY"
-	ResourceAvStatusOFFLINE         ResourceAvStatus = "OFFLINE"
-	ResourceAvStatusPOWEROFF        ResourceAvStatus = "POWER_OFF"
-	ResourceAvStatusUNKNOWNAVSTATUS ResourceAvStatus = "UNKNOWN_AVSTATUS"
-)
-
-// Defines values for ResourceCStatus.
-const (
-	OPEN                ResourceCStatus = "OPEN"
-	PARTOFSERVICELOCKED ResourceCStatus = "PART_OF_SERVICE_LOCKED"
-	RESERVEDFORTEST     ResourceCStatus = "RESERVED_FOR_TEST"
-	SUBJECTTOTEST       ResourceCStatus = "SUBJECT_TO_TEST"
-	SUSPENDED           ResourceCStatus = "SUSPENDED"
-	UNKNOWNCSTATUS      ResourceCStatus = "UNKNOWN_CSTATUS"
-)
-
-// Defines values for ResourceOpState.
-const (
-	DISABLED       ResourceOpState = "DISABLED"
-	ENABLED        ResourceOpState = "ENABLED"
-	UNKNOWNOPSTATE ResourceOpState = "UNKNOWN_OPSTATE"
-)
-
-// Defines values for ResourcePStatus.
-const (
-	INITIALIZATIONREQUIRED ResourcePStatus = "INITIALIZATION_REQUIRED"
-	INITIALIZING           ResourcePStatus = "INITIALIZING"
-	NOTINITIALIZED         ResourcePStatus = "NOT_INITIALIZED"
-	REPORTING              ResourcePStatus = "REPORTING"
-	TERMINATING            ResourcePStatus = "TERMINATING"
-	UNKNOWNPSTATUS         ResourcePStatus = "UNKNOWN_PSTATUS"
-)
-
-// Defines values for ResourcePublic.
-const (
-	ResourcePublicFALSE      ResourcePublic = "FALSE"
-	ResourcePublicTRUE       ResourcePublic = "TRUE"
-	ResourcePublicUNKNOWNPUB ResourcePublic = "UNKNOWN_PUB"
-)
-
-// Defines values for ResourceSStatus.
-const (
-	COLDSTANDBY      ResourceSStatus = "COLD_STANDBY"
-	HOTSTANDBY       ResourceSStatus = "HOT_STANDBY"
-	NONE             ResourceSStatus = "NONE"
-	PROVIDINGSERVICE ResourceSStatus = "PROVIDING_SERVICE"
-	UNKNOWNSSTATUS   ResourceSStatus = "UNKNOWN_SSTATUS"
-)
-
-// Defines values for ResourceUStatus.
-const (
-	ResourceUStatusKNOWN          ResourceUStatus = "KNOWN"
-	ResourceUStatusUNKNOWN        ResourceUStatus = "UNKNOWN"
-	ResourceUStatusUNKNOWNUSTATUS ResourceUStatus = "UNKNOWN_USTATUS"
-)
-
-// Defines values for ResourceUsageState.
-const (
-	ACTIVE            ResourceUsageState = "ACTIVE"
-	BUSY              ResourceUsageState = "BUSY"
-	IDLE              ResourceUsageState = "IDLE"
-	UNKNOWNUSAGESTATE ResourceUsageState = "UNKNOWN_USAGESTATE"
-)
-
-// Defines values for ApiprotoComputeRole.
-const (
-	ApiprotoComputeRolePRIMARY ApiprotoComputeRole = "PRIMARY"
-	ApiprotoComputeRoleREPLICA ApiprotoComputeRole = "REPLICA"
-	ApiprotoComputeRoleROLEDEF ApiprotoComputeRole = "ROLE_DEF"
-	ApiprotoComputeRoleUNKNOWN ApiprotoComputeRole = "UNKNOWN"
-	ApiprotoComputeRoleWORKER  ApiprotoComputeRole = "WORKER"
-)
-
-// Defines values for ApiprotoComputeSelectorRole.
-const (
-	CONTROLLER ApiprotoComputeSelectorRole = "CONTROLLER"
-	DUPLEX     ApiprotoComputeSelectorRole = "DUPLEX"
-	ROLEDEF    ApiprotoComputeSelectorRole = "ROLE_DEF"
-	WORKER     ApiprotoComputeSelectorRole = "WORKER"
-)
-
-// Defines values for ApiprotoResourceResourceType.
-const (
-	BMC           ApiprotoResourceResourceType = "BMC"
-	CLOUD         ApiprotoResourceResourceType = "CLOUD"
-	COMPUTE       ApiprotoResourceResourceType = "COMPUTE"
-	NETWORKDEVICE ApiprotoResourceResourceType = "NETWORKDEVICE"
-)
-
-// Defines values for ApiprotoResponseStatus.
-const (
-	ApiprotoResponseStatusBUSY      ApiprotoResponseStatus = "BUSY"
-	ApiprotoResponseStatusCANCELLED ApiprotoResponseStatus = "CANCELLED"
-	ApiprotoResponseStatusCOMPLETE  ApiprotoResponseStatus = "COMPLETE"
-	ApiprotoResponseStatusFAILED    ApiprotoResponseStatus = "FAILED"
-)
-
 // CloudCloudType defines model for CloudCloudType.
-type CloudCloudType string
+type CloudCloudType = interface{}
 
 // ComputeKind defines model for ComputeKind.
-type ComputeKind string
+type ComputeKind = interface{}
 
 // ComputeRealTime defines model for ComputeRealTime.
-type ComputeRealTime string
+type ComputeRealTime = interface{}
+
+// FilterOperator defines model for FilterOperator.
+type FilterOperator = interface{}
 
 // ResourceAdminState defines model for ResourceAdminState.
-type ResourceAdminState string
+type ResourceAdminState = interface{}
 
 // ResourceAdminStatus defines model for ResourceAdminStatus.
-type ResourceAdminStatus string
+type ResourceAdminStatus = interface{}
 
 // ResourceAvStatus defines model for ResourceAvStatus.
-type ResourceAvStatus string
+type ResourceAvStatus = interface{}
 
 // ResourceCStatus defines model for ResourceCStatus.
-type ResourceCStatus string
+type ResourceCStatus = interface{}
 
 // ResourceOpState defines model for ResourceOpState.
-type ResourceOpState string
+type ResourceOpState = interface{}
 
 // ResourcePStatus defines model for ResourcePStatus.
-type ResourcePStatus string
+type ResourcePStatus = interface{}
 
 // ResourcePublic defines model for ResourcePublic.
-type ResourcePublic string
+type ResourcePublic = interface{}
 
 // ResourceSStatus defines model for ResourceSStatus.
-type ResourceSStatus string
+type ResourceSStatus = interface{}
 
 // ResourceUStatus defines model for ResourceUStatus.
-type ResourceUStatus string
+type ResourceUStatus = interface{}
 
 // ResourceUsageState defines model for ResourceUsageState.
-type ResourceUsageState string
+type ResourceUsageState = interface{}
 
 // ApiprotoBaseResource defines model for apiprotoBaseResource.
 type ApiprotoBaseResource struct {
@@ -220,50 +77,155 @@ type ApiprotoCloud struct {
 
 // ApiprotoCompute defines model for apiprotoCompute.
 type ApiprotoCompute struct {
-	Bios        *string              `json:"bios,omitempty"`
-	BmcId       *string              `json:"bmcId,omitempty"`
-	DiskSize    *int32               `json:"diskSize,omitempty"`
-	Kind        *ComputeKind         `json:"kind,omitempty"`
-	Lom         *ApiprotoLom         `json:"lom,omitempty"`
-	Memory      *string              `json:"memory,omitempty"`
-	NpId        *string              `json:"npId,omitempty"`
-	Os          *ApiprotoOs          `json:"os,omitempty"`
-	RealTimeOS  *ComputeRealTime     `json:"realTimeOS,omitempty"`
-	Role        *ApiprotoComputeRole `json:"role,omitempty"`
-	Serial      *string              `json:"serial,omitempty"`
-	SocketCores *int32               `json:"socketCores,omitempty"`
-	SocketNum   *int32               `json:"socketNum,omitempty"`
+	// Bios The version or identifier of the Basic Input/Output System (BIOS) firmware used by the compute resource. BIOS is firmware used to perform hardware initialization during the booting process.
+	Bios *string `json:"bios,omitempty"`
+
+	// BmcId The unique identifier for the Baseboard Management Controller (BMC) associated with this compute resource. The BMC is responsible for monitoring and managing the hardware of the server, including remote access and diagnostics.
+	BmcId *string `json:"bmcId,omitempty"`
+
+	// DiskSize The size of the disk available to the compute resource, measured in megabytes (MB). This field is particularly relevant for virtual machines, indicating the allocated storage capacity.
+	DiskSize *int32       `json:"diskSize,omitempty"`
+	Kind     *ComputeKind `json:"kind,omitempty"`
+	Lom      *ApiprotoLom `json:"lom,omitempty"`
+
+	// Memory The total memory available in the compute resource, measured in bytes. Memory (RAM) is a critical component for storing data that the CPU accesses during operations.
+	Memory *string `json:"memory,omitempty"`
+
+	// NpId The unique identifier for the network processor (NP) associated with this compute resource. This ID is used to reference the NP within the system for networking tasks and configurations.
+	NpId       *string              `json:"npId,omitempty"`
+	Os         *ApiprotoOs          `json:"os,omitempty"`
+	RealTimeOS *ComputeRealTime     `json:"realTimeOS,omitempty"`
+	Role       *ApiprotoComputeRole `json:"role,omitempty"`
+
+	// Serial The serial number of the compute resource, typically assigned by the manufacturer. This is a unique identifier that is used for tracking and managing the physical hardware.
+	Serial *string `json:"serial,omitempty"`
+
+	// SocketCores The number of cores available per CPU socket in the compute resource. CPU cores are the individual processing units within a CPU that perform computations.
+	SocketCores *int32 `json:"socketCores,omitempty"`
+
+	// SocketNum The number of CPU sockets available in the compute resource. A CPU socket is a physical connector on the motherboard that allows a microprocessor (CPU) to be installed.
+	SocketNum *int32 `json:"socketNum,omitempty"`
 }
 
 // ApiprotoComputeRole defines model for apiprotoComputeRole.
-type ApiprotoComputeRole string
+type ApiprotoComputeRole = interface{}
 
 // ApiprotoComputeSelector defines model for apiprotoComputeSelector.
 type ApiprotoComputeSelector struct {
-	Labels      *[]ApiprotoLabel             `json:"labels,omitempty"`
+	Labels *[]ApiprotoLabel `json:"labels,omitempty"`
+
+	// NumComputes If missing, may be based on policy.
 	NumComputes *int32                       `json:"numComputes,omitempty"`
 	Role        *ApiprotoComputeSelectorRole `json:"role,omitempty"`
 	RpId        *string                      `json:"rpId,omitempty"`
 }
 
 // ApiprotoComputeSelectorRole defines model for apiprotoComputeSelectorRole.
-type ApiprotoComputeSelectorRole string
+type ApiprotoComputeSelectorRole = interface{}
+
+// ApiprotoCreateResourceResp defines model for apiprotoCreateResourceResp.
+type ApiprotoCreateResourceResp struct {
+	Resource *ApiprotoResource `json:"Resource,omitempty"`
+	Resp     *ApiprotoResponse `json:"Resp,omitempty"`
+	Tenant   *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoDeleteResourceResp defines model for apiprotoDeleteResourceResp.
+type ApiprotoDeleteResourceResp struct {
+	Resp   *ApiprotoResponse `json:"Resp,omitempty"`
+	Tenant *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoDeploymentDB defines model for apiprotoDeploymentDB.
+type ApiprotoDeploymentDB struct {
+	BPDescription    *string    `json:"BPDescription,omitempty"`
+	BlueprintName    *string    `json:"BlueprintName,omitempty"`
+	BlueprintVersion *string    `json:"BlueprintVersion,omitempty"`
+	DeploymentName   *string    `json:"DeploymentName,omitempty"`
+	IsLatest         *bool      `json:"IsLatest,omitempty"`
+	LastUpdatedAt    *time.Time `json:"LastUpdatedAt,omitempty"`
+	LastUpdatedBy    *string    `json:"LastUpdatedBy,omitempty"`
+}
 
 // ApiprotoDeploymentStatus defines model for apiprotoDeploymentStatus.
 type ApiprotoDeploymentStatus struct {
-	CreateExecution                   *string `json:"CreateExecution,omitempty"`
-	DeploymentStatus                  *string `json:"DeploymentStatus,omitempty"`
-	EnvironmentType                   *string `json:"EnvironmentType,omitempty"`
-	HasSubDeployments                 *bool   `json:"HasSubDeployments,omitempty"`
-	InstallationStatus                *string `json:"InstallationStatus,omitempty"`
-	LatestExecution                   *string `json:"LatestExecution,omitempty"`
-	LatestExecutionFinishedOperations *int32  `json:"LatestExecutionFinishedOperations,omitempty"`
-	LatestExecutionStatus             *string `json:"LatestExecutionStatus,omitempty"`
-	LatestExecutionTotalOperations    *int32  `json:"LatestExecutionTotalOperations,omitempty"`
-	SubEnvironmentsCount              *int32  `json:"SubEnvironmentsCount,omitempty"`
-	SubEnvironmentsStatus             *string `json:"SubEnvironmentsStatus,omitempty"`
-	SubServicesCount                  *int32  `json:"SubServicesCount,omitempty"`
-	SubServicesStatus                 *string `json:"SubServicesStatus,omitempty"`
+	CreateExecution *string `json:"CreateExecution,omitempty"`
+
+	// DeploymentStatus The overall deployment status.
+	DeploymentStatus *string `json:"DeploymentStatus,omitempty"`
+
+	// EnvironmentType The environment type. Represents the value of csys-env-type label attached to deployment.
+	EnvironmentType   *string `json:"EnvironmentType,omitempty"`
+	HasSubDeployments *bool   `json:"HasSubDeployments,omitempty"`
+
+	// InstallationStatus The deployment installation status.
+	InstallationStatus *string `json:"InstallationStatus,omitempty"`
+	LatestExecution    *string `json:"LatestExecution,omitempty"`
+
+	// LatestExecutionFinishedOperations The finished operations for latest execution of deployment.
+	LatestExecutionFinishedOperations *int32 `json:"LatestExecutionFinishedOperations,omitempty"`
+
+	// LatestExecutionStatus The deployment latest execution status.
+	LatestExecutionStatus *string `json:"LatestExecutionStatus,omitempty"`
+
+	// LatestExecutionTotalOperations The total operations for latest execution of deployment.
+	LatestExecutionTotalOperations *int32 `json:"LatestExecutionTotalOperations,omitempty"`
+
+	// SubEnvironmentsCount The aggregated sub environments count.
+	SubEnvironmentsCount *int32 `json:"SubEnvironmentsCount,omitempty"`
+
+	// SubEnvironmentsStatus The aggregated sub environments(deployments) status.
+	SubEnvironmentsStatus *string `json:"SubEnvironmentsStatus,omitempty"`
+
+	// SubServicesCount The aggregated sub services count.
+	SubServicesCount *int32 `json:"SubServicesCount,omitempty"`
+
+	// SubServicesStatus The aggregated sub services(deployments) status.
+	SubServicesStatus *string `json:"SubServicesStatus,omitempty"`
+}
+
+// ApiprotoFilter defines model for apiprotoFilter.
+type ApiprotoFilter struct {
+	Key      *string         `json:"Key,omitempty"`
+	Values   *[]string       `json:"Values,omitempty"`
+	Operator *FilterOperator `json:"operator,omitempty"`
+}
+
+// ApiprotoGetResourceDeploymentsResp defines model for apiprotoGetResourceDeploymentsResp.
+type ApiprotoGetResourceDeploymentsResp struct {
+	Deployments *[]ApiprotoDeploymentDB `json:"Deployments,omitempty"`
+	Id          *string                 `json:"Id,omitempty"`
+	Resp        *ApiprotoResponse       `json:"Resp,omitempty"`
+	Tenant      *string                 `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetResourceResp defines model for apiprotoGetResourceResp.
+type ApiprotoGetResourceResp struct {
+	Resource *ApiprotoResource `json:"Resource,omitempty"`
+	Resp     *ApiprotoResponse `json:"Resp,omitempty"`
+	Tenant   *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetResourceSubscriptionResp defines model for apiprotoGetResourceSubscriptionResp.
+type ApiprotoGetResourceSubscriptionResp struct {
+	ResourceSubscription *[]ApiprotoResourceSubscriptionResp `json:"ResourceSubscription,omitempty"`
+	Resp                 *ApiprotoResponse                   `json:"Resp,omitempty"`
+	Tenant               *string                             `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetResourceSubscriptionsResp defines model for apiprotoGetResourceSubscriptionsResp.
+type ApiprotoGetResourceSubscriptionsResp struct {
+	Pagination           *ApiprotoPagination                 `json:"Pagination,omitempty"`
+	ResourceSubscription *[]ApiprotoResourceSubscriptionResp `json:"ResourceSubscription,omitempty"`
+	Resp                 *ApiprotoResponse                   `json:"Resp,omitempty"`
+}
+
+// ApiprotoGetResourcesResp defines model for apiprotoGetResourcesResp.
+type ApiprotoGetResourcesResp struct {
+	Pagination *ApiprotoPagination `json:"Pagination,omitempty"`
+	Resources  *[]ApiprotoResource `json:"Resources,omitempty"`
+	Resp       *ApiprotoResponse   `json:"Resp,omitempty"`
+	Tenant     *string             `json:"Tenant,omitempty"`
 }
 
 // ApiprotoGroups defines model for apiprotoGroups.
@@ -279,13 +241,21 @@ type ApiprotoLabel struct {
 
 // ApiprotoLom defines model for apiprotoLom.
 type ApiprotoLom struct {
-	ApiKey     *string `json:"apiKey,omitempty"`
-	IpAddress  *string `json:"ipAddress,omitempty"`
+	ApiKey *string `json:"apiKey,omitempty"`
+
+	// IpAddress This is represents ipAddress for the compute
+	IpAddress *string `json:"ipAddress,omitempty"`
+
+	// MacAddress This is represents macAddress for the compute
 	MacAddress *string `json:"macAddress,omitempty"`
-	Password   *string `json:"password,omitempty"`
-	Port       *int32  `json:"port,omitempty"`
-	Protocol   *string `json:"protocol,omitempty"`
-	User       *string `json:"user,omitempty"`
+
+	// Password Password is the cloudify secret created from compute password
+	Password *string `json:"password,omitempty"`
+	Port     *int32  `json:"port,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
+
+	// User This is the user name for the compute node
+	User *string `json:"user,omitempty"`
 }
 
 // ApiprotoOs defines model for apiprotoOs.
@@ -307,36 +277,70 @@ type ApiprotoOs struct {
 	Version     *string `json:"version,omitempty"`
 }
 
+// ApiprotoPagination defines model for apiprotoPagination.
+type ApiprotoPagination struct {
+	Limit  *int64 `json:"limit,omitempty"`
+	Offset *int64 `json:"offset,omitempty"`
+	Total  *int64 `json:"total,omitempty"`
+}
+
 // ApiprotoResource defines model for apiprotoResource.
 type ApiprotoResource struct {
-	Capabilities      *map[string]interface{}            `json:"Capabilities,omitempty"`
-	Description       *string                            `json:"Description,omitempty"`
-	Elements          *[]ApiprotoResource                `json:"Elements,omitempty"`
-	Extensions        *map[string]map[string]interface{} `json:"Extensions,omitempty"`
-	GlobalAssetId     *string                            `json:"GlobalAssetId,omitempty"`
-	Groups            *ApiprotoGroups                    `json:"Groups,omitempty"`
-	Id                *string                            `json:"Id,omitempty"`
-	Labels            *[]ApiprotoLabel                   `json:"Labels,omitempty"`
-	Name              *string                            `json:"Name,omitempty"`
-	Res               *ApiprotoBaseResource              `json:"Res,omitempty"`
-	ResType           *ApiprotoResourceResourceType      `json:"ResType,omitempty"`
-	ResourceAttribute *ApiprotoResourceAttribute         `json:"ResourceAttribute,omitempty"`
-	ResourcePoolId    *string                            `json:"ResourcePoolId,omitempty"`
-	ResourceTypeId    *string                            `json:"ResourceTypeId,omitempty"`
-	SiteId            *string                            `json:"SiteId,omitempty"`
-	Status            *ApiprotoDeploymentStatus          `json:"Status,omitempty"`
-	Tags              *[]string                          `json:"Tags,omitempty"`
-	Workflow          *string                            `json:"Workflow,omitempty"`
-	AState            *ResourceAdminState                `json:"aState,omitempty"`
-	AStatus           *ResourceAdminStatus               `json:"aStatus,omitempty"`
-	AvStatus          *ResourceAvStatus                  `json:"avStatus,omitempty"`
-	CStatus           *ResourceCStatus                   `json:"cStatus,omitempty"`
-	OpState           *ResourceOpState                   `json:"opState,omitempty"`
-	PStatus           *ResourcePStatus                   `json:"pStatus,omitempty"`
-	Public            *ResourcePublic                    `json:"public,omitempty"`
-	SStatus           *ResourceSStatus                   `json:"sStatus,omitempty"`
-	UState            *ResourceUsageState                `json:"uState,omitempty"`
-	UStatus           *ResourceUStatus                   `json:"uStatus,omitempty"`
+	// Capabilities A dictionary containing an capabilities definition of a deployment.
+	Capabilities *map[string]interface{} `json:"Capabilities,omitempty"`
+	Deployment   *ApiprotoDeploymentDB   `json:"Deployment,omitempty"`
+
+	// Description A textual description of the resource. This field provides additional details or context about what the resource is or how it should be used.
+	Description *string             `json:"Description,omitempty"`
+	Elements    *[]ApiprotoResource `json:"Elements,omitempty"`
+
+	// Extensions It is raw json blob that can be provided while creating resource. This can be used to pass any custom data for creating a resource like compute,cloud,etc.
+	Extensions *map[string]map[string]interface{} `json:"Extensions,omitempty"`
+
+	// GlobalAssetId Identifier or serial number of the resource. Service tag of the compute resource can be provided as the value for GlobalAsset ID.
+	GlobalAssetId *string         `json:"GlobalAssetId,omitempty"`
+	Groups        *ApiprotoGroups `json:"Groups,omitempty"`
+
+	// Id A unique identifier for the resource. This ID is required to be a non-empty string.
+	Id *string `json:"Id,omitempty"`
+
+	// Labels A list of labels associated with the resource. Labels are key-value pairs that can be used for organizing, searching, or filtering resources. For example: While creating a compute resource which can be tagged with controller label we can add label as key with role and vlaue as controller.
+	Labels *[]ApiprotoLabel `json:"Labels,omitempty"`
+
+	// Name Name of the resource
+	Name              *string                       `json:"Name,omitempty"`
+	Res               *ApiprotoBaseResource         `json:"Res,omitempty"`
+	ResType           *ApiprotoResourceResourceType `json:"ResType,omitempty"`
+	ResourceAttribute *ApiprotoResourceAttribute    `json:"ResourceAttribute,omitempty"`
+
+	// ResourcePoolId The ID of the resource pool to which this resource belongs. A resource pool is a collection of resources that can be managed together.
+	ResourcePoolId *string `json:"ResourcePoolId,omitempty"`
+
+	// ResourceProfileID The ID of the resource profile associated with this resource.
+	ResourceProfileID *string `json:"ResourceProfileID,omitempty"`
+
+	// ResourceTypeId This is the deployment ID for resource type data model.
+	ResourceTypeId *string `json:"ResourceTypeId,omitempty"`
+
+	// SiteId Id of the site to which this resource belongs
+	SiteId *string                   `json:"SiteId,omitempty"`
+	Status *ApiprotoDeploymentStatus `json:"Status,omitempty"`
+
+	// Tags A list of tags assigned to the resource. Tags are simple string identifiers that can be used for categorization and searchability.
+	Tags *[]string `json:"Tags,omitempty"`
+
+	// Workflow The workflow name to be provided while creating the resource. This is optional. By default the value is 'install'
+	Workflow *string              `json:"Workflow,omitempty"`
+	AState   *ResourceAdminState  `json:"aState,omitempty"`
+	AStatus  *ResourceAdminStatus `json:"aStatus,omitempty"`
+	AvStatus *ResourceAvStatus    `json:"avStatus,omitempty"`
+	CStatus  *ResourceCStatus     `json:"cStatus,omitempty"`
+	OpState  *ResourceOpState     `json:"opState,omitempty"`
+	PStatus  *ResourcePStatus     `json:"pStatus,omitempty"`
+	Public   *ResourcePublic      `json:"public,omitempty"`
+	SStatus  *ResourceSStatus     `json:"sStatus,omitempty"`
+	UState   *ResourceUsageState  `json:"uState,omitempty"`
+	UStatus  *ResourceUStatus     `json:"uStatus,omitempty"`
 }
 
 // ApiprotoResourceAttribute defines model for apiprotoResourceAttribute.
@@ -345,8 +349,58 @@ type ApiprotoResourceAttribute struct {
 	Compute *ApiprotoCompute `json:"compute,omitempty"`
 }
 
+// ApiprotoResourceDetails defines model for apiprotoResourceDetails.
+type ApiprotoResourceDetails struct {
+	Collected  *string `json:"Collected,omitempty"`
+	Resource   *string `json:"Resource,omitempty"`
+	Subscribed *string `json:"Subscribed,omitempty"`
+}
+
+// ApiprotoResourcePool defines model for apiprotoResourcePool.
+type ApiprotoResourcePool struct {
+	DefaultRp   *bool                     `json:"DefaultRp,omitempty"`
+	Description *string                   `json:"Description,omitempty"`
+	Extensions  *map[string]ProtobufAny   `json:"Extensions,omitempty"`
+	Id          *string                   `json:"Id,omitempty"`
+	Labels      *[]ApiprotoLabel          `json:"Labels,omitempty"`
+	Name        *string                   `json:"Name,omitempty"`
+	Res         *ApiprotoBaseResource     `json:"Res,omitempty"`
+	Resources   *[]ApiprotoResource       `json:"Resources,omitempty"`
+	SiteId      *string                   `json:"SiteId,omitempty"`
+	Status      *ApiprotoDeploymentStatus `json:"Status,omitempty"`
+}
+
+// ApiprotoResourcePoolResp defines model for apiprotoResourcePoolResp.
+type ApiprotoResourcePoolResp struct {
+	ResourcePool *ApiprotoResourcePool `json:"ResourcePool,omitempty"`
+	Resp         *ApiprotoResponse     `json:"Resp,omitempty"`
+}
+
+// ApiprotoResourcePoolsResp defines model for apiprotoResourcePoolsResp.
+type ApiprotoResourcePoolsResp struct {
+	Pagination    *ApiprotoPagination     `json:"Pagination,omitempty"`
+	ResourcePools *[]ApiprotoResourcePool `json:"ResourcePools,omitempty"`
+	Resp          *ApiprotoResponse       `json:"Resp,omitempty"`
+}
+
 // ApiprotoResourceResourceType defines model for apiprotoResourceResourceType.
-type ApiprotoResourceResourceType string
+type ApiprotoResourceResourceType = interface{}
+
+// ApiprotoResourceSubscriptionResp defines model for apiprotoResourceSubscriptionResp.
+type ApiprotoResourceSubscriptionResp struct {
+	CollectorId *string                    `json:"CollectorId,omitempty"`
+	Description *string                    `json:"Description,omitempty"`
+	Id          *string                    `json:"Id,omitempty"`
+	Name        *string                    `json:"Name,omitempty"`
+	Resources   *[]ApiprotoResourceDetails `json:"Resources,omitempty"`
+	SiteId      *string                    `json:"SiteId,omitempty"`
+}
+
+// ApiprotoResourceSubscriptionsFilter defines model for apiprotoResourceSubscriptionsFilter.
+type ApiprotoResourceSubscriptionsFilter struct {
+	CollectorId *string `json:"CollectorId,omitempty"`
+	SiteId      *string `json:"SiteId,omitempty"`
+}
 
 // ApiprotoResponse defines model for apiprotoResponse.
 type ApiprotoResponse struct {
@@ -358,7 +412,38 @@ type ApiprotoResponse struct {
 }
 
 // ApiprotoResponseStatus defines model for apiprotoResponseStatus.
-type ApiprotoResponseStatus string
+type ApiprotoResponseStatus = interface{}
+
+// ApiprotoSubscribeResourcesResp defines model for apiprotoSubscribeResourcesResp.
+type ApiprotoSubscribeResourcesResp struct {
+	Resp   *ApiprotoResponse `json:"Resp,omitempty"`
+	Tenant *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoUnsubscribeResourcesResp defines model for apiprotoUnsubscribeResourcesResp.
+type ApiprotoUnsubscribeResourcesResp struct {
+	Resp   *ApiprotoResponse `json:"Resp,omitempty"`
+	Tenant *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoUpdateResource defines model for apiprotoUpdateResource.
+type ApiprotoUpdateResource struct {
+	// Op The operation to be performed on the resource, typically specifying the type of update. Common values might include 'replace', 'add', or 'remove', depending on the desired modification.
+	Op *string `json:"Op,omitempty"`
+
+	// Path A string representing the JSON Pointer syntax to specify the exact location within the resource where the update will be applied. This allows the system to precisely identify which field or attribute is being updated.
+	Path *string `json:"Path,omitempty"`
+
+	// Value The new value(s) to be applied at the specified path as part of the update operation. This could be a single value or a complex object, depending on the nature of the update.
+	Value *[]map[string]interface{} `json:"Value,omitempty"`
+}
+
+// ApiprotoUpdateResourceResp defines model for apiprotoUpdateResourceResp.
+type ApiprotoUpdateResourceResp struct {
+	Resource *ApiprotoResource `json:"Resource,omitempty"`
+	Response *ApiprotoResponse `json:"Response,omitempty"`
+	Tenant   *string           `json:"Tenant,omitempty"`
+}
 
 // GooglerpcStatus defines model for googlerpcStatus.
 type GooglerpcStatus struct {
@@ -476,8 +561,7 @@ type ProtobufAny struct {
 	//
 	// Schemes other than `http`, `https` (or the empty scheme) might be
 	// used with implementation specific semantics.
-	Type                 *string                `json:"@type,omitempty"`
-	AdditionalProperties map[string]interface{} `json:"-"`
+	Type *string `json:"@type,omitempty"`
 }
 
 // RhprotoCreateResourceGroupReqBody defines model for rhprotoCreateResourceGroupReqBody.
@@ -620,76 +704,110 @@ type RhprotoResourceSelectorRequest struct {
 	RpId              *string                        `json:"rpId,omitempty"`
 }
 
+// GetResourcePoolsBody defines model for GetResourcePoolsBody.
+type GetResourcePoolsBody struct {
+	Filters    *[]ApiprotoFilter   `json:"Filters,omitempty"`
+	Pagination *ApiprotoPagination `json:"Pagination,omitempty"`
+}
+
+// SubscribeResourcesBody defines model for SubscribeResourcesBody.
+type SubscribeResourcesBody struct {
+	Id        *string   `json:"Id,omitempty"`
+	Resources *[]string `json:"Resources,omitempty"`
+}
+
+// CreateResourcePoolJSONBody defines parameters for CreateResourcePool.
+type CreateResourcePoolJSONBody struct {
+	ResourcePool *ApiprotoResourcePool `json:"ResourcePool,omitempty"`
+}
+
+// DeleteResourcePoolParams defines parameters for DeleteResourcePool.
+type DeleteResourcePoolParams struct {
+	// Force Example: true
+	Force *bool `form:"Force,omitempty" json:"Force,omitempty"`
+
+	// DeleteLogs Example: true
+	DeleteLogs *bool `form:"DeleteLogs,omitempty" json:"DeleteLogs,omitempty"`
+}
+
+// UpdateResourceJSONBody defines parameters for UpdateResource.
+type UpdateResourceJSONBody struct {
+	Resource *[]ApiprotoUpdateResource `json:"Resource,omitempty"`
+
+	// ResourceName Name of the resource to be updated
+	ResourceName *string `json:"ResourceName,omitempty"`
+}
+
+// CreateResourceJSONBody defines parameters for CreateResource.
+type CreateResourceJSONBody struct {
+	Resource *ApiprotoResource `json:"Resource,omitempty"`
+}
+
+// DeleteResourceParams defines parameters for DeleteResource.
+type DeleteResourceParams struct {
+	// Force Example: true
+	Force *bool `form:"Force,omitempty" json:"Force,omitempty"`
+
+	// DeleteLogs Example: true
+	DeleteLogs *bool `form:"DeleteLogs,omitempty" json:"DeleteLogs,omitempty"`
+}
+
+// SubscribeResourcesJSONBody defines parameters for SubscribeResources.
+type SubscribeResourcesJSONBody struct {
+	Id        *string   `json:"Id,omitempty"`
+	Resources *[]string `json:"Resources,omitempty"`
+}
+
+// UnsubscribeResourcesJSONBody defines parameters for UnsubscribeResources.
+type UnsubscribeResourcesJSONBody struct {
+	Id        *string   `json:"Id,omitempty"`
+	Resources *[]string `json:"Resources,omitempty"`
+}
+
+// GetResourcePoolsJSONBody defines parameters for GetResourcePools.
+type GetResourcePoolsJSONBody struct {
+	Filters    *[]ApiprotoFilter   `json:"Filters,omitempty"`
+	Pagination *ApiprotoPagination `json:"Pagination,omitempty"`
+}
+
+// GetResourcesJSONBody defines parameters for GetResources.
+type GetResourcesJSONBody struct {
+	Filters    *[]ApiprotoFilter   `json:"Filters,omitempty"`
+	Pagination *ApiprotoPagination `json:"Pagination,omitempty"`
+}
+
+// GetResourceSubscriptionsJSONBody defines parameters for GetResourceSubscriptions.
+type GetResourceSubscriptionsJSONBody struct {
+	Filters    *ApiprotoResourceSubscriptionsFilter `json:"Filters,omitempty"`
+	Pagination *ApiprotoPagination                  `json:"Pagination,omitempty"`
+}
+
 // GetTokenJSONRequestBody defines body for GetToken for application/json ContentType.
 type GetTokenJSONRequestBody = RhprotoGetTokenReqBody
 
 // CreateResourceGroupJSONRequestBody defines body for CreateResourceGroup for application/json ContentType.
 type CreateResourceGroupJSONRequestBody = RhprotoCreateResourceGroupReqBody
 
-// Getter for additional properties for ProtobufAny. Returns the specified
-// element and whether it was found
-func (a ProtobufAny) Get(fieldName string) (value interface{}, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
+// CreateResourcePoolJSONRequestBody defines body for CreateResourcePool for application/json ContentType.
+type CreateResourcePoolJSONRequestBody CreateResourcePoolJSONBody
 
-// Setter for additional properties for ProtobufAny
-func (a *ProtobufAny) Set(fieldName string, value interface{}) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]interface{})
-	}
-	a.AdditionalProperties[fieldName] = value
-}
+// UpdateResourceJSONRequestBody defines body for UpdateResource for application/json ContentType.
+type UpdateResourceJSONRequestBody UpdateResourceJSONBody
 
-// Override default JSON handling for ProtobufAny to handle AdditionalProperties
-func (a *ProtobufAny) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
+// CreateResourceJSONRequestBody defines body for CreateResource for application/json ContentType.
+type CreateResourceJSONRequestBody CreateResourceJSONBody
 
-	if raw, found := object["@type"]; found {
-		err = json.Unmarshal(raw, &a.Type)
-		if err != nil {
-			return fmt.Errorf("error reading '@type': %w", err)
-		}
-		delete(object, "@type")
-	}
+// SubscribeResourcesJSONRequestBody defines body for SubscribeResources for application/json ContentType.
+type SubscribeResourcesJSONRequestBody SubscribeResourcesJSONBody
 
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]interface{})
-		for fieldName, fieldBuf := range object {
-			var fieldVal interface{}
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
+// UnsubscribeResourcesJSONRequestBody defines body for UnsubscribeResources for application/json ContentType.
+type UnsubscribeResourcesJSONRequestBody UnsubscribeResourcesJSONBody
 
-// Override default JSON handling for ProtobufAny to handle AdditionalProperties
-func (a ProtobufAny) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
+// GetResourcePoolsJSONRequestBody defines body for GetResourcePools for application/json ContentType.
+type GetResourcePoolsJSONRequestBody GetResourcePoolsJSONBody
 
-	if a.Type != nil {
-		object["@type"], err = json.Marshal(a.Type)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '@type': %w", err)
-		}
-	}
+// GetResourcesJSONRequestBody defines body for GetResources for application/json ContentType.
+type GetResourcesJSONRequestBody GetResourcesJSONBody
 
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
+// GetResourceSubscriptionsJSONRequestBody defines body for GetResourceSubscriptions for application/json ContentType.
+type GetResourceSubscriptionsJSONRequestBody GetResourceSubscriptionsJSONBody

@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/hwmgrclient"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
@@ -76,10 +77,9 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return
 	}
 
-	// Make sure this is an instance for this adaptor and that this generation hasn't already been handled
-	if hwmgr.Spec.AdaptorID != r.AdaptorID ||
-		hwmgr.Status.ObservedGeneration == hwmgr.Generation {
-		// Nothing to do
+	// Make sure this is an instance for this adaptor
+	if hwmgr.Spec.AdaptorID != r.AdaptorID {
+		// Skip this CR
 		return
 	}
 
@@ -99,9 +99,11 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return
 	}
 
+	result = utils.RequeueWithLongInterval()
+
 	r.Logger.InfoContext(ctx, "Validating client connection", slog.String("apiUrl", hwmgr.Spec.DellData.ApiUrl))
 
-	_, clientErr := hwmgrclient.NewClientWithResponses(ctx, r.Logger, r.Client, hwmgr)
+	client, clientErr := hwmgrclient.NewClientWithResponses(ctx, r.Logger, r.Client, hwmgr)
 	if clientErr != nil {
 		r.Logger.InfoContext(ctx, "NewClientWithResponses error", slog.String("error", clientErr.Error()))
 		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
@@ -114,6 +116,32 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		r.Logger.Error("Failed to establish connection to hardware manager", slog.String("name", hwmgr.Name), slog.String("error", clientErr.Error()))
 		return
+	}
+
+	pools, clientErr := client.GetResourcePools(ctx)
+	if clientErr != nil {
+		r.Logger.InfoContext(ctx, "GetResourcePools error", slog.String("error", clientErr.Error()))
+		if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
+			pluginv1alpha1.ConditionTypes.Validation,
+			pluginv1alpha1.ConditionReasons.Failed,
+			metav1.ConditionFalse,
+			"Failed to query resource pools - "+clientErr.Error()); updateErr != nil {
+			err = fmt.Errorf("failed to update status for hardware manager (%s) with authentication failure: %w", hwmgr.Name, updateErr)
+			return
+		}
+		r.Logger.Error("Failed to query resource pools", slog.String("name", hwmgr.Name), slog.String("error", clientErr.Error()))
+		return
+	}
+
+	hwmgr.Status.ResourcePools = make(pluginv1alpha1.PerSiteResourcePoolList)
+	if pools.ResourcePools != nil {
+		for _, pool := range *pools.ResourcePools {
+			if pool.SiteId == nil || pool.Id == nil {
+				continue
+			}
+			hwmgr.Status.ResourcePools[*pool.SiteId] = append(hwmgr.Status.ResourcePools[*pool.SiteId], *pool.Id)
+			slices.Sort(hwmgr.Status.ResourcePools[*pool.SiteId])
+		}
 	}
 
 	if updateErr := utils.UpdateHardwareManagerStatusCondition(ctx, r.Client, hwmgr,
