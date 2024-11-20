@@ -96,7 +96,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("failed to update configmap: %w", err)
 		}
 
-		if err := a.CreateNode(ctx, cloudID, nodename, nodegroup.ResourcePoolId, nodegroup.HwProfile); err != nil {
+		if err := a.CreateNode(ctx, cloudID, nodename, nodegroup.Name, nodegroup.HwProfile); err != nil {
 			return fmt.Errorf("failed to create allocated node (%s): %w", nodename, err)
 		}
 
