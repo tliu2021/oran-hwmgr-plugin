@@ -26,6 +26,7 @@ import (
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
@@ -58,8 +59,30 @@ type ExtensionInterface struct {
 	Ports []ExtensionPort `json:"ports,omitempty"`
 }
 
+func bmcSecretName(nodename string) string {
+	return fmt.Sprintf("%s-bmc-secret", nodename)
+}
+
+// CheckBMCSecret creates the bmc-secret for a node
+func (a *Adaptor) CheckBMCSecret(ctx context.Context, resource hwmgrapi.RhprotoResource) error {
+	nodename := *resource.Id
+
+	a.Logger.InfoContext(ctx, "Checking bmc-secret:", "nodename", nodename)
+
+	secretName := bmcSecretName(nodename)
+
+	// TODO: For now, just check that the secret exists. Once the creds are accessible, we can create the secret
+	bmcSecret := &corev1.Secret{}
+
+	if err := a.Get(ctx, types.NamespacedName{Name: secretName, Namespace: a.Namespace}, bmcSecret); err != nil {
+		return fmt.Errorf("failed to get secret %s: %w", secretName, err)
+	}
+
+	return nil
+}
+
 // AllocateNode processes a NodePool CR, allocating a free node for each specified nodegroup as needed
-func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource) (string, error) {
+func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource, nodegroupName string) (string, error) {
 	nodename := *resource.Id
 	ctx = logging.AppendCtx(ctx, slog.String("nodenameCtx", nodename))
 
@@ -67,11 +90,11 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 	// if err := a.CreateBMCSecret(ctx, nodename, nodeinfo.BMC.UsernameBase64, nodeinfo.BMC.PasswordBase64); err != nil {
 	// 	return fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
 	// }
-	if err := a.ValidateNodeConfig(resource); err != nil {
+	if err := a.ValidateNodeConfig(ctx, resource); err != nil {
 		return "", fmt.Errorf("failed to validate resource configuration: %w", err)
 	}
 
-	if err := a.CreateNode(ctx, nodepool, resource); err != nil {
+	if err := a.CreateNode(ctx, nodepool, resource, nodegroupName); err != nil {
 		return "", fmt.Errorf("failed to create allocated node (%s): %w", *resource.Id, err)
 	}
 
@@ -144,7 +167,7 @@ func (a *Adaptor) getNodeInterfaces(resource hwmgrapi.RhprotoResource) ([]*hwmgm
 }
 
 // ValidateNodeConfig performs basic data structure validation on the resource
-func (a *Adaptor) ValidateNodeConfig(resource hwmgrapi.RhprotoResource) error {
+func (a *Adaptor) ValidateNodeConfig(ctx context.Context, resource hwmgrapi.RhprotoResource) error {
 	// Check required fields
 	if resource.ResourceAttribute == nil ||
 		resource.ResourceAttribute.Compute == nil ||
@@ -152,6 +175,10 @@ func (a *Adaptor) ValidateNodeConfig(resource hwmgrapi.RhprotoResource) error {
 		resource.ResourceAttribute.Compute.Lom.IpAddress == nil ||
 		resource.ResourceAttribute.Compute.Lom.Password == nil {
 		return fmt.Errorf("resource structure missing required resource attribute field")
+	}
+
+	if err := a.CheckBMCSecret(ctx, resource); err != nil {
+		return fmt.Errorf("bmc-secret check failed: %w", err)
 	}
 
 	if _, err := a.parseExtensionInterfaces(resource); err != nil {
@@ -162,9 +189,8 @@ func (a *Adaptor) ValidateNodeConfig(resource hwmgrapi.RhprotoResource) error {
 }
 
 // CreateNode creates a Node CR with specified attributes
-func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource) error {
+func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource, nodegroupName string) error {
 	nodename := *resource.Id
-	groupname := *resource.ResourcePoolId
 	hwprofile := *resource.ResourceProfileID
 
 	a.Logger.InfoContext(ctx, "Creating node")
@@ -184,7 +210,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 		},
 		Spec: hwmgmtv1alpha1.NodeSpec{
 			NodePool:  nodepool.Name,
-			GroupName: groupname,
+			GroupName: nodegroupName,
 			HwProfile: hwprofile,
 		},
 	}
@@ -212,7 +238,7 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, resource hwmgrapi.Rhprot
 
 	node.Status.BMC = &hwmgmtv1alpha1.BMC{
 		Address:         IdracUrlPrefix + *resource.ResourceAttribute.Compute.Lom.IpAddress + IdracUrlSuffix,
-		CredentialsName: *resource.ResourceAttribute.Compute.Lom.Password,
+		CredentialsName: bmcSecretName(nodename),
 	}
 	node.Status.Hostname = *resource.Name // TODO: Define how the hostname is set
 
