@@ -276,7 +276,7 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
-# github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241119221834-27fcd2507c33
+# github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241127210828-c10e9748ed3f
 ## explicit; go 1.22.0
 github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1
 # github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5

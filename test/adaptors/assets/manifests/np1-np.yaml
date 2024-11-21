@@ -8,9 +8,10 @@ spec:
   hwMgrId: loopback-1
   location: ottawa
   nodeGroup:
-  - hwProfile: profile-spr-single-processor-64G
-    name: controller
+  - nodePoolData:
+      hwProfile: profile-spr-single-processor-64G
+      name: controller
+      role: master
+      resourcePoolId: xyz-master
     size: 1
-    role: master
-    resourcePoolId: xyz-master
   site: building-1
