@@ -113,6 +113,9 @@ type HardwareManagerSpec struct {
 	DellData *DellData `json:"dellData,omitempty"`
 }
 
+type ResourcePoolList []string
+type PerSiteResourcePoolList map[string]ResourcePoolList
+
 // HardwareManagerStatus defines the observed state of HardwareManager
 type HardwareManagerStatus struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=status
@@ -124,6 +127,10 @@ type HardwareManagerStatus struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+
+	// ResourcePools provides a per-site list of resource pools
+	// +operator-sdk:csv:customresourcedefinitions:type=status
+	ResourcePools PerSiteResourcePoolList `json:"resourcePools,omitempty"`
 }
 
 // +operator-sdk:csv:customresourcedefinitions:resources={{Service,v1,policy-engine-service}}

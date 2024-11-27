@@ -67,6 +67,9 @@ spec:
         path: conditions
       - displayName: Observed Generation
         path: observedGeneration
+      - description: ResourcePools provides a per-site list of resource pools
+        displayName: Resource Pools
+        path: resourcePools
       version: v1alpha1
   description: O-Cloud Hardware Manager Plugin
   displayName: O-Cloud Hardware Manager Plugin

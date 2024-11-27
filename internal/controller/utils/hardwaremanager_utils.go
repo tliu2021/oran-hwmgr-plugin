@@ -23,7 +23,6 @@ import (
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -66,25 +65,8 @@ func UpdateHardwareManagerStatusCondition(
 		conditionStatus,
 		message)
 
-	// nolint: wrapcheck
-	err := RetryOnConflictOrRetriable(retry.DefaultRetry, func() error {
-		newHwMgr := &pluginv1alpha1.HardwareManager{}
-		if err := c.Get(ctx, client.ObjectKeyFromObject(hwmgr), newHwMgr); err != nil {
-			return err
-		}
-		SetStatusCondition(&newHwMgr.Status.Conditions,
-			string(conditionType),
-			string(conditionReason),
-			conditionStatus,
-			message)
-		if err := c.Status().Update(ctx, newHwMgr); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to update hwmgr condition: %w", err)
+	if err := UpdateK8sCRStatus(ctx, c, hwmgr); err != nil {
+		return fmt.Errorf("failed to update hwmgr status %s: %w", hwmgr.Name, err)
 	}
 
 	return nil
