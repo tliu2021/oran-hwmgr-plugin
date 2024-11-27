@@ -23,7 +23,11 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/openshift-kni/oran-hwmgr-plugin/test/adaptors/crds"
+
+	"github.com/integralist/go-findroot/find"
 	. "github.com/onsi/ginkgo/v2" //nolint:golint,revive
+	"golang.org/x/mod/modfile"
 )
 
 const (
@@ -138,4 +142,76 @@ func GetProjectDir() (string, error) {
 	}
 	wd = strings.Replace(wd, "/test/e2e", "", -1)
 	return wd, nil
+}
+
+// GetGitCommitFromPseudoVersion gets the git commit from the pseudo version
+// the pseudo version parameter is like 'v0.0.0-20241119215836-4bf01fa3f48'
+func GetGitCommitFromPseudoVersion(pseudoVersion string) string {
+
+	tokens := strings.Split(pseudoVersion, "-")
+	commit := tokens[len(tokens)-1]
+	return commit
+}
+
+// GetHardwareManagementGitRepoFromModule gets the git repository from the modPath of a HardwareManagement module
+// the modPath parameter is like 'github.com/rauherna/oran-o2ims/api/hardwaremanagement'
+func GetHardwareManagementGitRepoFromModule(modPath string) string {
+
+	hwrMgtRepo := strings.TrimRight(modPath, "/"+crds.ImsHwrMgtPath)
+	return hwrMgtRepo
+}
+
+// GetModuleFromGoMod gets the module path (considering 'replace') and pseudo version processing the project go.mod
+// the modPath parameter is like 'github.com/openshift-kni/oran-o2ims/api/hardwaremanagement'
+// the returned new module path is like 'github.com/rauherna/oran-o2ims/api/hardwaremanagement'
+// the returned module pseudo version is like 'v0.0.0-20241119215836-4bf01fa3f48'
+func GetModuleFromGoMod(modPath string) (modNewPath string, modPseudoVersion string, e error) {
+
+	// find the project dir (the go.mod absolute path)
+	prjDir, err := find.Repo()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to find project root, err:%w", err)
+	}
+
+	// read go.mod
+	goModFile := prjDir.Path + "/go.mod"
+	goModData, err := os.ReadFile(goModFile)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to read go.mod:%s, err:%w",
+			goModFile, err)
+	}
+
+	// parse go.mod
+	mods, err := modfile.Parse("go.mod", goModData, nil)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse go.mod:%s, err:%w",
+			goModFile, err)
+	}
+
+	// check if the module is 'replaced' in go.mod
+	for _, modr := range mods.Replace {
+		pathOld := modr.Old.Path
+
+		if pathOld == modPath {
+
+			pathNew := modr.New.Path
+			versionNew := modr.New.Version
+
+			return pathNew, versionNew, nil
+		}
+	}
+
+	// check if the module is 'required' in go.mod (fallback)
+	for _, modr := range mods.Require {
+		path := modr.Mod.Path
+
+		if path == modPath {
+
+			version := modr.Mod.Version
+			return path, version, nil
+		}
+	}
+
+	return "", "",
+		fmt.Errorf("failed to find module:%s in go.mod:%s", modPath, goModFile)
 }
