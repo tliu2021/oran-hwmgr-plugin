@@ -110,7 +110,7 @@ func (a *Adaptor) HandleNodePoolProcessing(
 	}
 	nodepool.Status.Properties.NodeNames = allocatedNodes
 
-	if err := utils.UpdateK8sCRStatus(ctx, a.Client, nodepool); err != nil {
+	if err := utils.UpdateNodePoolProperties(ctx, a.Client, nodepool); err != nil {
 		return utils.RequeueWithMediumInterval(),
 			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
 	}
