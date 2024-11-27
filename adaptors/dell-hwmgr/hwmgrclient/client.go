@@ -201,16 +201,16 @@ func ResourceGroupFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) *hwmgrapi.Crea
 
 	resourceSelectors := make(map[string]hwmgrapi.RhprotoResourceSelectorRequest)
 	for _, nodegroup := range nodepool.Spec.NodeGroup {
-		resourceSelectors[nodegroup.Name] = hwmgrapi.RhprotoResourceSelectorRequest{
-			RpId:              &nodegroup.ResourcePoolId,
-			ResourceProfileId: &nodegroup.HwProfile,
+		resourceSelectors[nodegroup.NodePoolData.Name] = hwmgrapi.RhprotoResourceSelectorRequest{
+			RpId:              &nodegroup.NodePoolData.ResourcePoolId,
+			ResourceProfileId: &nodegroup.NodePoolData.HwProfile,
 			NumResources:      &nodegroup.Size,
 			Filters: &hwmgrapi.RhprotoResourceSelectorFilter{
 				Include: &hwmgrapi.RhprotoResourceSelectorFilterInclude{
 					Labels: &[]hwmgrapi.RhprotoResourceSelectorFilterIncludeLabel{
 						{
 							Key:   &roleKey,
-							Value: &nodegroup.Name, // TODO: This should be nodegroup.Role, but has to be nodegroup.Name for now
+							Value: &nodegroup.NodePoolData.Name, // TODO: This should be nodegroup.NodePoolData.Role, but has to be nodegroup.NodePoolData.Name for now
 						},
 					},
 				},

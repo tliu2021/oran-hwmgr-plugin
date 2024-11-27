@@ -78,7 +78,7 @@ var _ = Describe("reconcile via the loopback adaptor", func() {
 
 			// check node must use the hardware profile specified by the nodepool cr instance
 			got := node.Spec.HwProfile
-			wanted := np.Spec.NodeGroup[0].HwProfile
+			wanted := np.Spec.NodeGroup[0].NodePoolData.HwProfile
 			Expect(got).To(Equal(wanted))
 		})
 
