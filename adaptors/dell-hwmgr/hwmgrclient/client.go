@@ -306,3 +306,18 @@ func (c *HardwareManagerClient) GetResourcePools(ctx context.Context) (*hwmgrapi
 
 	return response.JSON200, nil
 }
+
+// GetResourceGroup queries the hardware manager to get the resource group data
+func (c *HardwareManagerClient) GetSecret(ctx context.Context, secretKey string) (*hwmgrapi.RhprotoGetSecretsResponseBody, error) {
+	response, err := c.HwmgrClient.GetSecretsWithResponse(ctx, Tenant, secretKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret %s: response: %v, err: %w", secretKey, response, err)
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("resource group get failed with status %s (%d), message=%s",
+			response.Status(), response.StatusCode(), string(response.Body))
+	}
+
+	return response.JSON200, nil
+}

@@ -192,7 +192,7 @@ func (a *Adaptor) HandleNodePoolProcessing(
 				a.Logger.InfoContext(ctx, "Node is already added", slog.String("nodename", *node.Id))
 				continue
 			}
-			if nodename, err := a.AllocateNode(ctx, nodepool, node, nodegroupName); err != nil {
+			if nodename, err := a.AllocateNode(ctx, hwmgrClient, nodepool, node, nodegroupName); err != nil {
 				a.Logger.InfoContext(ctx, "Failed allocating node", slog.String("err", err.Error()))
 				if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
 					hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,

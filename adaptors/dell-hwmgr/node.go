@@ -23,6 +23,7 @@ import (
 	"log/slog"
 
 	hwmgrapi "github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/generated"
+	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/hwmgrclient"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
@@ -30,6 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -59,39 +61,31 @@ type ExtensionInterface struct {
 	Ports []ExtensionPort `json:"ports,omitempty"`
 }
 
+type BMCCredentials struct {
+	Username string `json:"bmc_username"`
+	Password string `json:"bmc_password"`
+}
+
 func bmcSecretName(nodename string) string {
 	return fmt.Sprintf("%s-bmc-secret", nodename)
 }
 
-// CheckBMCSecret creates the bmc-secret for a node
-func (a *Adaptor) CheckBMCSecret(ctx context.Context, resource hwmgrapi.RhprotoResource) error {
-	nodename := *resource.Id
-
-	a.Logger.InfoContext(ctx, "Checking bmc-secret:", "nodename", nodename)
-
-	secretName := bmcSecretName(nodename)
-
-	// TODO: For now, just check that the secret exists. Once the creds are accessible, we can create the secret
-	bmcSecret := &corev1.Secret{}
-
-	if err := a.Get(ctx, types.NamespacedName{Name: secretName, Namespace: a.Namespace}, bmcSecret); err != nil {
-		return fmt.Errorf("failed to get secret %s: %w", secretName, err)
-	}
-
-	return nil
-}
-
 // AllocateNode processes a NodePool CR, allocating a free node for each specified nodegroup as needed
-func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource, nodegroupName string) (string, error) {
+func (a *Adaptor) AllocateNode(
+	ctx context.Context,
+	hwmgrClient *hwmgrclient.HardwareManagerClient,
+	nodepool *hwmgmtv1alpha1.NodePool,
+	resource hwmgrapi.RhprotoResource,
+	nodegroupName string) (string, error) {
 	nodename := *resource.Id
 	ctx = logging.AppendCtx(ctx, slog.String("nodenameCtx", nodename))
 
-	// TODO: Need to be able to create a BMC secret, but we don't have access?
-	// if err := a.CreateBMCSecret(ctx, nodename, nodeinfo.BMC.UsernameBase64, nodeinfo.BMC.PasswordBase64); err != nil {
-	// 	return fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
-	// }
 	if err := a.ValidateNodeConfig(ctx, resource); err != nil {
 		return "", fmt.Errorf("failed to validate resource configuration: %w", err)
+	}
+
+	if err := a.CreateBMCSecret(ctx, hwmgrClient, nodepool, nodename, resource); err != nil {
+		return "", fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
 	}
 
 	if err := a.CreateNode(ctx, nodepool, resource, nodegroupName); err != nil {
@@ -177,12 +171,76 @@ func (a *Adaptor) ValidateNodeConfig(ctx context.Context, resource hwmgrapi.Rhpr
 		return fmt.Errorf("resource structure missing required resource attribute field")
 	}
 
-	if err := a.CheckBMCSecret(ctx, resource); err != nil {
-		return fmt.Errorf("bmc-secret check failed: %w", err)
-	}
-
 	if _, err := a.parseExtensionInterfaces(resource); err != nil {
 		return fmt.Errorf("invalid interface list: %w", err)
+	}
+
+	return nil
+}
+
+// CreateBMCSecret creates the bmc-secret for a node
+func (a *Adaptor) CreateBMCSecret(
+	ctx context.Context,
+	hwmgrClient *hwmgrclient.HardwareManagerClient,
+	nodepool *hwmgmtv1alpha1.NodePool,
+	nodename string,
+	resource hwmgrapi.RhprotoResource) error {
+	a.Logger.InfoContext(ctx, "Creating bmc-secret:", "nodename", nodename)
+
+	remoteSecretKey := *resource.ResourceAttribute.Compute.Lom.Password
+	remoteSecret, err := hwmgrClient.GetSecret(ctx, remoteSecretKey)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve BMC credentials (%s): %w", remoteSecretKey, err)
+	}
+
+	creds := BMCCredentials{}
+	if err := json.Unmarshal([]byte(*remoteSecret.Secret.Value), &creds); err != nil {
+		return fmt.Errorf("unable to parse BMC credentials (%s)", remoteSecretKey)
+	}
+
+	secretName := bmcSecretName(nodename)
+
+	blockDeletion := true
+	bmcSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      secretName,
+			Namespace: a.Namespace,
+			OwnerReferences: []metav1.OwnerReference{{
+				APIVersion:         nodepool.APIVersion,
+				Kind:               nodepool.Kind,
+				Name:               nodepool.Name,
+				UID:                nodepool.UID,
+				BlockOwnerDeletion: &blockDeletion,
+			}},
+		},
+		Data: map[string][]byte{
+			"username": []byte(creds.Username),
+			"password": []byte(creds.Password),
+		},
+	}
+
+	if err = utils.CreateK8sCR(ctx, a.Client, bmcSecret, nil, utils.UPDATE); err != nil {
+		return fmt.Errorf("failed to create bmc-secret for node %s: %w", nodename, err)
+	}
+
+	return nil
+}
+
+// DeleteBMCSecret deletes the bmc-secret for a node
+func (a *Adaptor) DeleteBMCSecret(ctx context.Context, nodename string) error {
+	a.Logger.InfoContext(ctx, "Deleting bmc-secret:", "nodename", nodename)
+
+	secretName := bmcSecretName(nodename)
+
+	bmcSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      secretName,
+			Namespace: a.Namespace,
+		},
+	}
+
+	if err := a.Client.Delete(ctx, bmcSecret); client.IgnoreNotFound(err) != nil {
+		return fmt.Errorf("failed to delete bmc-secret for node %s: %w", nodename, err)
 	}
 
 	return nil
