@@ -84,11 +84,14 @@ func (a *Adaptor) HandleNodePoolCreate(
 		message = "Handling creation"
 	}
 
-	nodepool.Status.HwMgrPlugin.ObservedGeneration = nodepool.ObjectMeta.Generation
 	if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
 		conditionType, conditionReason, conditionStatus, message); err != nil {
 		return utils.RequeueWithMediumInterval(),
 			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+	}
+	// Update the Node Pool hwMgrPlugin status
+	if err := utils.UpdateNodePoolPluginStatus(ctx, a.Client, nodepool); err != nil {
+		return utils.RequeueWithShortInterval(), fmt.Errorf("failed to update hwMgrPlugin observedGeneration Status: %w", err)
 	}
 
 	return utils.DoNotRequeue(), nil
@@ -219,7 +222,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		}
 		// Update the Node Pool hwMgrPlugin status
 		if err = utils.UpdateNodePoolPluginStatus(ctx, a.Client, nodepool); err != nil {
-			return utils.RequeueWithShortInterval(), fmt.Errorf("failed UpdateNodePoolPluginStatus: %w", err)
+			return utils.RequeueWithShortInterval(), fmt.Errorf("failed to update hwMgrPlugin observedGeneration Status: %w", err)
 		}
 	} else {
 		// Requeue if there are still nodes upgrading
@@ -255,7 +258,6 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	nodepool *hwmgmtv1alpha1.NodePool) error {
 
 	cloudID := nodepool.Spec.CloudID
-	nodepool.Status.HwMgrPlugin.ObservedGeneration = nodepool.ObjectMeta.Generation
 	a.Logger.InfoContext(ctx, "Processing ProcessNewNodePool request:",
 		slog.Any("loopback additionalInfo", hwmgr.Spec.LoopbackData),
 		slog.String("cloudID", cloudID),
