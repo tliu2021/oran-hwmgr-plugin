@@ -27,7 +27,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"golang.org/x/oauth2"
@@ -63,12 +62,6 @@ type OAuthClientConfig struct {
 	Password string
 }
 
-// Environment variable names
-const (
-	TLSSkipVerifyEnvName      = "INSECURE_SKIP_VERIFY"
-	TLSSkipVerifyDefaultValue = true // Setting default to true until the hardware manager has a real certificate
-)
-
 // Default values for backend URL and token:
 const (
 	defaultBackendURL       = "https://kubernetes.default.svc"
@@ -76,22 +69,6 @@ const (
 	defaultBackendCABundle  = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"         // nolint: gosec // hardcoded path only
 	defaultServiceCAFile    = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt" // nolint: gosec // hardcoded path only
 )
-
-// GetTLSSkipVerify returns the current requested value of the TLS Skip Verify setting
-func GetTLSSkipVerify() bool {
-	value, ok := os.LookupEnv(TLSSkipVerifyEnvName)
-	if !ok {
-		return TLSSkipVerifyDefaultValue
-	}
-
-	result, err := strconv.ParseBool(value)
-	if err != nil {
-		utilsLog.Error("Error parsing TLSSkipVerify env variable", slog.String(TLSSkipVerifyEnvName, value))
-		return TLSSkipVerifyDefaultValue
-	}
-
-	return result
-}
 
 // loadDefaultCABundles loads the default service account and ingress CA bundles.  This should only be invoked if TLS
 // verification has not been disabled since the expectation is that it will only need to be disabled when testing as a
@@ -121,13 +98,13 @@ func loadDefaultCABundles(config *tls.Config) error {
 
 // GetDefaultTLSConfig sets the TLS configuration attributes appropriately to enable communication between internal
 // services and accessing the public facing API endpoints.
-func GetDefaultTLSConfig(config *tls.Config) (*tls.Config, error) {
+func GetDefaultTLSConfig(config *tls.Config, insecureSkipTLSVerify bool) (*tls.Config, error) {
 	if config == nil {
 		config = &tls.Config{MinVersion: tls.VersionTLS12}
 	}
 
 	// Allow developers to override the TLS verification
-	config.InsecureSkipVerify = GetTLSSkipVerify()
+	config.InsecureSkipVerify = insecureSkipTLSVerify
 	if !config.InsecureSkipVerify {
 		// TLS verification is enabled therefore we need to load the CA bundles that are injected into our filesystem
 		// automatically; which happens since we are defined as using a service-account
@@ -141,8 +118,8 @@ func GetDefaultTLSConfig(config *tls.Config) (*tls.Config, error) {
 }
 
 // GetDefaultBackendTransport returns an HTTP transport with the proper TLS defaults set.
-func GetDefaultBackendTransport() (http.RoundTripper, error) {
-	tlsConfig, err := GetDefaultTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12})
+func GetDefaultBackendTransport(insecureSkipTLSVerify bool) (http.RoundTripper, error) {
+	tlsConfig, err := GetDefaultTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12}, insecureSkipTLSVerify)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +127,8 @@ func GetDefaultBackendTransport() (http.RoundTripper, error) {
 	return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
 }
 
-func GetTransportWithCaBundle(config OAuthClientConfig) (http.RoundTripper, error) {
-	tlsConfig, err := GetDefaultTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12})
+func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify bool) (http.RoundTripper, error) {
+	tlsConfig, err := GetDefaultTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12}, insecureSkipTLSVerify)
 	if err != nil {
 		return nil, err
 	}
@@ -248,8 +225,8 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 // SetupOAuthClient creates an HTTP client capable of acquiring an OAuth token used to authorize client requests.  If
 // the config excludes the OAuth specific sections then the client produced is a simple HTTP client without OAuth
 // capabilities.
-func SetupOAuthClient(ctx context.Context, config OAuthClientConfig) (*http.Client, error) {
-	tr, err := GetTransportWithCaBundle(config)
+func SetupOAuthClient(ctx context.Context, config OAuthClientConfig, insecureSkipTLSVerify bool) (*http.Client, error) {
+	tr, err := GetTransportWithCaBundle(config, insecureSkipTLSVerify)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get http transport: %w", err)
 	}

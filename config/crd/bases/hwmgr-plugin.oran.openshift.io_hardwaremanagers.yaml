@@ -79,6 +79,11 @@ spec:
                       CaBundleName references a config map that contains a set of custom CA certificates to be used when communicating
                       with a hardware manager that has its TLS certificate signed by a non-public CA certificate.
                     type: string
+                  insecureSkipTLSVerify:
+                    description: |-
+                      insecureSkipTLSVerify indicates that the plugin should not confirm the validity of the TLS certificate of the hardware manager.
+                      This is insecure and is not recommended.
+                    type: boolean
                 required:
                 - apiUrl
                 - authSecret
