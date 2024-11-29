@@ -165,6 +165,9 @@ type ClientInterface interface {
 
 	// GetResourceSubscription request
 	GetResourceSubscription(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSecrets request
+	GetSecrets(ctx context.Context, tenant string, secretKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -505,6 +508,18 @@ func (c *Client) GetResourceSubscriptions(ctx context.Context, tenant string, bo
 
 func (c *Client) GetResourceSubscription(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetResourceSubscriptionRequest(c.Server, tenant, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSecrets(ctx context.Context, tenant string, secretKey string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSecretsRequest(c.Server, tenant, secretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -1423,6 +1438,47 @@ func NewGetResourceSubscriptionRequest(server string, tenant string, id string) 
 	return req, nil
 }
 
+// NewGetSecretsRequest generates requests for GetSecrets
+func NewGetSecretsRequest(server string, tenant string, secretKey string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "secret-key", runtime.ParamLocationPath, secretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/secrets/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -1542,6 +1598,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetResourceSubscriptionWithResponse request
 	GetResourceSubscriptionWithResponse(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*GetResourceSubscriptionResponse, error)
+
+	// GetSecretsWithResponse request
+	GetSecretsWithResponse(ctx context.Context, tenant string, secretKey string, reqEditors ...RequestEditorFn) (*GetSecretsResponse, error)
 }
 
 type GetTokenResponse struct {
@@ -1981,6 +2040,29 @@ func (r GetResourceSubscriptionResponse) StatusCode() int {
 	return 0
 }
 
+type GetSecretsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RhprotoGetSecretsResponseBody
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSecretsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSecretsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetTokenWithBodyWithResponse request with arbitrary body returning *GetTokenResponse
 func (c *ClientWithResponses) GetTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetTokenResponse, error) {
 	rsp, err := c.GetTokenWithBody(ctx, contentType, body, reqEditors...)
@@ -2230,6 +2312,15 @@ func (c *ClientWithResponses) GetResourceSubscriptionWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseGetResourceSubscriptionResponse(rsp)
+}
+
+// GetSecretsWithResponse request returning *GetSecretsResponse
+func (c *ClientWithResponses) GetSecretsWithResponse(ctx context.Context, tenant string, secretKey string, reqEditors ...RequestEditorFn) (*GetSecretsResponse, error) {
+	rsp, err := c.GetSecrets(ctx, tenant, secretKey, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSecretsResponse(rsp)
 }
 
 // ParseGetTokenResponse parses an HTTP response from a GetTokenWithResponse call
@@ -2842,6 +2933,39 @@ func ParseGetResourceSubscriptionResponse(rsp *http.Response) (*GetResourceSubsc
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ApiprotoGetResourceSubscriptionResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSecretsResponse parses an HTTP response from a GetSecretsWithResponse call
+func ParseGetSecretsResponse(rsp *http.Response) (*GetSecretsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSecretsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RhprotoGetSecretsResponseBody
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -570,6 +570,11 @@ type RhprotoCreateResourceGroupReqBody struct {
 	ResourceGroup *RhprotoResourceGroupObjectRequest `json:"resourceGroup,omitempty"`
 }
 
+// RhprotoGetSecretsResponseBody defines model for rhprotoGetSecretsResponseBody.
+type RhprotoGetSecretsResponseBody struct {
+	Secret *RhprotoSecret `json:"secret,omitempty"`
+}
+
 // RhprotoGetTokenReqBody defines model for rhprotoGetTokenReqBody.
 type RhprotoGetTokenReqBody struct {
 	ClientId  *string `json:"client_id,omitempty"`
@@ -702,6 +707,18 @@ type RhprotoResourceSelectorRequest struct {
 	Filters           *RhprotoResourceSelectorFilter `json:"filters,omitempty"`
 	NumResources      *int                           `json:"numResources,omitempty"`
 	RpId              *string                        `json:"rpId,omitempty"`
+}
+
+// RhprotoSecret defines model for rhprotoSecret.
+type RhprotoSecret struct {
+	CreatedAt     *string `json:"CreatedAt,omitempty"`
+	CreatedBy     *string `json:"CreatedBy,omitempty"`
+	IsHiddenValue *bool   `json:"IsHiddenValue,omitempty"`
+	Key           *string `json:"Key,omitempty"`
+	Tenant        *string `json:"Tenant,omitempty"`
+	UpdatedAt     *string `json:"UpdatedAt,omitempty"`
+	Value         *string `json:"Value,omitempty"`
+	Visibility    *string `json:"Visibility,omitempty"`
 }
 
 // GetResourcePoolsBody defines model for GetResourcePoolsBody.
