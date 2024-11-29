@@ -31,7 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -221,26 +220,6 @@ func (a *Adaptor) CreateBMCSecret(
 
 	if err = utils.CreateK8sCR(ctx, a.Client, bmcSecret, nil, utils.UPDATE); err != nil {
 		return fmt.Errorf("failed to create bmc-secret for node %s: %w", nodename, err)
-	}
-
-	return nil
-}
-
-// DeleteBMCSecret deletes the bmc-secret for a node
-func (a *Adaptor) DeleteBMCSecret(ctx context.Context, nodename string) error {
-	a.Logger.InfoContext(ctx, "Deleting bmc-secret:", "nodename", nodename)
-
-	secretName := bmcSecretName(nodename)
-
-	bmcSecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      secretName,
-			Namespace: a.Namespace,
-		},
-	}
-
-	if err := a.Client.Delete(ctx, bmcSecret); client.IgnoreNotFound(err) != nil {
-		return fmt.Errorf("failed to delete bmc-secret for node %s: %w", nodename, err)
 	}
 
 	return nil
