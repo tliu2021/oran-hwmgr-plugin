@@ -92,6 +92,11 @@ type DellData struct {
 	// +optional
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Custom CA Certificates",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	CaBundleName *string `json:"caBundleName,omitempty"`
+
+	// insecureSkipTLSVerify indicates that the plugin should not confirm the validity of the TLS certificate of the hardware manager.
+	// This is insecure and is not recommended.
+	// +optional
+	InsecureSkipTLSVerify bool `json:"insecureSkipTLSVerify,omitempty"`
 }
 
 // HardwareManagerSpec defines the desired state of HardwareManager
