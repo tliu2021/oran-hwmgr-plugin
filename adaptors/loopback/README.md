@@ -120,7 +120,7 @@ At this moment, the loopback adaptor will reconcile this CR, creating nodes with
 
 We can examine logs and Node objects to confirm this:
 
-```
+```console
 oc logs -n oran-hwmgr-plugin -l control-plane=controller-manager -f
 ...
 2024/10/24 11:04:38 INFO Creating node: controller=adaptors adaptor=loopback cloudID=testcloud-1 "nodegroup name"=master nodename=dummy-sp-64g-0
@@ -157,7 +157,6 @@ status:
     reason: Completed
     status: "True"
     type: Provisioned
-  hostname: dummy-sp-64g-0.localhost
   interfaces:
   - label: bootable-interface
     macAddress: c6:b6:13:a0:02:00
@@ -187,7 +186,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:01:00"
-        hostname: "dummy-dp-128g-0.localhost"
       dummy-dp-128g-1:
         poolID: worker
         bmc:
@@ -198,7 +196,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:01:01"
-        hostname: "dummy-dp-128g-1.localhost"
       dummy-dp-128g-2:
         poolID: worker
         bmc:
@@ -209,7 +206,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:01:02"
-        hostname: "dummy-dp-128g-2.localhost"
       dummy-sp-64g-0:
         poolID: master
         bmc:
@@ -220,7 +216,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:00"
-        hostname: "dummy-sp-64g-0.localhost"
       dummy-sp-64g-1:
         poolID: master
         bmc:
@@ -231,7 +226,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:01"
-        hostname: "dummy-sp-64g-1.localhost"
       dummy-sp-64g-2:
         poolID: master
         bmc:
@@ -242,7 +236,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:02"
-        hostname: "dummy-sp-64g-2.localhost"
       dummy-sp-64g-3:
         poolID: master
         bmc:
@@ -253,7 +246,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:03"
-        hostname: "dummy-sp-64g-3.localhost"
       dummy-sp-64g-4:
         poolID: master
         bmc:
@@ -264,7 +256,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:04"
-        hostname: "dummy-sp-64g-4.localhost"
 kind: ConfigMap
 metadata:
   creationTimestamp: "2024-09-18T17:28:38Z"
@@ -275,11 +266,12 @@ metadata:
   uid: e6dfe91c-0713-46d2-b3e5-b883c3d8b8c5
 
 ```
+
 ### Clean up O-Cloud Hardware Manager Plugin
 
 We cannot call `make undeploy` directly to clean up all the resources created in `oran-hwmgr-plugin` namespace while the Nodepool exists:
 
-```
+```console
 $ oc get nodepools.o2ims-hardwaremanagement.oran.openshift.io -n oran-hwmgr-plugin np1 -o yaml
 apiVersion: o2ims-hardwaremanagement.oran.openshift.io/v1alpha1
 kind: NodePool
@@ -291,7 +283,7 @@ metadata:
 
 We will firstly delete the Nodepool and then undeploy (execute the make command from the project root):
 
-```
+```console
 $ oc delete -f examples/np1.yaml
 $ make undeploy
 ```

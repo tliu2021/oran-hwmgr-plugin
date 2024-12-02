@@ -277,7 +277,6 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, resource hwmgrapi.Rhprot
 		Address:         IdracUrlPrefix + *resource.ResourceAttribute.Compute.Lom.IpAddress + IdracUrlSuffix,
 		CredentialsName: bmcSecretName(nodename),
 	}
-	node.Status.Hostname = *resource.Name // TODO: Define how the hostname is set
 
 	var parseErr error
 	if node.Status.Interfaces, parseErr = a.getNodeInterfaces(resource); parseErr != nil {

@@ -214,7 +214,6 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cm
 		Address:         info.BMC.Address,
 		CredentialsName: bmcSecretName(nodename),
 	}
-	node.Status.Hostname = info.Hostname
 	node.Status.Interfaces = info.Interfaces
 
 	utils.SetStatusCondition(&node.Status.Conditions,
