@@ -37,7 +37,6 @@ type cmNodeInfo struct {
 	ResourcePoolID string                      `json:"poolID,omitempty"`
 	BMC            *cmBmcInfo                  `json:"bmc,omitempty"`
 	Interfaces     []*hwmgmtv1alpha1.Interface `json:"interfaces,omitempty"`
-	Hostname       string                      `json:"hostname,omitempty"`
 }
 
 type cmResources struct {

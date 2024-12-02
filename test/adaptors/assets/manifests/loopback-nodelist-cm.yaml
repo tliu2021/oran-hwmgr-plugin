@@ -19,7 +19,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:00"
-        hostname: "dummy-sp-64g-0.localhost"
       dummy-sp-128g-0:
         poolID: xyz-worker
         bmc:
@@ -30,4 +29,3 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:01"
-        hostname: "dummy-sp-128g-0.localhost"

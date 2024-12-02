@@ -67,7 +67,6 @@ function nodes {
           - name: eth0
             label: bootable-interface
             macAddress: "${mac}"
-        hostname: "${nodename}.localhost"
 EOF
         done
     done

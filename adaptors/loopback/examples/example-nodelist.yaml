@@ -19,7 +19,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:01:00"
-        hostname: "dummy-dp-128g-0.localhost"
       dummy-dp-128g-1:
         poolID: worker
         bmc:
@@ -30,7 +29,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:01:01"
-        hostname: "dummy-dp-128g-1.localhost"
       dummy-dp-128g-2:
         poolID: worker
         bmc:
@@ -41,7 +39,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:01:02"
-        hostname: "dummy-dp-128g-2.localhost"
       dummy-sp-64g-0:
         poolID: master
         bmc:
@@ -52,7 +49,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:00"
-        hostname: "dummy-sp-64g-0.localhost"
       dummy-sp-64g-1:
         poolID: master
         bmc:
@@ -63,7 +59,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:01"
-        hostname: "dummy-sp-64g-1.localhost"
       dummy-sp-64g-2:
         poolID: master
         bmc:
@@ -74,7 +69,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:02"
-        hostname: "dummy-sp-64g-2.localhost"
       dummy-sp-64g-3:
         poolID: master
         bmc:
@@ -85,7 +79,6 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:03"
-        hostname: "dummy-sp-64g-3.localhost"
       dummy-sp-64g-4:
         poolID: master
         bmc:
@@ -96,4 +89,3 @@ data:
           - name: eth0
             label: bootable-interface
             macAddress: "c6:b6:13:a0:02:04"
-        hostname: "dummy-sp-64g-4.localhost"
