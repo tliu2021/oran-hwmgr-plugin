@@ -38,7 +38,7 @@ import (
 	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/loopback"
 )
 
-// TODO: Define supported adaptor IDs in oran-o2ims
+// Supported adaptor IDs
 const (
 	LoopbackAdaptorID  = "loopback"
 	DellHwMgrAdaptorID = "dell-hwmgr"

@@ -34,10 +34,11 @@ import (
 )
 
 const (
-	IdracUrlPrefix = "idrac-virtualmedia+"
-	IdracUrlSuffix = "/redfish/v1/Systems/System.Embedded.1" // TODO: Hardware manager should return the full URL
 	ExtensionsNics = "O2-nics"
 	ExtensionsNads = "nads"
+
+	ExtensionsRemoteManagement = "RemoteManagement"
+	ExtensionsVirtualMediaUrl  = "virtualMediaUrl"
 
 	LabelNameKey  = "name"
 	LabelLabelKey = "label"
@@ -106,25 +107,49 @@ func (a *Adaptor) parseExtensionInterfaces(resource hwmgrapi.RhprotoResource) ([
 
 	nics, exists := (*resource.Extensions)[ExtensionsNics]
 	if !exists {
-		return nil, fmt.Errorf("resource structure missing required extensions nics field")
+		return nil, fmt.Errorf("resource structure missing required extensions field: %s", ExtensionsNics)
 	}
 
 	nads, exists := nics[ExtensionsNads]
 	if !exists {
-		return nil, fmt.Errorf("resource structure missing required extensions nads field")
+		return nil, fmt.Errorf("resource structure missing required extensions field: %s.%s", ExtensionsNics, ExtensionsNads)
 	}
 
 	data, err := json.Marshal(nads)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal resource data: %w", err)
+		return nil, fmt.Errorf("failed to marshal resource data from extensions field: %s.%s: %w", ExtensionsNics, ExtensionsNads, err)
 	}
 
 	var interfaces []ExtensionInterface
 	if err := json.Unmarshal(data, &interfaces); err != nil {
-		return nil, fmt.Errorf("resource structure contains invalid nic data format")
+		return nil, fmt.Errorf("resource structure contains invalid nic data format: %s.%s", ExtensionsNics, ExtensionsNads)
 	}
 
 	return interfaces, nil
+}
+
+// parseExtensionVirtualMediaUrl parses the Extensions object in the resource to get the virtualMediaUrl
+func (a *Adaptor) parseExtensionVirtualMediaUrl(resource hwmgrapi.RhprotoResource) (string, error) {
+	if resource.Extensions == nil {
+		return "", fmt.Errorf("resource structure missing required extensions field")
+	}
+
+	remoteManagement, exists := (*resource.Extensions)[ExtensionsRemoteManagement]
+	if !exists {
+		return "", fmt.Errorf("resource structure missing required extensions field: %s", ExtensionsRemoteManagement)
+	}
+
+	virtualMediaUrlIntf, exists := remoteManagement[ExtensionsVirtualMediaUrl]
+	if !exists {
+		return "", fmt.Errorf("resource structure missing required extensions field: %s.%s", ExtensionsRemoteManagement, ExtensionsVirtualMediaUrl)
+	}
+
+	virtualMediaUrl, ok := virtualMediaUrlIntf.(string)
+	if !ok {
+		return "", fmt.Errorf("resource structure has invalid field, expected string: %s.%s", ExtensionsRemoteManagement, ExtensionsVirtualMediaUrl)
+	}
+
+	return virtualMediaUrl, nil
 }
 
 // getNodeInterfaces translates the interface data from the resource object into the o2ims-defined data structure for the Node CR
@@ -172,6 +197,10 @@ func (a *Adaptor) ValidateNodeConfig(ctx context.Context, resource hwmgrapi.Rhpr
 
 	if _, err := a.parseExtensionInterfaces(resource); err != nil {
 		return fmt.Errorf("invalid interface list: %w", err)
+	}
+
+	if _, err := a.parseExtensionVirtualMediaUrl(resource); err != nil {
+		return fmt.Errorf("unable to parse %s from resource", ExtensionsVirtualMediaUrl)
 	}
 
 	return nil
@@ -273,8 +302,13 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, resource hwmgrapi.Rhprot
 		return fmt.Errorf("failed to get Node for update: %w", err)
 	}
 
+	virtualMediaUrl, err := a.parseExtensionVirtualMediaUrl(resource)
+	if err != nil {
+		return fmt.Errorf("unable to parse %s from resource", ExtensionsVirtualMediaUrl)
+	}
+
 	node.Status.BMC = &hwmgmtv1alpha1.BMC{
-		Address:         IdracUrlPrefix + *resource.ResourceAttribute.Compute.Lom.IpAddress + IdracUrlSuffix,
+		Address:         virtualMediaUrl,
 		CredentialsName: bmcSecretName(nodename),
 	}
 
