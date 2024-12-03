@@ -36,7 +36,7 @@ import (
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 )
 
-var utilsLog = slog.New(logging.NewLoggingContextHandler()).With("module", "utils")
+var utilsLog = slog.New(logging.NewLoggingContextHandler(slog.LevelDebug)).With("module", "utils")
 
 // OAuthClientConfig defines the parameters required to establish an HTTP Client capable of acquiring an OAuth Token
 // from an OAuth capable authorization server.
@@ -127,7 +127,7 @@ func GetDefaultBackendTransport(insecureSkipTLSVerify bool) (http.RoundTripper, 
 	return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
 }
 
-func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify bool) (http.RoundTripper, error) {
+func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify, logMessages bool) (http.RoundTripper, error) {
 	tlsConfig, err := GetDefaultTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12}, insecureSkipTLSVerify)
 	if err != nil {
 		return nil, err
@@ -149,9 +149,11 @@ func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify bo
 		}
 	}
 
-	// nolint:gocritic
-	// return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
-	return LoggingRoundTripper{TLSClientConfig: tlsConfig}, nil
+	if logMessages {
+		return LoggingRoundTripper{TLSClientConfig: tlsConfig}, nil
+	}
+
+	return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
 }
 
 // TODO: Determine whether to remove the message tracing altogether.
@@ -225,8 +227,8 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 // SetupOAuthClient creates an HTTP client capable of acquiring an OAuth token used to authorize client requests.  If
 // the config excludes the OAuth specific sections then the client produced is a simple HTTP client without OAuth
 // capabilities.
-func SetupOAuthClient(ctx context.Context, config OAuthClientConfig, insecureSkipTLSVerify bool) (*http.Client, error) {
-	tr, err := GetTransportWithCaBundle(config, insecureSkipTLSVerify)
+func SetupOAuthClient(ctx context.Context, config OAuthClientConfig, insecureSkipTLSVerify, logMessages bool) (*http.Client, error) {
+	tr, err := GetTransportWithCaBundle(config, insecureSkipTLSVerify, logMessages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get http transport: %w", err)
 	}
