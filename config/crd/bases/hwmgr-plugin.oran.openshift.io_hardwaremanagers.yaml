@@ -84,6 +84,10 @@ spec:
                       insecureSkipTLSVerify indicates that the plugin should not confirm the validity of the TLS certificate of the hardware manager.
                       This is insecure and is not recommended.
                     type: boolean
+                  tenant:
+                    description: Tenant allows the specific of the hardware manager
+                      tenant to use for this instance.
+                    type: string
                 required:
                 - apiUrl
                 - authSecret

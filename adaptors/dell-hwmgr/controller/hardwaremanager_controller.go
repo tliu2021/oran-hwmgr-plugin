@@ -24,6 +24,7 @@ import (
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/adaptors/dell-hwmgr/hwmgrclient"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
+	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -79,6 +80,8 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return
 	}
 
+	ctx = logging.AppendCtx(ctx, slog.String("hwmgr", hwmgr.Name))
+
 	hwmgr.Status.ObservedGeneration = hwmgr.Generation
 
 	if hwmgr.Spec.DellData == nil {
@@ -131,8 +134,11 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	hwmgr.Status.ResourcePools = make(pluginv1alpha1.PerSiteResourcePoolList)
 	if pools.ResourcePools != nil {
+		tenant := client.GetTenant()
 		for _, pool := range *pools.ResourcePools {
-			if pool.SiteId == nil || pool.Id == nil {
+			if pool.SiteId == nil || pool.Id == nil ||
+				pool.Res == nil || pool.Res.Tenant == nil || *pool.Res.Tenant != tenant {
+				// Skip pools that are missing data or for a different tenant
 				continue
 			}
 			hwmgr.Status.ResourcePools[*pool.SiteId] = append(hwmgr.Status.ResourcePools[*pool.SiteId], *pool.Id)
