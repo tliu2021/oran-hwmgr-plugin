@@ -85,7 +85,7 @@ spec:
                       This is insecure and is not recommended.
                     type: boolean
                   tenant:
-                    description: Tenant allows the specific of the hardware manager
+                    description: Tenant allows the specification of the hardware manager
                       tenant to use for this instance.
                     type: string
                 required:

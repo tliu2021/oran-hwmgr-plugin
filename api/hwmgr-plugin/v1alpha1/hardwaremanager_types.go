@@ -93,7 +93,7 @@ type DellData struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Custom CA Certificates",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	CaBundleName *string `json:"caBundleName,omitempty"`
 
-	// Tenant allows the specific of the hardware manager tenant to use for this instance.
+	// Tenant allows the specification of the hardware manager tenant to use for this instance.
 	// +optional
 	Tenant *string `json:"tenant,omitempty"`
 

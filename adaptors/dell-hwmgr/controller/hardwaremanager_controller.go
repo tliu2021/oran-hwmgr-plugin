@@ -137,10 +137,18 @@ func (r *HardwareManagerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		tenant := client.GetTenant()
 		for _, pool := range *pools.ResourcePools {
 			if pool.SiteId == nil || pool.Id == nil ||
-				pool.Res == nil || pool.Res.Tenant == nil || *pool.Res.Tenant != tenant {
-				// Skip pools that are missing data or for a different tenant
+				pool.Res == nil || pool.Res.Tenant == nil {
+				// Skip pools that are missing data
+				r.Logger.InfoContext(ctx, "entry in resourcepools list missing data", slog.Any("pool", pool))
 				continue
 			}
+
+			if *pool.Res.Tenant != tenant {
+				// Skip pools for other tenants
+				r.Logger.InfoContext(ctx, "resourcepools list contains entry for other tenant", slog.String("tenant", *pool.Res.Tenant), slog.String("id", *pool.Id))
+				continue
+			}
+
 			hwmgr.Status.ResourcePools[*pool.SiteId] = append(hwmgr.Status.ResourcePools[*pool.SiteId], *pool.Id)
 			slices.Sort(hwmgr.Status.ResourcePools[*pool.SiteId])
 		}
