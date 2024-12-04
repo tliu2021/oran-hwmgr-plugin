@@ -130,7 +130,7 @@ func NewClientWithResponses(
 		CaBundle: []byte(caBundle),
 	}
 
-	tr, err := utils.GetTransportWithCaBundle(config, hwmgr.Spec.DellData.InsecureSkipTLSVerify)
+	tr, err := utils.GetTransportWithCaBundle(config, hwmgr.Spec.DellData.InsecureSkipTLSVerify, utils.IsHardwareManagerLogMessagesEnabled(hwmgr))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get http transport: %w", err)
 	}

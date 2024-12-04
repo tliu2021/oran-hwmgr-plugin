@@ -111,3 +111,17 @@ kind: List
 metadata:
   resourceVersion: ""
 ```
+
+## Debug
+
+Message tracing, which logs the JSON request and response data for interactions with the hardware manager, can be
+enabled by setting an annotation on the HardwareManager CR, setting
+`hwmgr-plugin.oran.openshift.io/logMessages=enabled`. Any other value will disable the tracing.
+
+```console
+# Add the annotation to target HardwareManager
+oc annotate -n oran-hwmgr-plugin HardwareManager <hwmgr> hwmgr-plugin.oran.openshift.io/logMessages=enabled
+
+# Remove the annotation
+oc annotate -n oran-hwmgr-plugin HardwareManager <hwmgr> hwmgr-plugin.oran.openshift.io/logMessages-
+```

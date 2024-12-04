@@ -151,7 +151,7 @@ func main() {
 	hwmgrAdaptor := &adaptors.HwMgrAdaptorController{
 		Client:    mgr.GetClient(),
 		Scheme:    mgr.GetScheme(),
-		Logger:    slog.New(logging.NewLoggingContextHandler()).With("controller", "adaptors"),
+		Logger:    slog.New(logging.NewLoggingContextHandler(slog.LevelInfo)).With("controller", "adaptors"),
 		Namespace: myNamespace,
 	}
 	if err = hwmgrAdaptor.SetupWithManager(mgr); err != nil {
@@ -162,7 +162,7 @@ func main() {
 	if err = (&o2imshardwaremanagementcontroller.NodePoolReconciler{
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
-		Logger:       slog.New(logging.NewLoggingContextHandler()).With("controller", "NodePool"),
+		Logger:       slog.New(logging.NewLoggingContextHandler(slog.LevelInfo)).With("controller", "NodePool"),
 		Namespace:    myNamespace,
 		HwMgrAdaptor: hwmgrAdaptor,
 	}).SetupWithManager(mgr); err != nil {

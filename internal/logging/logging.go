@@ -35,6 +35,7 @@ const (
 
 type LoggingContextHandler struct {
 	handler slog.Handler
+	level   slog.Level
 }
 
 // Handle adds attributes from the context to the log record
@@ -49,26 +50,27 @@ func (h LoggingContextHandler) Handle(ctx context.Context, record slog.Record) e
 }
 
 func (h LoggingContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	return h.handler.Enabled(ctx, level)
+	return level >= h.level
 }
 
 func (h LoggingContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	if len(attrs) == 0 {
 		return h
 	}
-	return LoggingContextHandler{handler: h.handler.WithAttrs(attrs)}
+	return LoggingContextHandler{handler: h.handler.WithAttrs(attrs), level: h.level}
 }
 
 func (h LoggingContextHandler) WithGroup(name string) slog.Handler {
 	if name == "" {
 		return h
 	}
-	return LoggingContextHandler{handler: h.handler.WithGroup(name)}
+	return LoggingContextHandler{handler: h.handler.WithGroup(name), level: h.level}
 }
 
-func NewLoggingContextHandler() *LoggingContextHandler {
+func NewLoggingContextHandler(level slog.Level) *LoggingContextHandler {
 	return &LoggingContextHandler{
 		handler: slog.Default().Handler(),
+		level:   level,
 	}
 }
 

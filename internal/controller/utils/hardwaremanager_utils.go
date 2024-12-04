@@ -26,6 +26,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	LogMessagesAnnotation = "hwmgr-plugin.oran.openshift.io/logMessages"
+	LogMessagesEnabled    = "enabled"
+)
+
 func GetHardwareManagerValidationCondition(hwmgr *pluginv1alpha1.HardwareManager) *metav1.Condition {
 	return meta.FindStatusCondition(
 		hwmgr.Status.Conditions,
@@ -48,6 +53,15 @@ func IsHardwareManagerValidationFailed(hwmgr *pluginv1alpha1.HardwareManager) bo
 	}
 
 	return false
+}
+
+func IsHardwareManagerLogMessagesEnabled(hwmgr *pluginv1alpha1.HardwareManager) bool {
+	annotations := hwmgr.GetAnnotations()
+	if annotations == nil {
+		return false
+	}
+
+	return annotations[LogMessagesAnnotation] == LogMessagesEnabled
 }
 
 func UpdateHardwareManagerStatusCondition(

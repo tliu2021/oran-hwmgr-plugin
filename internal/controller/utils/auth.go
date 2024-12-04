@@ -21,12 +21,14 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"golang.org/x/oauth2"
@@ -36,7 +38,7 @@ import (
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 )
 
-var utilsLog = slog.New(logging.NewLoggingContextHandler()).With("module", "utils")
+var utilsLog = slog.New(logging.NewLoggingContextHandler(slog.LevelDebug)).With("module", "utils")
 
 // OAuthClientConfig defines the parameters required to establish an HTTP Client capable of acquiring an OAuth Token
 // from an OAuth capable authorization server.
@@ -69,6 +71,12 @@ const (
 	defaultBackendCABundle  = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"         // nolint: gosec // hardcoded path only
 	defaultServiceCAFile    = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt" // nolint: gosec // hardcoded path only
 )
+
+// The following regex pattern is used to match keys to automatically redact from the message tracing logs
+var redactionPattern = regexp.MustCompile(`(?i)password|token|client_id|username`)
+
+// Replacement string for redacted fields in message tracing logs
+const redactedValue = "*redacted*"
 
 // loadDefaultCABundles loads the default service account and ingress CA bundles.  This should only be invoked if TLS
 // verification has not been disabled since the expectation is that it will only need to be disabled when testing as a
@@ -127,7 +135,7 @@ func GetDefaultBackendTransport(insecureSkipTLSVerify bool) (http.RoundTripper, 
 	return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
 }
 
-func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify bool) (http.RoundTripper, error) {
+func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify, logMessages bool) (http.RoundTripper, error) {
 	tlsConfig, err := GetDefaultTLSConfig(&tls.Config{MinVersion: tls.VersionTLS12}, insecureSkipTLSVerify)
 	if err != nil {
 		return nil, err
@@ -149,9 +157,11 @@ func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify bo
 		}
 	}
 
-	// nolint:gocritic
-	// return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
-	return LoggingRoundTripper{TLSClientConfig: tlsConfig}, nil
+	if logMessages {
+		return LoggingRoundTripper{TLSClientConfig: tlsConfig}, nil
+	}
+
+	return net.SetTransportDefaults(&http.Transport{TLSClientConfig: tlsConfig}), nil
 }
 
 // TODO: Determine whether to remove the message tracing altogether.
@@ -159,6 +169,41 @@ func GetTransportWithCaBundle(config OAuthClientConfig, insecureSkipTLSVerify bo
 // setting the loglevel of the utilsLog logger, so this needs some work here.
 type LoggingRoundTripper struct {
 	TLSClientConfig *tls.Config
+}
+
+func redactObject(object interface{}) interface{} {
+	switch t := object.(type) {
+	case map[string]interface{}:
+		for k := range t {
+			if redactionPattern.MatchString(k) {
+				t[k] = redactedValue
+			}
+		}
+		return t
+	case []interface{}:
+		for i, v := range t {
+			t[i] = redactObject(v)
+		}
+		return t
+	}
+
+	return object
+}
+
+func redact(msg []byte) string {
+	var object interface{}
+	if err := json.Unmarshal(msg, &object); err != nil {
+		utilsLog.Debug("failed to unmarshal message", slog.String("error", err.Error()))
+		return ""
+	}
+
+	redacted := redactObject(object)
+	redactedMsg, err := json.Marshal(redacted)
+	if err != nil {
+		utilsLog.Debug("failed to marshal redacted message", slog.String("error", err.Error()))
+	}
+
+	return string(redactedMsg)
 }
 
 func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -178,7 +223,7 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 			if errreq != nil {
 				utilsLog.Debug("Reading http request from RoundTrip injector error", slog.String("error", errreq.Error()))
 			} else {
-				reqStr = string(breq)
+				reqStr = redact(breq)
 			}
 		}
 	}
@@ -204,9 +249,19 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 			if errresp != nil {
 				utilsLog.Debug("Reading http response from RoundTrip injector error", slog.String("error", errresp.Error()))
 			} else {
-				respStr = string(b)
+				respStr = redact(b)
 			}
 		}
+	}
+
+	redactedReqHeader := req.Header
+	if _, exists := redactedReqHeader["Authorization"]; exists {
+		redactedReqHeader["Authorization"] = []string{redactedValue}
+	}
+
+	redactedRespHeader := resp.Header
+	if _, exists := redactedRespHeader["Authorization"]; exists {
+		redactedRespHeader["Authorization"] = []string{redactedValue}
 	}
 
 	// Do work after the response is received
@@ -225,8 +280,8 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 // SetupOAuthClient creates an HTTP client capable of acquiring an OAuth token used to authorize client requests.  If
 // the config excludes the OAuth specific sections then the client produced is a simple HTTP client without OAuth
 // capabilities.
-func SetupOAuthClient(ctx context.Context, config OAuthClientConfig, insecureSkipTLSVerify bool) (*http.Client, error) {
-	tr, err := GetTransportWithCaBundle(config, insecureSkipTLSVerify)
+func SetupOAuthClient(ctx context.Context, config OAuthClientConfig, insecureSkipTLSVerify, logMessages bool) (*http.Client, error) {
+	tr, err := GetTransportWithCaBundle(config, insecureSkipTLSVerify, logMessages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get http transport: %w", err)
 	}
