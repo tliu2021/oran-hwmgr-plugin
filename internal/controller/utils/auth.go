@@ -21,12 +21,14 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	"golang.org/x/oauth2"
@@ -69,6 +71,12 @@ const (
 	defaultBackendCABundle  = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"         // nolint: gosec // hardcoded path only
 	defaultServiceCAFile    = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt" // nolint: gosec // hardcoded path only
 )
+
+// The following regex pattern is used to match keys to automatically redact from the message tracing logs
+var redactionPattern = regexp.MustCompile(`(?i)password|token|client_id|username`)
+
+// Replacement string for redacted fields in message tracing logs
+const redactedValue = "*redacted*"
 
 // loadDefaultCABundles loads the default service account and ingress CA bundles.  This should only be invoked if TLS
 // verification has not been disabled since the expectation is that it will only need to be disabled when testing as a
@@ -163,6 +171,41 @@ type LoggingRoundTripper struct {
 	TLSClientConfig *tls.Config
 }
 
+func redactObject(object interface{}) interface{} {
+	switch t := object.(type) {
+	case map[string]interface{}:
+		for k := range t {
+			if redactionPattern.MatchString(k) {
+				t[k] = redactedValue
+			}
+		}
+		return t
+	case []interface{}:
+		for i, v := range t {
+			t[i] = redactObject(v)
+		}
+		return t
+	}
+
+	return object
+}
+
+func redact(msg []byte) string {
+	var object interface{}
+	if err := json.Unmarshal(msg, &object); err != nil {
+		utilsLog.Debug("failed to unmarshal message", slog.String("error", err.Error()))
+		return ""
+	}
+
+	redacted := redactObject(object)
+	redactedMsg, err := json.Marshal(redacted)
+	if err != nil {
+		utilsLog.Debug("failed to marshal redacted message", slog.String("error", err.Error()))
+	}
+
+	return string(redactedMsg)
+}
+
 func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	var reqStr string
 	var respStr string
@@ -180,7 +223,7 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 			if errreq != nil {
 				utilsLog.Debug("Reading http request from RoundTrip injector error", slog.String("error", errreq.Error()))
 			} else {
-				reqStr = string(breq)
+				reqStr = redact(breq)
 			}
 		}
 	}
@@ -206,9 +249,19 @@ func (t LoggingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 			if errresp != nil {
 				utilsLog.Debug("Reading http response from RoundTrip injector error", slog.String("error", errresp.Error()))
 			} else {
-				respStr = string(b)
+				respStr = redact(b)
 			}
 		}
+	}
+
+	redactedReqHeader := req.Header
+	if _, exists := redactedReqHeader["Authorization"]; exists {
+		redactedReqHeader["Authorization"] = []string{redactedValue}
+	}
+
+	redactedRespHeader := resp.Header
+	if _, exists := redactedRespHeader["Authorization"]; exists {
+		redactedRespHeader["Authorization"] = []string{redactedValue}
 	}
 
 	// Do work after the response is received
