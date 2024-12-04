@@ -33,8 +33,8 @@ import (
 )
 
 const (
-	RoleKey = "role"
-	Tenant  = "default_tenant" // TODO: Hardcoded, for now
+	RoleKey       = "role"
+	DefaultTenant = "default_tenant"
 )
 
 // HardwareManagerClient provides functions for calling the hardware manager APIs
@@ -44,6 +44,15 @@ type HardwareManagerClient struct {
 	Logger      *slog.Logger
 	Namespace   string
 	hwmgr       *pluginv1alpha1.HardwareManager
+}
+
+// GetTenant gets the tenant parameter from the hwmgr configuration
+func (c *HardwareManagerClient) GetTenant() string {
+	if c.hwmgr.Spec.DellData.Tenant != nil && *c.hwmgr.Spec.DellData.Tenant != "" {
+		return *c.hwmgr.Spec.DellData.Tenant
+	}
+
+	return DefaultTenant
 }
 
 // GetToken sends a request to the hardware manager to request an authentication token
@@ -169,10 +178,11 @@ func NewClientWithResponses(
 
 // GetResourceGroup queries the hardware manager to get the resource group data
 func (c *HardwareManagerClient) GetResourceGroup(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (*hwmgrapi.RhprotoResourceGroupObjectGetResponseBody, error) {
-	rg := ResourceGroupFromNodePool(nodepool)
+	rg := c.ResourceGroupFromNodePool(nodepool)
 	rgId := *rg.ResourceGroup.Id
+	tenant := c.GetTenant()
 
-	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, Tenant, rgId)
+	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, tenant, rgId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource group %s: response: %v, err: %w", rgId, response, err)
 	}
@@ -191,9 +201,9 @@ func ResourceGroupIdFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) string {
 }
 
 // ResourceGroupFromNodePool transforms data from a nodepool object to a CreateResourceGroupJSONRequestBody instance
-func ResourceGroupFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) *hwmgrapi.CreateResourceGroupJSONRequestBody {
+func (c *HardwareManagerClient) ResourceGroupFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) *hwmgrapi.CreateResourceGroupJSONRequestBody {
 	rgId := ResourceGroupIdFromNodePool(nodepool)
-	tenant := Tenant
+	tenant := c.GetTenant()
 	resourceTypeId := utils.GetResourceTypeId(nodepool)
 	description := "Resource Group managed by O-Cloud Hardware Manager Plugin"
 	excludes := make(map[string]interface{})
@@ -236,11 +246,12 @@ func ResourceGroupFromNodePool(nodepool *hwmgmtv1alpha1.NodePool) *hwmgrapi.Crea
 // CreateResourceGroup sends a request to the hardware manager, returns a jobId
 // TODO: Improve error handling for different status codes
 func (c *HardwareManagerClient) CreateResourceGroup(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (string, error) {
-	rg := ResourceGroupFromNodePool(nodepool)
+	rg := c.ResourceGroupFromNodePool(nodepool)
 	rgId := *rg.ResourceGroup.Id
+	tenant := c.GetTenant()
 
 	// First check whether the resource group already exists
-	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, Tenant, rgId)
+	response, err := c.HwmgrClient.GetResourceGroupWithResponse(ctx, tenant, rgId)
 	if err != nil {
 		return "", fmt.Errorf("failed to query for resource group %s: response: %v, err: %w", rgId, response, err)
 	}
@@ -250,7 +261,7 @@ func (c *HardwareManagerClient) CreateResourceGroup(ctx context.Context, nodepoo
 	}
 
 	// Send a request to the hardware manager to create the resource group
-	rgResponse, err := c.HwmgrClient.CreateResourceGroupWithResponse(ctx, Tenant, *rg)
+	rgResponse, err := c.HwmgrClient.CreateResourceGroupWithResponse(ctx, tenant, *rg)
 	if err != nil {
 		return "", fmt.Errorf("failed to create resource group %s, api failure: response: %v, err: %w", rgId, response, err)
 	}
@@ -267,7 +278,8 @@ func (c *HardwareManagerClient) CreateResourceGroup(ctx context.Context, nodepoo
 
 // CheckResourceGroupRequest queries the hardware manager for the status of a job
 func (c *HardwareManagerClient) CheckResourceGroupRequest(ctx context.Context, jobId string) (*hwmgrapi.RhprotoJobStatus, error) {
-	response, err := c.HwmgrClient.VerifyRequestStatusWithResponse(ctx, Tenant, jobId)
+	tenant := c.GetTenant()
+	response, err := c.HwmgrClient.VerifyRequestStatusWithResponse(ctx, tenant, jobId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for resource group job status: id: %s, response: %v, err: %w", jobId, response, err)
 	}
@@ -282,8 +294,9 @@ func (c *HardwareManagerClient) CheckResourceGroupRequest(ctx context.Context, j
 // DeleteResourceGroup asks the hardware manager to delete the resource group associated with the specified nodepool
 func (c *HardwareManagerClient) DeleteResourceGroup(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool) (string, error) {
 	rgId := ResourceGroupIdFromNodePool(nodepool)
+	tenant := c.GetTenant()
 
-	response, err := c.HwmgrClient.DeleteResourceGroupWithResponse(ctx, Tenant, rgId)
+	response, err := c.HwmgrClient.DeleteResourceGroupWithResponse(ctx, tenant, rgId)
 	if err != nil || response.StatusCode() != http.StatusOK {
 		return "", fmt.Errorf("failed to delete resource group %s: response: %v, err: %w", rgId, response, err)
 	}
@@ -293,8 +306,9 @@ func (c *HardwareManagerClient) DeleteResourceGroup(ctx context.Context, nodepoo
 
 // GetResourceGroup queries the hardware manager to get the resource group data
 func (c *HardwareManagerClient) GetResourcePools(ctx context.Context) (*hwmgrapi.ApiprotoResourcePoolsResp, error) {
+	tenant := c.GetTenant()
 	body := hwmgrapi.GetResourcePoolsJSONRequestBody{}
-	response, err := c.HwmgrClient.GetResourcePoolsWithResponse(ctx, Tenant, body)
+	response, err := c.HwmgrClient.GetResourcePoolsWithResponse(ctx, tenant, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource pools: response: %v, err: %w", response, err)
 	}
@@ -309,7 +323,8 @@ func (c *HardwareManagerClient) GetResourcePools(ctx context.Context) (*hwmgrapi
 
 // GetResourceGroup queries the hardware manager to get the resource group data
 func (c *HardwareManagerClient) GetSecret(ctx context.Context, secretKey string) (*hwmgrapi.RhprotoGetSecretsResponseBody, error) {
-	response, err := c.HwmgrClient.GetSecretsWithResponse(ctx, Tenant, secretKey)
+	tenant := c.GetTenant()
+	response, err := c.HwmgrClient.GetSecretsWithResponse(ctx, tenant, secretKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get secret %s: response: %v, err: %w", secretKey, response, err)
 	}
