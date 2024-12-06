@@ -4,10 +4,15 @@ PROG=$(basename $0)
 
 function usage {
     cat <<EOF
-${PROG} [ -b <branch> ]
+${PROG} [ --branch <branch> ] [ --dev <github username> ]
 
 Options:
-    -b <branch>     Specify a branch to pull from (default: main)
+    --branch <branch>           Specify a branch to pull from (default: main)
+    --dev <github username>     Specify a github user for developer replace, for WIP dev
+
+For WIP dev work, to resync against the wip-dev-work-x branch in the github.com/myuserid/oran-o2ims fork, run:
+hack/resync-oran-o2ims-api.sh --dev myuserid --branch wip-dev-work-x
+
 EOF
 }
 
@@ -15,12 +20,13 @@ EOF
 # Defaults
 #
 declare BRANCH="main"
+declare DEVELOPER=
 
 #
 # Process command-line arguments
 #
-LONGOPTS="help,branch:"
-OPTS=$(getopt -o "hb:" --long "${LONGOPTS}" --name "$0" -- "$@")
+LONGOPTS="help,branch:,dev:"
+OPTS=$(getopt -o "hb:d:" --long "${LONGOPTS}" --name "$0" -- "$@")
 
 if [ $? -ne 0 ]; then
     usage
@@ -35,6 +41,10 @@ while :; do
             BRANCH=$2
             shift 2
             ;;
+        -d|--dev)
+            DEVELOPER=$2
+            shift 2
+            ;;
         --)
             shift
             break
@@ -45,8 +55,15 @@ while :; do
     esac
 done
 
-if ! go get "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement@${BRANCH}"; then
-    echo "go get request failed" >&2
+cmd="go get github.com/openshift-kni/oran-o2ims/api/hardwaremanagement@${BRANCH}"
+
+if [ -n "${DEVELOPER}" ]; then
+    cmd="go mod edit -replace github.com/openshift-kni/oran-o2ims/api/hardwaremanagement=github.com/${DEVELOPER}/oran-o2ims/api/hardwaremanagement@${BRANCH}"
+fi
+
+echo "Running command: ${cmd}"
+if ! bash -c "${cmd}"; then
+    echo "Command failed" >&2
     exit 1
 fi
 

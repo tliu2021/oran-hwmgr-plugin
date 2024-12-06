@@ -20,11 +20,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+)
+
+const (
+	HwMgrNodeId = "hwmgrNodeId"
 )
 
 // GetNode get a node resource for a provided name
@@ -41,4 +46,18 @@ func GetNode(ctx context.Context, c client.Client, namespace, nodename string) (
 		return node, fmt.Errorf("failed to get Node for update: %w", err)
 	}
 	return node, nil
+}
+
+// GenerateNodeName
+func GenerateNodeName() string {
+	return uuid.NewString()
+}
+
+func FindNodeInList(nodelist hwmgmtv1alpha1.NodeList, hwMgrId, nodeId string) string {
+	for _, node := range nodelist.Items {
+		if node.Spec.HwMgrId == hwMgrId && node.Spec.HwMgrNodeId == nodeId {
+			return node.Name
+		}
+	}
+	return ""
 }

@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
@@ -72,16 +73,18 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("not enough free resources remaining in resource pool %s", nodegroup.NodePoolData.ResourcePoolId)
 		}
 
-		// Grab the first node
-		nodename := freenodes[0]
+		nodename := utils.GenerateNodeName()
 
-		nodeinfo, exists := resources.Nodes[nodename]
+		// Grab the first node
+		nodeId := freenodes[0]
+
+		nodeinfo, exists := resources.Nodes[nodeId]
 		if !exists {
 			return fmt.Errorf("unable to find nodeinfo for %s", nodename)
 		}
 
 		if err := a.CreateBMCSecret(ctx, nodename, nodeinfo.BMC.UsernameBase64, nodeinfo.BMC.PasswordBase64); err != nil {
-			return fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
+			return fmt.Errorf("failed to create bmc-secret when allocating node %s, nodeId %s: %w", nodename, nodeId, err)
 		}
 
 		cloud.Nodegroups[nodegroup.NodePoolData.Name] = append(cloud.Nodegroups[nodegroup.NodePoolData.Name], nodename)
@@ -96,7 +99,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("failed to update configmap: %w", err)
 		}
 
-		if err := a.CreateNode(ctx, cloudID, nodename, nodegroup.NodePoolData.Name, nodegroup.NodePoolData.HwProfile); err != nil {
+		if err := a.CreateNode(ctx, nodepool, cloudID, nodename, nodeId, nodegroup.NodePoolData.Name, nodegroup.NodePoolData.HwProfile); err != nil {
 			return fmt.Errorf("failed to create allocated node (%s): %w", nodename, err)
 		}
 
@@ -167,13 +170,11 @@ func (a *Adaptor) DeleteBMCSecret(ctx context.Context, nodename string) error {
 }
 
 // CreateNode creates a Node CR with specified attributes
-func (a *Adaptor) CreateNode(ctx context.Context, cloudID, nodename, groupname, hwprofile string) error {
-
-	a.Logger.InfoContext(ctx, "Creating node:",
-		"cloudID", cloudID,
-		"nodegroup name", groupname,
-		"nodename", nodename,
-	)
+func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, cloudID, nodename, nodeId, groupname, hwprofile string) error {
+	a.Logger.InfoContext(ctx, "Creating node",
+		slog.String("nodegroup name", groupname),
+		slog.String("nodename", nodename),
+		slog.String("nodeId", nodeId))
 
 	node := &hwmgmtv1alpha1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -181,9 +182,11 @@ func (a *Adaptor) CreateNode(ctx context.Context, cloudID, nodename, groupname, 
 			Namespace: a.Namespace,
 		},
 		Spec: hwmgmtv1alpha1.NodeSpec{
-			NodePool:  cloudID,
-			GroupName: groupname,
-			HwProfile: hwprofile,
+			NodePool:    cloudID,
+			GroupName:   groupname,
+			HwProfile:   hwprofile,
+			HwMgrId:     nodepool.Spec.HwMgrId,
+			HwMgrNodeId: nodeId,
 		},
 	}
 
@@ -196,10 +199,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, cloudID, nodename, groupname, 
 
 // UpdateNodeStatus updates a Node CR status field with additional node information from the nodelist configmap
 func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cmNodeInfo, hwprofile string) error {
-
-	a.Logger.InfoContext(ctx, "Updating node:",
-		"nodename", nodename,
-	)
+	a.Logger.InfoContext(ctx, "Updating node", slog.String("nodename", nodename))
 
 	node := &hwmgmtv1alpha1.Node{}
 
@@ -209,7 +209,9 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cm
 		return fmt.Errorf("failed to get Node for update: %w", err)
 	}
 
-	a.Logger.InfoContext(ctx, "Adding info to node", "nodename", nodename, "info", info)
+	a.Logger.InfoContext(ctx, "Adding info to node",
+		slog.String("nodename", nodename),
+		slog.Any("info", info))
 	node.Status.BMC = &hwmgmtv1alpha1.BMC{
 		Address:         info.BMC.Address,
 		CredentialsName: bmcSecretName(nodename),
@@ -231,10 +233,7 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, info cm
 
 // DeleteNode deletes a Node CR
 func (a *Adaptor) DeleteNode(ctx context.Context, nodename string) error {
-
-	a.Logger.InfoContext(ctx, "Deleting node:",
-		"nodename", nodename,
-	)
+	a.Logger.InfoContext(ctx, "Deleting node", slog.String("nodename", nodename))
 
 	node := &hwmgmtv1alpha1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -248,21 +247,4 @@ func (a *Adaptor) DeleteNode(ctx context.Context, nodename string) error {
 	}
 
 	return nil
-}
-
-// GetNode get a node resource for a provided name
-func (a *Adaptor) GetNode(ctx context.Context, nodename string) (*hwmgmtv1alpha1.Node, error) {
-
-	a.Logger.InfoContext(ctx, "Getting node:",
-		"nodename", nodename,
-	)
-
-	node := &hwmgmtv1alpha1.Node{}
-
-	if err := utils.RetryOnConflictOrRetriableOrNotFound(retry.DefaultRetry, func() error {
-		return a.Get(ctx, types.NamespacedName{Name: nodename, Namespace: a.Namespace}, node)
-	}); err != nil {
-		return node, fmt.Errorf("failed to get Node for update: %w", err)
-	}
-	return node, nil
 }

@@ -25,7 +25,6 @@ import (
 	"github.com/openshift-kni/oran-hwmgr-plugin/test/adaptors/assets"
 	imsv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 var _ = Describe("reconcile via the loopback adaptor", func() {
@@ -74,7 +73,7 @@ var _ = Describe("reconcile via the loopback adaptor", func() {
 			// check node has been created
 			node := &imsv1alpha1.Node{}
 			timeout, interval := 30, 1
-			Eventually(nodeExists("dummy-sp-64g-0", "default", node), timeout, interval).Should(BeTrue())
+			Eventually(nodeExists("dummy-sp-64g-0", node), timeout, interval).Should(BeTrue())
 
 			// check node must use the hardware profile specified by the nodepool cr instance
 			got := node.Spec.HwProfile
@@ -85,13 +84,20 @@ var _ = Describe("reconcile via the loopback adaptor", func() {
 	})
 })
 
-func nodeExists(name string, ns string, node *imsv1alpha1.Node) func() bool {
+func nodeExists(nodeId string, node *imsv1alpha1.Node) func() bool {
 	return func() bool {
-		typeNamespacedNode := types.NamespacedName{
-			Name:      name,
-			Namespace: ns,
+		nodelist := &imsv1alpha1.NodeList{}
+		if err := k8sClient.List(ctx, nodelist); err != nil {
+			return false
 		}
-		err := k8sClient.Get(ctx, typeNamespacedNode, node)
-		return err == nil
+
+		for _, nodeIter := range nodelist.Items {
+			if nodeIter.Spec.HwMgrNodeId == nodeId {
+				*node = nodeIter
+				return true
+			}
+		}
+
+		return false
 	}
 }

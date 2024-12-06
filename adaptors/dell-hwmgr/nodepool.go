@@ -193,18 +193,43 @@ func (a *Adaptor) HandleNodePoolProcessing(
 
 	// TODO: Need to add validation to ensure the rg satisfies the nodepool
 
+	var nodelist = hwmgmtv1alpha1.NodeList{}
+	if err := a.Client.List(ctx, &nodelist); err != nil {
+		a.Logger.InfoContext(ctx, "Unable to query node list", slog.String("error", err.Error()))
+		return utils.RequeueWithMediumInterval(), fmt.Errorf("failed to query node list: %w", err)
+	}
+
 	// Create the Node CRs corresponding to the allocated resources
 	for nodegroupName, resourceSelector := range *rg.ResourceSelectors {
 		for _, node := range *resourceSelector.Resources {
-			if slices.Contains(nodepool.Status.Properties.NodeNames, *node.Id) {
-				a.Logger.InfoContext(ctx, "Node is already added", slog.String("nodename", *node.Id))
-				continue
+			nodename := utils.FindNodeInList(nodelist, nodepool.Spec.HwMgrId, *node.Id)
+			if nodename != "" {
+				// Node CR exists
+				if slices.Contains(nodepool.Status.Properties.NodeNames, nodename) {
+					a.Logger.InfoContext(ctx, "Node is already added",
+						slog.String("nodename", nodename),
+						slog.String("nodeId", *node.Id))
+					continue
+				} else {
+					// TODO: Validate that the CR is current. For now, fail, as something went wrong
+					a.Logger.InfoContext(ctx, "Node previously allocted, but not in nodepool properties",
+						slog.String("nodename", nodename),
+						slog.String("nodeId", *node.Id))
+					if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
+						hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
+						fmt.Sprintf("Failed with partially allocated node: %s, %s", nodename, *node.Id)); err != nil {
+						return utils.RequeueWithMediumInterval(),
+							fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+					}
+
+					return utils.DoNotRequeue(), nil
+				}
 			}
 			if nodename, err := a.AllocateNode(ctx, hwmgrClient, nodepool, node, nodegroupName); err != nil {
 				a.Logger.InfoContext(ctx, "Failed allocating node", slog.String("err", err.Error()))
 				if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
 					hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
-					fmt.Sprintf("Failed to get create node (%s): %s", *node.Name, err.Error())); err != nil {
+					fmt.Sprintf("Failed to allocate node (%s): %s", *node.Name, err.Error())); err != nil {
 					return utils.RequeueWithMediumInterval(),
 						fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
 				}

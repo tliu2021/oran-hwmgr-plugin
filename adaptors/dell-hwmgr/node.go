@@ -77,8 +77,8 @@ func (a *Adaptor) AllocateNode(
 	nodepool *hwmgmtv1alpha1.NodePool,
 	resource hwmgrapi.RhprotoResource,
 	nodegroupName string) (string, error) {
-	nodename := *resource.Id
-	ctx = logging.AppendCtx(ctx, slog.String("nodenameCtx", nodename))
+	nodename := utils.GenerateNodeName()
+	ctx = logging.AppendCtx(ctx, slog.String("nodename", nodename))
 
 	if err := a.ValidateNodeConfig(ctx, resource); err != nil {
 		return "", fmt.Errorf("failed to validate resource configuration: %w", err)
@@ -88,11 +88,11 @@ func (a *Adaptor) AllocateNode(
 		return "", fmt.Errorf("failed to create bmc-secret when allocating node %s: %w", nodename, err)
 	}
 
-	if err := a.CreateNode(ctx, nodepool, resource, nodegroupName); err != nil {
+	if err := a.CreateNode(ctx, nodepool, nodename, resource, nodegroupName); err != nil {
 		return "", fmt.Errorf("failed to create allocated node (%s): %w", *resource.Id, err)
 	}
 
-	if err := a.UpdateNodeStatus(ctx, resource); err != nil {
+	if err := a.UpdateNodeStatus(ctx, nodename, resource); err != nil {
 		return nodename, fmt.Errorf("failed to update node status (%s): %w", *resource.Id, err)
 	}
 
@@ -255,9 +255,7 @@ func (a *Adaptor) CreateBMCSecret(
 }
 
 // CreateNode creates a Node CR with specified attributes
-func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource, nodegroupName string) error {
-	nodename := *resource.Id
-
+func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, nodename string, resource hwmgrapi.RhprotoResource, nodegroupName string) error {
 	// TODO: remove this casuistic when the hwprofile returned by the Dell hwmgr is not empty (not supported yet)
 	//
 	var hwprofile string
@@ -295,9 +293,11 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 			}},
 		},
 		Spec: hwmgmtv1alpha1.NodeSpec{
-			NodePool:  nodepool.Name,
-			GroupName: nodegroupName,
-			HwProfile: hwprofile,
+			NodePool:    nodepool.Name,
+			GroupName:   nodegroupName,
+			HwProfile:   hwprofile,
+			HwMgrId:     nodepool.Spec.HwMgrId,
+			HwMgrNodeId: *resource.Id,
 		},
 	}
 
@@ -309,9 +309,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 }
 
 // UpdateNodeStatus updates a Node CR status field with additional node information from the RhprotoResource
-func (a *Adaptor) UpdateNodeStatus(ctx context.Context, resource hwmgrapi.RhprotoResource) error {
-	nodename := *resource.Id
-
+func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, resource hwmgrapi.RhprotoResource) error {
 	a.Logger.InfoContext(ctx, "Updating node")
 
 	node := &hwmgmtv1alpha1.Node{}

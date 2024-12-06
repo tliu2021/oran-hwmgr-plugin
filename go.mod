@@ -6,13 +6,14 @@ toolchain go1.22.7
 
 require (
 	github.com/go-git/go-git/v5 v5.12.0
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
-	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241207205102-349af227a187
+	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241209130036-e9695ba7a364
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/sethvargo/go-retry v0.3.0
 	golang.org/x/mod v0.22.0
@@ -53,7 +54,6 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20240525223248-4bfdf5a9a2af // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -98,3 +98,5 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
+
+replace github.com/openshift-kni/oran-o2ims/api/hardwaremanagement => github.com/donpenney/oran-o2ims/api/hardwaremanagement v0.0.0-20241207225358-3517f7a1902f
