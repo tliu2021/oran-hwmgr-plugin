@@ -147,7 +147,7 @@ func (a *Adaptor) checkNodeUpgradeProcess(
 
 	for _, name := range allocatedNodes {
 		// Fetch the latest version of each node to ensure up-to-date status
-		updatedNode, err := a.GetNode(ctx, name)
+		updatedNode, err := utils.GetNode(ctx, a.Client, a.Namespace, name)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get node %s: %w", name, err)
 		}
@@ -183,7 +183,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 
 	// Stage 1: Initiate upgrades by updating node.Spec.HwProfile as necessary
 	for _, name := range allocatedNodes {
-		node, err := a.GetNode(ctx, name)
+		node, err := utils.GetNode(ctx, a.Client, a.Namespace, name)
 		if err != nil {
 			return utils.RequeueWithShortInterval(), err
 		}

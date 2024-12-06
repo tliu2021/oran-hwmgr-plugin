@@ -257,7 +257,27 @@ func (a *Adaptor) CreateBMCSecret(
 // CreateNode creates a Node CR with specified attributes
 func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, resource hwmgrapi.RhprotoResource, nodegroupName string) error {
 	nodename := *resource.Id
-	hwprofile := *resource.ResourceProfileID
+
+	// TODO: remove this casuistic when the hwprofile returned by the Dell hwmgr is not empty (not supported yet)
+	//
+	var hwprofile string
+	isHwProfileEmpty := resource.ResourceProfileID == nil || *resource.ResourceProfileID == ""
+	if isHwProfileEmpty {
+		found := false
+		for _, ng := range nodepool.Spec.NodeGroup {
+			if ng.NodePoolData.Name == nodegroupName {
+				hwprofile = ng.NodePoolData.HwProfile
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("failed to assign hwprofile from the nodepool cr for nodegroup name:%s",
+				nodegroupName)
+		}
+	} else {
+		hwprofile = *resource.ResourceProfileID
+	}
 
 	a.Logger.InfoContext(ctx, "Creating node")
 
@@ -288,7 +308,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 	return nil
 }
 
-// UpdateNodeStatus updates a Node CR status field with additional node information from the nodelist configmap
+// UpdateNodeStatus updates a Node CR status field with additional node information from the RhprotoResource
 func (a *Adaptor) UpdateNodeStatus(ctx context.Context, resource hwmgrapi.RhprotoResource) error {
 	nodename := *resource.Id
 
