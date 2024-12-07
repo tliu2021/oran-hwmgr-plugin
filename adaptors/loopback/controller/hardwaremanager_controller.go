@@ -107,6 +107,7 @@ func (r *HardwareManagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.AdaptorID = pluginv1alpha1.SupportedAdaptors.Loopback
 	r.Logger.Info("Setting up Loopback controller", slog.String("adaptorId", string(r.AdaptorID)))
 	if err := ctrl.NewControllerManagedBy(mgr).
+		Named(string(r.AdaptorID)).
 		For(&pluginv1alpha1.HardwareManager{}).
 		WithEventFilter(filterEvents(r.AdaptorID)).
 		Complete(r); err != nil {
