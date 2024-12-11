@@ -13,7 +13,7 @@ require (
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
-	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241209142323-d4afb172a747
+	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241211004106-38a18a6a9c95
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/sethvargo/go-retry v0.3.0
 	golang.org/x/mod v0.22.0
@@ -98,5 +98,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
-
-replace github.com/openshift-kni/oran-o2ims/api/hardwaremanagement => github.com/donpenney/oran-o2ims/api/hardwaremanagement v0.0.0-20241207225358-3517f7a1902f
