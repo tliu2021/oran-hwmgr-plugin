@@ -16,9 +16,8 @@ updates:
       patterns: [ "golang.org/*" ]
       update-types: [ "major", "minor", "patch" ]
   ignore:
-    - match:
-      # the oran-o2ims version is hand-managed
-      dependency_name: "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement"
+    # the oran-o2ims version is hand-managed
+    - dependency-name: "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement"
   #ignore:
   #  - dependency-name: "*"
   #    update-types: ["version-update:semver-patch"]
