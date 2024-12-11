@@ -18,9 +18,9 @@ require (
 	github.com/sethvargo/go-retry v0.3.0
 	golang.org/x/mod v0.22.0
 	golang.org/x/oauth2 v0.21.0
-	k8s.io/api v0.31.3
-	k8s.io/apimachinery v0.31.3
-	k8s.io/client-go v0.31.3
+	k8s.io/api v0.31.4
+	k8s.io/apimachinery v0.31.4
+	k8s.io/client-go v0.31.4
 	sigs.k8s.io/controller-runtime v0.19.3
 	sigs.k8s.io/yaml v1.4.0
 )
