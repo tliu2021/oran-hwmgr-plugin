@@ -83,7 +83,7 @@ func (a *Adaptor) AllocateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.Nod
 			return fmt.Errorf("unable to find nodeinfo for %s", nodename)
 		}
 
-		if err := a.CreateBMCSecret(ctx, nodename, nodeinfo.BMC.UsernameBase64, nodeinfo.BMC.PasswordBase64); err != nil {
+		if err := a.CreateBMCSecret(ctx, nodepool, nodename, nodeinfo.BMC.UsernameBase64, nodeinfo.BMC.PasswordBase64); err != nil {
 			return fmt.Errorf("failed to create bmc-secret when allocating node %s, nodeId %s: %w", nodename, nodeId, err)
 		}
 
@@ -116,7 +116,7 @@ func bmcSecretName(nodename string) string {
 }
 
 // CreateBMCSecret creates the bmc-secret for a node
-func (a *Adaptor) CreateBMCSecret(ctx context.Context, nodename, usernameBase64, passwordBase64 string) error {
+func (a *Adaptor) CreateBMCSecret(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, nodename, usernameBase64, passwordBase64 string) error {
 	a.Logger.InfoContext(ctx, "Creating bmc-secret:", "nodename", nodename)
 
 	secretName := bmcSecretName(nodename)
@@ -131,10 +131,18 @@ func (a *Adaptor) CreateBMCSecret(ctx context.Context, nodename, usernameBase64,
 		return fmt.Errorf("failed to decode usernameBase64 string (%s) for node %s: %w", passwordBase64, nodename, err)
 	}
 
+	blockDeletion := true
 	bmcSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      secretName,
 			Namespace: a.Namespace,
+			OwnerReferences: []metav1.OwnerReference{{
+				APIVersion:         nodepool.APIVersion,
+				Kind:               nodepool.Kind,
+				Name:               nodepool.Name,
+				UID:                nodepool.UID,
+				BlockOwnerDeletion: &blockDeletion,
+			}},
 		},
 		Data: map[string][]byte{
 			"username": username,
@@ -176,10 +184,18 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 		slog.String("nodename", nodename),
 		slog.String("nodeId", nodeId))
 
+	blockDeletion := true
 	node := &hwmgmtv1alpha1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nodename,
 			Namespace: a.Namespace,
+			OwnerReferences: []metav1.OwnerReference{{
+				APIVersion:         nodepool.APIVersion,
+				Kind:               nodepool.Kind,
+				Name:               nodepool.Name,
+				UID:                nodepool.UID,
+				BlockOwnerDeletion: &blockDeletion,
+			}},
 		},
 		Spec: hwmgmtv1alpha1.NodeSpec{
 			NodePool:    cloudID,

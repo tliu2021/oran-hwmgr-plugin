@@ -123,8 +123,8 @@ var _ = BeforeSuite(func() {
 
 	// build the adaptor controller
 	hwmgrAdaptor := &adaptors.HwMgrAdaptorController{
-		Client:    k8sClient,
-		Scheme:    k8sClient.Scheme(),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
 		Logger:    logger,
 		Namespace: "default",
 	}
@@ -134,8 +134,8 @@ var _ = BeforeSuite(func() {
 
 	// build the hardware manager reconciler
 	nodepoolReconciler := o2imshardwaremanagement.NodePoolReconciler{
-		Client:       k8sClient,
-		Scheme:       k8sClient.Scheme(),
+		Client:       mgr.GetClient(),
+		Scheme:       mgr.GetScheme(),
 		Logger:       logger,
 		Namespace:    "default",
 		HwMgrAdaptor: hwmgrAdaptor,
@@ -164,5 +164,4 @@ var _ = AfterSuite(func() {
 		err := testEnv.Stop()
 		Expect(err).NotTo(HaveOccurred())
 	}
-
 })
