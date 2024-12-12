@@ -353,18 +353,6 @@ func (a *Adaptor) ReleaseNodePool(ctx context.Context,
 		return nil
 	}
 
-	for groupname := range allocations.Clouds[index].Nodegroups {
-		for _, nodename := range allocations.Clouds[index].Nodegroups[groupname] {
-			if err := a.DeleteBMCSecret(ctx, nodename); err != nil {
-				return fmt.Errorf("failed to delete bmc-secret for %s: %w", nodename, err)
-			}
-
-			if err := a.DeleteNode(ctx, nodename); err != nil {
-				return fmt.Errorf("failed to delete node %s: %w", nodename, err)
-			}
-		}
-	}
-
 	allocations.Clouds = slices.Delete[[]cmAllocatedCloud](allocations.Clouds, index, index+1)
 
 	// Update the configmap

@@ -23,8 +23,10 @@ import (
 	. "github.com/onsi/gomega"
 	hwmgrpluginoranopenshiftiov1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 	"github.com/openshift-kni/oran-hwmgr-plugin/test/adaptors/assets"
+	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	imsv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 var _ = Describe("reconcile via the loopback adaptor", func() {
@@ -57,14 +59,15 @@ var _ = Describe("reconcile via the loopback adaptor", func() {
 		})
 
 		AfterEach(func() {
+
+			// delete the Nodepool cr instance
+			Expect(k8sClient.Delete(ctx, np)).To(Succeed())
+
 			// delete the loopback cm instance
 			Expect(k8sClient.Delete(ctx, cm)).To(Succeed())
 
 			// delete the HardwareManager cr instance
 			Expect(k8sClient.Delete(ctx, hwmgr)).To(Succeed())
-
-			// delete the Nodepool cr instance
-			Expect(k8sClient.Delete(ctx, np)).To(Succeed())
 
 		})
 		It("must create ims nodes", func() {
@@ -79,10 +82,72 @@ var _ = Describe("reconcile via the loopback adaptor", func() {
 			got := node.Spec.HwProfile
 			wanted := np.Spec.NodeGroup[0].NodePoolData.HwProfile
 			Expect(got).To(Equal(wanted))
+
+			// get the NodePool
+			np := &hwmgmtv1alpha1.NodePool{}
+			ns := types.NamespacedName{
+				Name:      "np1",
+				Namespace: "default",
+			}
+			Expect(k8sClient.Get(ctx, ns, np)).To(Succeed())
+
+			// check nodes will be automatically deleted when the Nodepool is deleted by 'ownerReference'
+			Expect(DoAllnodesHaveNpOwnerRef(np.UID)).To(BeTrue())
+
+			// check secrets will be automatically deleted when the NodePool is deleted by 'ownerReference'
+			Expect(DoAllsecretsHaveNpOwnerRef(np.UID)).To(BeTrue())
 		})
 
 	})
 })
+
+func DoAllsecretsHaveNpOwnerRef(uid types.UID) bool {
+	secretList := &corev1.SecretList{}
+	if err := k8sClient.List(ctx, secretList); err != nil {
+		return false
+	}
+	// for all secrets
+	for _, item := range secretList.Items {
+		ors := item.ObjectMeta.OwnerReferences
+		found := false
+		// get ownerReferences
+		for _, or := range ors {
+			// and check the NodePool has ownership
+			if or.Kind == "NodePool" && or.UID == uid {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false // a secret was found without an ownerReference to the NodePool
+		}
+	}
+	return true
+}
+
+func DoAllnodesHaveNpOwnerRef(uid types.UID) bool {
+	nodelist := &imsv1alpha1.NodeList{}
+	if err := k8sClient.List(ctx, nodelist); err != nil {
+		return false
+	}
+	// for all nodes
+	for _, item := range nodelist.Items {
+		ors := item.ObjectMeta.OwnerReferences
+		found := false
+		// get ownerReferences
+		for _, or := range ors {
+			// and check the NodePool has ownership
+			if or.Kind == "NodePool" && or.UID == uid {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false // a node was found without an ownerReference to the NodePool
+		}
+	}
+	return true
+}
 
 func nodeExists(nodeId string, node *imsv1alpha1.Node) func() bool {
 	return func() bool {
