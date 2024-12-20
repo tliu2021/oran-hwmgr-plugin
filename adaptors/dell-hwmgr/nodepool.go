@@ -113,6 +113,9 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 
 	// Add the jobId in an annotation
 	annotations := nodepool.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
 	annotations[JobIdAnnotation] = jobId
 	nodepool.SetAnnotations(annotations)
 	if err := utils.CreateK8sCR(ctx, a.Client, nodepool, nil, utils.PATCH); err != nil {
