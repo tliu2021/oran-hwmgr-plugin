@@ -42,6 +42,10 @@ const (
 	PATCH  = "Patch"
 )
 
+const (
+	JobIdAnnotation = "hwmgr-plugin.oran.openshift.io/jobId"
+)
+
 func UpdateK8sCRStatus(ctx context.Context, c client.Client, object client.Object) error {
 	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		if err := c.Status().Update(ctx, object); err != nil {
@@ -57,8 +61,8 @@ func UpdateK8sCRStatus(ctx context.Context, c client.Client, object client.Objec
 	return nil
 }
 
-// CreateK8sCR creates/updates/patches an object.
-func CreateK8sCR(ctx context.Context, c client.Client,
+// CreateOrUpdateK8sCR creates/updates/patches an object.
+func CreateOrUpdateK8sCR(ctx context.Context, c client.Client,
 	newObject client.Object, ownerObject client.Object,
 	operation string) (err error) {
 
@@ -210,6 +214,32 @@ func GetAdaptorIdFromHwMgrId(hwMgrId string) string {
 		return ""
 	} else {
 		return fields[0]
+	}
+}
+
+func GetJobId(object client.Object) string {
+	annotations := object.GetAnnotations()
+	if annotations == nil {
+		return ""
+	}
+
+	return annotations[JobIdAnnotation]
+}
+
+func SetJobId(object client.Object, jobId string) {
+	annotations := object.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations[JobIdAnnotation] = jobId
+	object.SetAnnotations(annotations)
+}
+
+func ClearJobId(object client.Object) {
+	annotations := object.GetAnnotations()
+	if annotations != nil {
+		delete(annotations, JobIdAnnotation)
 	}
 }
 
