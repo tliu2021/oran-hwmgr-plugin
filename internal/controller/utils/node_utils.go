@@ -89,10 +89,10 @@ func GetChildNodes(
 	return nodelist, nil
 }
 
-// FindNodeUpdateInProgress scans the nodelist to find the first node with HwProfile update in progress
+// FindNodeUpdateInProgress scans the nodelist to find the first node with jobId annotation
 func FindNodeUpdateInProgress(nodelist *hwmgmtv1alpha1.NodeList) *hwmgmtv1alpha1.Node {
 	for _, node := range nodelist.Items {
-		if node.Spec.HwProfile != node.Status.HwProfile {
+		if GetJobId(&node) != "" {
 			return &node
 		}
 	}

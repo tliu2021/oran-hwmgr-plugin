@@ -149,7 +149,7 @@ func (a *Adaptor) CreateBMCSecret(ctx context.Context, nodepool *hwmgmtv1alpha1.
 		},
 	}
 
-	if err = utils.CreateK8sCR(ctx, a.Client, bmcSecret, nil, utils.UPDATE); err != nil {
+	if err = utils.CreateOrUpdateK8sCR(ctx, a.Client, bmcSecret, nil, utils.UPDATE); err != nil {
 		return fmt.Errorf("failed to create bmc-secret for node %s: %w", nodename, err)
 	}
 

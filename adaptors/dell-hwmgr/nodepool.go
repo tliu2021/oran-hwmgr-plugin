@@ -34,10 +34,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-const (
-	JobIdAnnotation = "hwmgr-plugin.oran.openshift.io/jobId"
-)
-
 // ValidateNodePool performs basic validation of the nodepool data
 func (a *Adaptor) ValidateNodePool(nodepool *hwmgmtv1alpha1.NodePool) error {
 	return nil
@@ -107,13 +103,9 @@ func (a *Adaptor) ProcessNewNodePool(ctx context.Context,
 	}
 
 	// Add the jobId in an annotation
-	annotations := nodepool.GetAnnotations()
-	if annotations == nil {
-		annotations = make(map[string]string)
-	}
-	annotations[JobIdAnnotation] = jobId
-	nodepool.SetAnnotations(annotations)
-	if err := utils.CreateK8sCR(ctx, a.Client, nodepool, nil, utils.PATCH); err != nil {
+	utils.SetJobId(nodepool, jobId)
+
+	if err := utils.CreateOrUpdateK8sCR(ctx, a.Client, nodepool, nil, utils.PATCH); err != nil {
 		return fmt.Errorf("failed to annotate nodepool %s: %w", nodepool.Name, err)
 	}
 
@@ -130,15 +122,10 @@ func (a *Adaptor) HandleNodePoolProcessing(
 	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
 
 	result := ctrl.Result{}
-	annotation := nodepool.GetAnnotations()
-	if annotation == nil {
-		return result, fmt.Errorf("annotations are missing from nodePool %s in namespace %s", nodepool.Name, nodepool.Namespace)
-	}
 
-	// Ensure the jobId annotation exists and is not empty
-	jobId, exists := annotation[JobIdAnnotation]
-	if !exists || jobId == "" {
-		return result, fmt.Errorf("%s annotation is missing or empty from nodepool %s", JobIdAnnotation, nodepool.Name)
+	jobId := utils.GetJobId(nodepool)
+	if jobId == "" {
+		return result, fmt.Errorf("jobId annotation is missing or empty from nodepool %s", nodepool.Name)
 	}
 
 	ctx = logging.AppendCtx(ctx, slog.String("jobId", jobId))
@@ -260,6 +247,11 @@ func (a *Adaptor) HandleNodePoolProcessing(
 			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
 	}
 
+	utils.ClearJobId(nodepool)
+	if err := utils.CreateOrUpdateK8sCR(ctx, a.Client, nodepool, nil, utils.PATCH); err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to clear annotation from nodepool %s: %w", nodepool.Name, err)
+	}
+
 	result = utils.DoNotRequeue()
 
 	return result, nil
@@ -320,15 +312,10 @@ func (a *Adaptor) handleNodePoolConfiguring(
 	// Search for a node that is currently being updated
 	if node := utils.FindNodeUpdateInProgress(nodelist); node != nil {
 		// A node has an update already in progress
-		annotation := node.GetAnnotations()
-		if annotation == nil {
-			return result, fmt.Errorf("annotations are missing from node %s in namespace %s", node.Name, node.Namespace)
-		}
 
-		// Ensure the jobId annotation exists and is not empty
-		jobId, exists := annotation[JobIdAnnotation]
-		if !exists || jobId == "" {
-			return result, fmt.Errorf("%s annotation is missing or empty from node %s", JobIdAnnotation, node.Name)
+		jobId := utils.GetJobId(node)
+		if jobId == "" {
+			return result, fmt.Errorf("jobId annotation is missing or empty from node %s", node.Name)
 		}
 
 		// Query the hardware manager for the job status
@@ -345,7 +332,9 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		case hwmgrclient.JobStatusFailed:
 			a.Logger.InfoContext(ctx, "Profile update creation failed", slog.String("failReason", failReason))
 			if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
-				hwmgmtv1alpha1.Provisioned, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
+				hwmgmtv1alpha1.Configured,
+				hwmgmtv1alpha1.Failed,
+				metav1.ConditionFalse,
 				fmt.Sprintf("Profile update creation failed: %s", failReason)); err != nil {
 				return utils.RequeueWithMediumInterval(),
 					fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
@@ -364,6 +353,11 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		node.Status.HwProfile = node.Spec.HwProfile
 		if err := utils.UpdateK8sCRStatus(ctx, a.Client, node); err != nil {
 			return ctrl.Result{}, fmt.Errorf("failed to update status for node %s: %w", node.Name, err)
+		}
+
+		utils.ClearJobId(node)
+		if err := utils.CreateOrUpdateK8sCR(ctx, a.Client, node, nil, utils.PATCH); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to clear annotation from node %s: %w", node.Name, err)
 		}
 
 		return utils.RequeueImmediately(), nil
@@ -403,12 +397,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		node.Spec.HwProfile = newHwProfile
 
 		// Record the jobId in an annotation
-		annotations := node.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
-		annotations[JobIdAnnotation] = jobId
-		node.SetAnnotations(annotations)
+		utils.SetJobId(node, jobId)
 
 		if err = a.Client.Patch(ctx, node, patch); err != nil {
 			return utils.RequeueWithShortInterval(), fmt.Errorf("failed to patch Node %s in namespace %s: %w", node.Name, node.Namespace, err)

@@ -92,7 +92,7 @@ func (a *Adaptor) AllocateNode(
 		return "", fmt.Errorf("failed to create allocated node (%s): %w", *resource.Id, err)
 	}
 
-	if err := a.UpdateNodeStatus(ctx, nodename, resource); err != nil {
+	if err := a.SetInitialNodeStatus(ctx, nodename, resource); err != nil {
 		return nodename, fmt.Errorf("failed to update node status (%s): %w", *resource.Id, err)
 	}
 
@@ -247,7 +247,7 @@ func (a *Adaptor) CreateBMCSecret(
 		},
 	}
 
-	if err = utils.CreateK8sCR(ctx, a.Client, bmcSecret, nil, utils.UPDATE); err != nil {
+	if err = utils.CreateOrUpdateK8sCR(ctx, a.Client, bmcSecret, nil, utils.UPDATE); err != nil {
 		return fmt.Errorf("failed to create bmc-secret for node %s: %w", nodename, err)
 	}
 
@@ -308,8 +308,8 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 	return nil
 }
 
-// UpdateNodeStatus updates a Node CR status field with additional node information from the RhprotoResource
-func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, resource hwmgrapi.RhprotoResource) error {
+// SetInitialNodeStatus updates a Node CR status field with additional node information from the RhprotoResource
+func (a *Adaptor) SetInitialNodeStatus(ctx context.Context, nodename string, resource hwmgrapi.RhprotoResource) error {
 	a.Logger.InfoContext(ctx, "Updating node")
 
 	node := &hwmgmtv1alpha1.Node{}
@@ -340,6 +340,8 @@ func (a *Adaptor) UpdateNodeStatus(ctx context.Context, nodename string, resourc
 		string(hwmgmtv1alpha1.Completed),
 		metav1.ConditionTrue,
 		"Provisioned")
+
+	node.Status.HwProfile = node.Spec.HwProfile
 
 	if err := utils.UpdateK8sCRStatus(ctx, a.Client, node); err != nil {
 		return fmt.Errorf("failed to update status for node %s: %w", nodename, err)

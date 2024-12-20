@@ -113,7 +113,7 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *NodePoolReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// Setup Node CRD indexer
+	// Setup Node CRD indexer. This field indexer allows us to query a list of Node CRs, filtered by the spec.nodePool field.
 	nodeIndexFunc := func(obj client.Object) []string {
 		return []string{obj.(*hwmgmtv1alpha1.Node).Spec.NodePool}
 	}
