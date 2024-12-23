@@ -321,7 +321,7 @@ func (c *HardwareManagerClient) CheckJobStatus(ctx context.Context, jobId string
 			failReason = "unknown"
 		}
 		c.Logger.InfoContext(ctx, "Job has failed", slog.Any("status", status), slog.String("failReason", failReason))
-		return JobStatusFailed, failReason, fmt.Errorf("job has failed: %s", failReason)
+		return JobStatusFailed, failReason, nil
 	default:
 		if status.Brief.FailReason != nil {
 			failReason = *status.Brief.FailReason
@@ -329,7 +329,7 @@ func (c *HardwareManagerClient) CheckJobStatus(ctx context.Context, jobId string
 			failReason = "unknown"
 		}
 		c.Logger.InfoContext(ctx, "Job status is unknown", slog.Any("status", status), slog.String("failReason", failReason))
-		return JobStatusUnknown, failReason, fmt.Errorf("job status is unknown: %s", failReason)
+		return JobStatusUnknown, failReason, nil
 	}
 
 	return JobStatusCompleted, failReason, nil
