@@ -11,7 +11,7 @@ require (
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
-	github.com/onsi/ginkgo/v2 v2.22.1
+	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241211004106-38a18a6a9c95
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
