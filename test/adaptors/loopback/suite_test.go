@@ -134,6 +134,7 @@ var _ = BeforeSuite(func() {
 
 	// build the hardware manager reconciler
 	nodepoolReconciler := o2imshardwaremanagement.NodePoolReconciler{
+		Manager:      mgr,
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
 		Logger:       logger,

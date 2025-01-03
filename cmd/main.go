@@ -160,6 +160,7 @@ func main() {
 	}
 
 	if err = (&o2imshardwaremanagementcontroller.NodePoolReconciler{
+		Manager:      mgr,
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
 		Logger:       slog.New(logging.NewLoggingContextHandler(slog.LevelInfo)).With("controller", "NodePool"),
