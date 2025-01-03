@@ -36,11 +36,26 @@ import (
 
 // NodePoolReconciler reconciles a NodePool object
 type NodePoolReconciler struct {
+	ctrl.Manager
 	client.Client
-	Scheme       *runtime.Scheme
-	Logger       *slog.Logger
-	Namespace    string
-	HwMgrAdaptor *adaptors.HwMgrAdaptorController
+	Scheme         *runtime.Scheme
+	Logger         *slog.Logger
+	Namespace      string
+	HwMgrAdaptor   *adaptors.HwMgrAdaptorController
+	indexerEnabled bool
+}
+
+func (r *NodePoolReconciler) SetupIndexer(ctx context.Context) error {
+	// Setup Node CRD indexer. This field indexer allows us to query a list of Node CRs, filtered by the spec.nodePool field.
+	nodeIndexFunc := func(obj client.Object) []string {
+		return []string{obj.(*hwmgmtv1alpha1.Node).Spec.NodePool}
+	}
+
+	if err := r.Manager.GetFieldIndexer().IndexField(ctx, &hwmgmtv1alpha1.Node{}, utils.NodeSpecNodePoolKey, nodeIndexFunc); err != nil {
+		return fmt.Errorf("failed to setup node indexer: %w", err)
+	}
+
+	return nil
 }
 
 //+kubebuilder:rbac:groups=o2ims-hardwaremanagement.oran.openshift.io,resources=nodepools,verbs=get;list;watch;update;patch
@@ -62,6 +77,15 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 	result = utils.DoNotRequeue()
 
 	ctx = logging.AppendCtx(ctx, slog.String("nodepool", req.Name))
+
+	if !r.indexerEnabled {
+		if err = r.SetupIndexer(ctx); err != nil {
+			err = fmt.Errorf("failed to setup indexer: %w", err)
+			return
+		}
+		r.Logger.InfoContext(ctx, "NodePool field indexer initialized")
+		r.indexerEnabled = true
+	}
 
 	// Fetch the nodepool:
 	nodepool := &hwmgmtv1alpha1.NodePool{}
@@ -113,15 +137,6 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (r
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *NodePoolReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// Setup Node CRD indexer. This field indexer allows us to query a list of Node CRs, filtered by the spec.nodePool field.
-	nodeIndexFunc := func(obj client.Object) []string {
-		return []string{obj.(*hwmgmtv1alpha1.Node).Spec.NodePool}
-	}
-
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &hwmgmtv1alpha1.Node{}, utils.NodeSpecNodePoolKey, nodeIndexFunc); err != nil {
-		return fmt.Errorf("failed to setup node indexer: %w", err)
-	}
-
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&hwmgmtv1alpha1.NodePool{}).
 		Complete(r); err != nil {

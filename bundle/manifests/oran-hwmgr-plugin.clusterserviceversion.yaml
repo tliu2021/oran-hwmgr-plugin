@@ -96,13 +96,6 @@ spec:
         displayName: Resource Pools
         path: resourcePools
       version: v1alpha1
-    required:
-    - kind: NodePool
-      name: nodepools.o2ims-hardwaremanagement.oran.openshift.io
-      version: v1alpha1
-    - kind: Node
-      name: nodes.o2ims-hardwaremanagement.oran.openshift.io
-      version: v1alpha1
   description: O-Cloud Hardware Manager Plugin
   displayName: O-Cloud Hardware Manager Plugin
   icon:
