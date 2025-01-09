@@ -48,6 +48,44 @@ spec:
     additionalInfo: "This is a test string"
 ```
 
+### Deploying operator from catalog
+
+To deploy from catalog, first build the operator, bundle, and catalog images, pushing to your repo:
+
+```console
+$ make IMAGE_TAG_BASE=quay.io/${MY_REPO}/oran-hwmgr-plugin docker-build docker-push bundle-build bundle-push catalog-build catalog-push
+```
+
+You can then use the `catalog-deploy` target to generate the catalog and subscription resources and deploy the operator:
+
+```console
+$ make IMAGE_TAG_BASE=quay.io/${MY_REPO}/oran-hwmgr-plugin VERSION=4.18.0 catalog-deploy
+hack/generate-catalog-deploy.sh \
+        --package oran-hwmgr-plugin \
+        --namespace oran-hwmgr-plugin \
+        --catalog-image quay.io/${MY_REPO}/oran-hwmgr-plugin-catalog:v4.18.0 \
+        --channel alpha \
+        --install-mode OwnNamespace \
+        | oc create -f -
+catalogsource.operators.coreos.com/oran-hwmgr-plugin created
+namespace/oran-hwmgr-plugin created
+operatorgroup.operators.coreos.com/oran-hwmgr-plugin created
+subscription.operators.coreos.com/oran-hwmgr-plugin created
+```
+
+To undeploy and clean up the installed resources, use the `catalog-undeploy` target:
+
+```console
+$ make IMAGE_TAG_BASE=quay.io/${MY_REPO}/oran-hwmgr-plugin catalog-undeploy
+hack/catalog-undeploy.sh --package oran-hwmgr-plugin --namespace oran-hwmgr-plugin --crd-search "plugin.*oran.openshift.io"
+subscription.operators.coreos.com "oran-hwmgr-plugin" deleted
+clusterserviceversion.operators.coreos.com "oran-hwmgr-plugin.v4.18.0" deleted
+customresourcedefinition.apiextensions.k8s.io "hardwaremanagers.hwmgr-plugin.oran.openshift.io" deleted
+namespace "oran-hwmgr-plugin" deleted
+clusterrole.rbac.authorization.k8s.io "oran-hwmgr-plugin-metrics-reader" deleted
+catalogsource.operators.coreos.com "oran-hwmgr-plugin" deleted
+```
+
 ## Loopback Adaptor
 
 See [adaptors/loopback/README.md](adaptors/loopback/README.md) for information about the Loopback Adaptor.
