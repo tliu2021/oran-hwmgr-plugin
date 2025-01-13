@@ -18,6 +18,7 @@
 # vendor/
 
 bin/
+catalog/
 
 # Go workspace file
 go.work
