@@ -82,6 +82,14 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+# IMAGE_PULL_POLICY sets the value that is patched into the CSV for the manager container imagePullPolicy.
+# If the IMAGE_TAG_BASE is a user repo, the default value is updated to imagePullPolicy=Always.
+ifneq (,$(findstring openshift-kni,$(IMAGE_TAG_BASE)))
+IMAGE_PULL_POLICY ?= IfNotPresent
+else
+IMAGE_PULL_POLICY ?= Always
+endif
+
 # CONTAINER_TOOL defines the container tool to be used for building images.
 # Be aware that the target commands are only tested with Docker which is
 # scaffolded by default. However, you might want to replace it to use other
@@ -182,7 +190,10 @@ uninstall: manifests kustomize kubectl ## Uninstall CRDs from the K8s cluster sp
 
 .PHONY: deploy
 deploy: manifests kustomize kubectl ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	@$(KUBECTL) create configmap env-config --from-literal=imagePullPolicy=$(IMAGE_PULL_POLICY) --dry-run=client -o yaml > config/manager/env-config.yaml
+	cd config/manager \
+		&& $(KUSTOMIZE) edit set image controller=${IMG} \
+		&& $(KUSTOMIZE) edit add transformer imagePullPolicyReplacement.yaml
 	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
 
 .PHONY: undeploy
@@ -264,8 +275,12 @@ $(OAPI_CODEGEN): $(LOCALBIN)
 .PHONY: bundle
 bundle: operator-sdk manifests kustomize kubectl ## Generate bundle manifests and metadata, then validate generated files.
 	$(OPERATOR_SDK) generate kustomize manifests --apis-dir api -q
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
+	@$(KUBECTL) create configmap env-config --from-literal=imagePullPolicy=$(IMAGE_PULL_POLICY) --dry-run=client -o yaml > config/manager/env-config.yaml
+	cd config/manager \
+		&& $(KUSTOMIZE) edit set image controller=$(IMG) \
+		&& $(KUSTOMIZE) edit add transformer imagePullPolicyReplacement.yaml
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
+	@rm bundle/manifests/oran-hwmgr-plugin-env-config_v1_configmap.yaml ## Clean up the temporary file for bundle validate
 	$(OPERATOR_SDK) bundle validate ./bundle
 	sed -i '/^[[:space:]]*createdAt:/d' bundle/manifests/oran-hwmgr-plugin.clusterserviceversion.yaml
 
