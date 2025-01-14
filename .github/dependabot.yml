@@ -4,7 +4,9 @@ version: 2
 updates:
 # Go modules
 - package-ecosystem: "gomod"
-  directory: "/" # Location of package manifests
+  directories:
+  - "/"
+  - "api/hwmgr-plugin"
   schedule:
     interval: "daily"
   open-pull-requests-limit: 5
