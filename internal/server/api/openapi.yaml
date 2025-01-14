@@ -1,0 +1,432 @@
+openapi: 3.0.3
+info:
+  title: Hardware Manager Inventory API
+  version: 1.0.0
+  description: API for serving Hardware Manager inventory resources
+  contact:
+    name: Red Hat
+    url: https://www.redhat.com
+
+servers:
+  - url: http://localhost:8080
+    description: O-Cloud Hardware Manager API Server
+
+tags:
+  - name: metadata
+    description: API metadata information
+  - name: inventory
+    description: Inventory Resources
+
+paths:
+  /o2ims-infrastructureMonitoring/api_versions:
+    get:
+      operationId: getAllVersions
+      summary: Get API versions
+      description: |
+        Returns the complete list of API versions implemented by the service.
+      tags:
+        - metadata
+      responses:
+        '200':
+          description: |
+            Successfully obtained the complete list of versions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIVersions"
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /hardware-manager/inventory/v1/api_versions:
+    get:
+      operationId: getMinorVersions
+      summary: Get minor API versions
+      description: |
+        Returns the list of minor API versions implemented for this major version of the API.
+      tags:
+        - metadata
+      responses:
+        '200':
+          description: |
+            Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIVersions"
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+
+  /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools:
+    get:
+      operationId: GetResourcePools
+      summary: Retrieve the list of resource pools
+      tags:
+        - inventory
+      parameters:
+        - in: path
+          name: hwMgrId
+          required: true
+          schema:
+            type: string
+          example: some-vendor-location
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourcePoolInfo'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '403':
+          description: Forbidden.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/{resourcePoolId}:
+    get:
+      operationId: GetResourcePool
+      summary: Retrieve exactly one resource pool
+      tags:
+        - inventory
+      parameters:
+        - in: path
+          name: hwMgrId
+          required: true
+          schema:
+            type: string
+          example: some-vendor-location
+        - in: path
+          name: resourcePoolId
+          required: true
+          schema:
+            type: string
+          example: rh-pool-cnfdg22
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourcePoolInfo'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: The specified resource pool was not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/${resourcePoolId}/resources:
+    get:
+      operationId: GetResourcePoolResources
+      summary: Retrieve the list of resources for a given resource pool
+      tags:
+        - inventory
+      parameters:
+        - in: path
+          name: hwMgrId
+          required: true
+          schema:
+            type: string
+          example: some-vendor-location
+        - in: path
+          name: resourcePoolId
+          required: true
+          schema:
+            type: string
+          example: rh-pool-cnfdg22
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceInfo'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /hardware-manager/inventory/v1/manager/${hwMgrId}/resources:
+    get:
+      operationId: GetResources
+      summary: Retrieve the list of resources
+      tags:
+        - inventory
+      parameters:
+        - in: path
+          name: hwMgrId
+          required: true
+          schema:
+            type: string
+          example: some-vendor-location
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceInfo'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /hardware-manager/inventory/v1/manager/${hwMgrId}/resources/{resourceId}:
+    get:
+      operationId: GetResource
+      summary: Retrieve exactly one resource
+      tags:
+        - subscriptions
+      parameters:
+        - in: path
+          name: hwMgrId
+          required: true
+          schema:
+            type: string
+          example: some-vendor-location
+        - in: path
+          name: resourceId
+          required: true
+          schema:
+            type: string
+          example: xr860txcnfdg22
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceInfo'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    APIVersion:
+      description: |
+        Information about a version of the API.
+      type: object
+      properties:
+        version:
+          type: string
+          example: "1.0.0"
+
+    APIVersions:
+      description: |
+        Information about a list of versions of the API.
+      type: object
+      properties:
+        uriPrefix:
+          type: string
+          example: "/o2ims-infrastructureInventory/v1"
+        apiVersions:
+          type: array
+          items:
+            $ref: "#/components/schemas/APIVersion"
+          example:
+            - version: "1.0.0"
+
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |
+            A URI reference according to IETF RFC 3986 [3] that identifies the problem type. It is encouraged that the URI provides
+            human-readable documentation for the problem (e.g. usingHTML) when dereferenced. When this member is not present,
+            its value is assumed to be "about:blank".
+          example: 'https://problem.description.com'
+        title:
+          type: string
+          description: |
+            A short, human-readable summary of the problem type. It should not change from occurrence to occurrence of the problem,
+            except for purposes of localization. If type is given and other than "about:blank", this attribute shall also be provided.
+        status:
+          type: integer
+          format: int
+          description: The HTTP status code for this occurrence of the problem.
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem.
+          example: Connection to database timed out
+        instance:
+          type: string
+          format: uri
+          description: |
+            A URI reference that identifies the specific occurrence of the problem. 
+            It may yield further information if dereferenced.
+        additionalAttributes:
+          type: object
+          additionalProperties:
+            type: string
+          description: Any number of additional attributes, as defined in a specification or by an implementation.
+      required:
+        - status
+        - detail
+
+    ResourcePoolInfo:
+      description:
+        Information about a resource pool.
+      type: object
+      properties:
+        resourcePoolId:
+          type: string
+          description: Identifier for the Resource Pool in the hardware manager instance.
+          example: "rh-pool-cnfdg22"
+        siteId:
+          type: string
+          description: Identifier for the location of the resource pool.
+          example: "rdu3"
+        name:
+          type: string
+          description: Human readable name of the resource pool.
+          example: "rh-pool-cnfdg22"
+        description:
+          type: string
+          description: Human readable description of the resource pool.
+          example: "Some description about this resource"
+      required:
+        - resourcePoolId
+        - name
+        - description
+
+    ResourceInfo:
+      description:
+        Information about a resource.
+      type: object
+      properties:
+        resourceId:
+          type: string
+          description: Identifier for the Resource.
+          example: "xr860txcnfdg22"
+        resourcePoolId:
+          type: string
+          example: "rh-pool-cnfdg22"
+        description:
+          type: string
+          description: Human readable description of the resource.
+          example: "Some description about this resource"
+        name:
+          type: string
+          description: Short name for the resource.
+          example: "xr860txcnfdg22"
+        globalAssetId:
+          type: string
+          description:
+            Identifier or serial number of the resource, if available.
+          example: "xr860txcnfdg22"
+        adminState:
+          type: string
+          enum:
+            - UNLOCKED
+            - SHUTTING_DOWN
+            - LOCKED
+            - UNKNOWN
+          description: The administrative state of the resource
+        operationalState:
+          type: string
+          enum:
+            - ENABLED
+            - DISABLED
+            - UNKNOWN
+          description: The operational state of the resource
+        usageState:
+          type: string
+          enum:
+            - IDLE
+            - ACTIVE
+            - BUSY
+            - UNKNOWN
+      required:
+        - resourceId
+        - resourcePoolId
+        - description
+        - name
+        - adminState
+        - operationalState
+        - usageState

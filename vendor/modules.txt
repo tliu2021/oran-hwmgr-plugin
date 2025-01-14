@@ -61,6 +61,9 @@ github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936
+## explicit; go 1.13
+github.com/dprotaso/go-yit
 # github.com/emicklei/go-restful/v3 v3.11.0
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
@@ -83,6 +86,9 @@ github.com/fsnotify/fsnotify
 # github.com/fxamacker/cbor/v2 v2.7.0
 ## explicit; go 1.17
 github.com/fxamacker/cbor/v2
+# github.com/getkin/kin-openapi v0.127.0
+## explicit; go 1.20
+github.com/getkin/kin-openapi/openapi3
 # github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376
 ## explicit; go 1.13
 github.com/go-git/gcfg
@@ -213,6 +219,9 @@ github.com/imdario/mergo
 # github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 ## explicit
 github.com/integralist/go-findroot/find
+# github.com/invopop/yaml v0.3.1
+## explicit; go 1.14
+github.com/invopop/yaml
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 ## explicit
 github.com/jbenet/go-context/io
@@ -236,15 +245,22 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
+# github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
+## explicit
+github.com/mohae/deepcopy
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
 # github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 ## explicit; go 1.21.0
+github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen
 github.com/oapi-codegen/oapi-codegen/v2/pkg/securityprovider
+github.com/oapi-codegen/oapi-codegen/v2/pkg/util
 # github.com/oapi-codegen/runtime v1.1.1
 ## explicit; go 1.20
 github.com/oapi-codegen/runtime
+github.com/oapi-codegen/runtime/strictmiddleware/nethttp
 github.com/oapi-codegen/runtime/types
 # github.com/onsi/ginkgo/v2 v2.22.2
 ## explicit; go 1.22.0
@@ -284,6 +300,9 @@ github.com/onsi/gomega/types
 # github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20241211004106-38a18a6a9c95
 ## explicit; go 1.22.0
 github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1
+# github.com/perimeterx/marshmallow v1.1.5
+## explicit; go 1.17
+github.com/perimeterx/marshmallow
 # github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 ## explicit
 github.com/phayes/freeport
@@ -322,9 +341,16 @@ github.com/sethvargo/go-retry
 # github.com/skeema/knownhosts v1.3.0
 ## explicit; go 1.17
 github.com/skeema/knownhosts
+# github.com/speakeasy-api/openapi-overlay v0.9.0
+## explicit; go 1.21.0
+github.com/speakeasy-api/openapi-overlay/pkg/loader
+github.com/speakeasy-api/openapi-overlay/pkg/overlay
 # github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 ## explicit; go 1.12
 github.com/spf13/pflag
+# github.com/vmware-labs/yaml-jsonpath v0.3.2
+## explicit; go 1.13
+github.com/vmware-labs/yaml-jsonpath/pkg/yamlpath
 # github.com/x448/float16 v0.8.4
 ## explicit; go 1.11
 github.com/x448/float16
@@ -402,6 +428,7 @@ golang.org/x/sys/windows
 golang.org/x/term
 # golang.org/x/text v0.21.0
 ## explicit; go 1.18
+golang.org/x/text/cases
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -412,6 +439,7 @@ golang.org/x/text/encoding/korean
 golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
 golang.org/x/text/encoding/unicode
+golang.org/x/text/internal
 golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
@@ -429,11 +457,13 @@ golang.org/x/time/rate
 ## explicit; go 1.22.0
 golang.org/x/tools/cmd/stringer
 golang.org/x/tools/cover
+golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/ast/inspector
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/packages
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
+golang.org/x/tools/imports
 golang.org/x/tools/internal/aliases
 golang.org/x/tools/internal/event
 golang.org/x/tools/internal/event/core
@@ -441,6 +471,9 @@ golang.org/x/tools/internal/event/keys
 golang.org/x/tools/internal/event/label
 golang.org/x/tools/internal/gcimporter
 golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/imports
+golang.org/x/tools/internal/modindex
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/pkgbits
 golang.org/x/tools/internal/stdlib

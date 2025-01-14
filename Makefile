@@ -135,10 +135,13 @@ manifests: deps-update controller-gen ## Generate WebhookConfiguration, ClusterR
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: deps-update controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: deps-update go-generate controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 ##@ Build
+.PHONY: go-generate
+go-generate:
+	go generate ./...
 
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
@@ -387,7 +390,7 @@ endif
 .PHONY: test-e2e  # Run the e2e tests against a Kind k8s instance that is spun up.
 test-e2e:
 	go test ./test/e2e/ -v -ginkgo.v
-	
+
 .PHONY: fmt
 fmt: ## Run go fmt against code.
 	@echo "Run fmt"
