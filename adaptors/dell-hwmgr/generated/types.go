@@ -11,6 +11,13 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
+// Defines values for GetServersInventoryParamsAllocated.
+const (
+	FALSE GetServersInventoryParamsAllocated = "FALSE"
+	NONE  GetServersInventoryParamsAllocated = "NONE"
+	TRUE  GetServersInventoryParamsAllocated = "TRUE"
+)
+
 // CloudCloudType defines model for CloudCloudType.
 type CloudCloudType = interface{}
 
@@ -53,6 +60,433 @@ type ResourceUStatus = interface{}
 // ResourceUsageState defines model for ResourceUsageState.
 type ResourceUsageState = interface{}
 
+// ApiprotoAPIError defines model for apiprotoAPIError.
+type ApiprotoAPIError struct {
+	Code    *int32         `json:"code,omitempty"`
+	Details *[]ProtobufAny `json:"details,omitempty"`
+	Message *string        `json:"message,omitempty"`
+}
+
+// ApiprotoAddress defines model for apiprotoAddress.
+type ApiprotoAddress struct {
+	City    *string `json:"city,omitempty"`
+	Country *string `json:"country,omitempty"`
+	State   *string `json:"state,omitempty"`
+	Street  *string `json:"street,omitempty"`
+}
+
+// ApiprotoAuditSpec defines model for apiprotoAuditSpec.
+type ApiprotoAuditSpec struct {
+	Action    *string              `json:"Action,omitempty"`
+	Blueprint *string              `json:"Blueprint,omitempty"`
+	Scan      *string              `json:"Scan,omitempty"`
+	Status    *ApiprotoAuditStatus `json:"Status,omitempty"`
+}
+
+// ApiprotoAuditStatus defines model for apiprotoAuditStatus.
+type ApiprotoAuditStatus struct {
+	Compliant *bool              `json:"Compliant,omitempty"`
+	Drift     *ApiprotoDriftData `json:"Drift,omitempty"`
+	LastScan  *string            `json:"LastScan,omitempty"`
+	State     *string            `json:"State,omitempty"`
+}
+
+// ApiprotoBIOSAttributes defines model for apiprotoBIOSAttributes.
+type ApiprotoBIOSAttributes struct {
+	AcPwrRcvry                   *string `json:"AcPwrRcvry,omitempty"`
+	AcPwrRcvryDelay              *string `json:"AcPwrRcvryDelay,omitempty"`
+	AcPwrRcvryUserDelay          *int32  `json:"AcPwrRcvryUserDelay,omitempty"`
+	AutoDiscovery                *string `json:"AutoDiscovery,omitempty"`
+	AvxIccpPreGrantLevel         *string `json:"AvxIccpPreGrantLevel,omitempty"`
+	AvxIccpPreGrantLicense       *string `json:"AvxIccpPreGrantLicense,omitempty"`
+	BootMode                     *string `json:"BootMode,omitempty"`
+	BootSeqRetry                 *string `json:"BootSeqRetry,omitempty"`
+	CECriticalSEL                *string `json:"CECriticalSEL,omitempty"`
+	ConTermType                  *string `json:"ConTermType,omitempty"`
+	ControlledTurbo              *string `json:"ControlledTurbo,omitempty"`
+	CorrEccSmi                   *string `json:"CorrEccSmi,omitempty"`
+	CpuInterconnectBusLinkPower  *string `json:"CpuInterconnectBusLinkPower,omitempty"`
+	CpuInterconnectBusSpeed      *string `json:"CpuInterconnectBusSpeed,omitempty"`
+	DcuIpPrefetcher              *string `json:"DcuIpPrefetcher,omitempty"`
+	DcuStreamerPrefetcher        *string `json:"DcuStreamerPrefetcher,omitempty"`
+	DeadLineLlcAlloc             *string `json:"DeadLineLlcAlloc,omitempty"`
+	DirectoryAtoS                *string `json:"DirectoryAtoS,omitempty"`
+	DirectoryMode                *string `json:"DirectoryMode,omitempty"`
+	DramRefreshDelay             *string `json:"DramRefreshDelay,omitempty"`
+	DynamicCoreAllocation        *string `json:"DynamicCoreAllocation,omitempty"`
+	DynamicL1                    *string `json:"DynamicL1,omitempty"`
+	EmbNic1Nic2Nic3Nic4          *string `json:"EmbNic1Nic2Nic3Nic4,omitempty"`
+	EmbSata                      *string `json:"EmbSata,omitempty"`
+	EmbVideo                     *string `json:"EmbVideo,omitempty"`
+	EnablePkgcCriteria           *string `json:"EnablePkgcCriteria,omitempty"`
+	EnergyPerformanceBias        *string `json:"EnergyPerformanceBias,omitempty"`
+	ErrPrompt                    *string `json:"ErrPrompt,omitempty"`
+	ExtSerialConnector           *string `json:"ExtSerialConnector,omitempty"`
+	FailSafeBaud                 *string `json:"FailSafeBaud,omitempty"`
+	ForceInt10                   *string `json:"ForceInt10,omitempty"`
+	HddFailover                  *string `json:"HddFailover,omitempty"`
+	InBandManageabilityInterface *string `json:"InBandManageabilityInterface,omitempty"`
+	InternalUsb                  *string `json:"InternalUsb,omitempty"`
+	IoatEngine                   *string `json:"IoatEngine,omitempty"`
+	LlcPrefetch                  *string `json:"LlcPrefetch,omitempty"`
+	LogicalProc                  *string `json:"LogicalProc,omitempty"`
+	MadtCoreEnumeration          *string `json:"MadtCoreEnumeration,omitempty"`
+	MemFrequency                 *string `json:"MemFrequency,omitempty"`
+	MemOpMode                    *string `json:"MemOpMode,omitempty"`
+	MemPatrolScrub               *string `json:"MemPatrolScrub,omitempty"`
+	MemRefreshRate               *string `json:"MemRefreshRate,omitempty"`
+	MemTest                      *string `json:"MemTest,omitempty"`
+	MemoryEncryption             *string `json:"MemoryEncryption,omitempty"`
+	MemoryMappedIOH              *string `json:"MemoryMappedIOH,omitempty"`
+	MemoryTraining               *string `json:"MemoryTraining,omitempty"`
+	MmioAbove4Gb                 *string `json:"MmioAbove4Gb,omitempty"`
+	MonitorMwait                 *string `json:"MonitorMwait,omitempty"`
+	NodeInterleave               *string `json:"NodeInterleave,omitempty"`
+	NumLock                      *string `json:"NumLock,omitempty"`
+	OneTimeBootMode              *string `json:"OneTimeBootMode,omitempty"`
+	OppSrefEn                    *string `json:"OppSrefEn,omitempty"`
+	OptimizerMode                *string `json:"OptimizerMode,omitempty"`
+	OsAcpiCx                     *string `json:"OsAcpiCx,omitempty"`
+	OsWatchdogTimer              *string `json:"OsWatchdogTimer,omitempty"`
+	PCIRootDeviceUnhide          *string `json:"PCIRootDeviceUnhide,omitempty"`
+	PackageCStates               *string `json:"PackageCStates,omitempty"`
+	PasswordStatus               *string `json:"PasswordStatus,omitempty"`
+	PcieAspmL1                   *string `json:"PcieAspmL1,omitempty"`
+	PkgCLatNeg                   *string `json:"PkgCLatNeg,omitempty"`
+	PowerCycleRequest            *string `json:"PowerCycleRequest,omitempty"`
+	Proc1NumCores                *int32  `json:"Proc1NumCores,omitempty"`
+	Proc1TurboCoreNum            *string `json:"Proc1TurboCoreNum,omitempty"`
+	Proc2NumCores                *int32  `json:"Proc2NumCores,omitempty"`
+	Proc2TurboCoreNum            *string `json:"Proc2TurboCoreNum,omitempty"`
+	ProcAdjCacheLine             *string `json:"ProcAdjCacheLine,omitempty"`
+	ProcAvxP1                    *string `json:"ProcAvxP1,omitempty"`
+	ProcC1E                      *string `json:"ProcC1E,omitempty"`
+	ProcCStates                  *string `json:"ProcCStates,omitempty"`
+	ProcCores                    *string `json:"ProcCores,omitempty"`
+	ProcHwPrefetcher             *string `json:"ProcHwPrefetcher,omitempty"`
+	ProcPwrPerf                  *string `json:"ProcPwrPerf,omitempty"`
+	ProcSwPrefetcher             *string `json:"ProcSwPrefetcher,omitempty"`
+	ProcTurboMode                *string `json:"ProcTurboMode,omitempty"`
+	ProcVirtualization           *string `json:"ProcVirtualization,omitempty"`
+	ProcX2Apic                   *string `json:"ProcX2Apic,omitempty"`
+	ProcessorC1AutoDemotion      *string `json:"ProcessorC1AutoDemotion,omitempty"`
+	ProcessorC1AutoUnDemotion    *string `json:"ProcessorC1AutoUnDemotion,omitempty"`
+	ProcessorGpssTimer           *string `json:"ProcessorGpssTimer,omitempty"`
+	ProcessorRaplPrioritization  *string `json:"ProcessorRaplPrioritization,omitempty"`
+	PwrButton                    *string `json:"PwrButton,omitempty"`
+	PxeDev1EnDis                 *string `json:"PxeDev1EnDis,omitempty"`
+	PxeDev1Interface             *string `json:"PxeDev1Interface,omitempty"`
+	PxeDev2EnDis                 *string `json:"PxeDev2EnDis,omitempty"`
+	PxeDev2Interface             *string `json:"PxeDev2Interface,omitempty"`
+	PxeDev3EnDis                 *string `json:"PxeDev3EnDis,omitempty"`
+	PxeDev3Interface             *string `json:"PxeDev3Interface,omitempty"`
+	PxeDev4EnDis                 *string `json:"PxeDev4EnDis,omitempty"`
+	PxeDev4Interface             *string `json:"PxeDev4Interface,omitempty"`
+	RedirAfterBoot               *string `json:"RedirAfterBoot,omitempty"`
+	RedundantOsLocation          *string `json:"RedundantOsLocation,omitempty"`
+	SHA256SetupPassword          *string `json:"SHA256SetupPassword,omitempty"`
+	SHA256SetupPasswordSalt      *string `json:"SHA256SetupPasswordSalt,omitempty"`
+	SHA256SystemPassword         *string `json:"SHA256SystemPassword,omitempty"`
+	SHA256SystemPasswordSalt     *string `json:"SHA256SystemPasswordSalt,omitempty"`
+	SecurityFreezeLock           *string `json:"SecurityFreezeLock,omitempty"`
+	SerialComm                   *string `json:"SerialComm,omitempty"`
+	SerialPortAddress            *string `json:"SerialPortAddress,omitempty"`
+	SetBootOrderDis              *string `json:"SetBootOrderDis,omitempty"`
+	SetBootOrderEn               *string `json:"SetBootOrderEn,omitempty"`
+	SetBootOrderFqdd1            *string `json:"SetBootOrderFqdd1,omitempty"`
+	SetBootOrderFqdd2            *string `json:"SetBootOrderFqdd2,omitempty"`
+	SetBootOrderFqdd3            *string `json:"SetBootOrderFqdd3,omitempty"`
+	SetBootOrderFqdd4            *string `json:"SetBootOrderFqdd4,omitempty"`
+	SetLegacyHddOrderFqdd1       *string `json:"SetLegacyHddOrderFqdd1,omitempty"`
+	SetLegacyHddOrderFqdd2       *string `json:"SetLegacyHddOrderFqdd2,omitempty"`
+	Slot1                        *string `json:"Slot1,omitempty"`
+	Slot2                        *string `json:"Slot2,omitempty"`
+	Slot3                        *string `json:"Slot3,omitempty"`
+	SnoopHldOff                  *string `json:"SnoopHldOff,omitempty"`
+	SriovGlobalEnable            *string `json:"SriovGlobalEnable,omitempty"`
+	SubNumaCluster               *string `json:"SubNumaCluster,omitempty"`
+	SysMemSize                   *string `json:"SysMemSize,omitempty"`
+	SysMemSpeed                  *string `json:"SysMemSpeed,omitempty"`
+	SysMemType                   *string `json:"SysMemType,omitempty"`
+	SysMfrContactInfo            *string `json:"SysMfrContactInfo,omitempty"`
+	SysProfile                   *string `json:"SysProfile,omitempty"`
+	SystemBiosVersion            *string `json:"SystemBiosVersion,omitempty"`
+	SystemCpldVersion            *string `json:"SystemCpldVersion,omitempty"`
+	SystemManufacturer           *string `json:"SystemManufacturer,omitempty"`
+	SystemMeVersion              *string `json:"SystemMeVersion,omitempty"`
+	SystemModelName              *string `json:"SystemModelName,omitempty"`
+	SystemServiceTag             *string `json:"SystemServiceTag,omitempty"`
+	TpmSecurity                  *string `json:"TpmSecurity,omitempty"`
+	UefiComplianceVersion        *string `json:"UefiComplianceVersion,omitempty"`
+	UefiVariableAccess           *string `json:"UefiVariableAccess,omitempty"`
+	UncoreFrequency              *string `json:"UncoreFrequency,omitempty"`
+	UpiPrefetch                  *string `json:"UpiPrefetch,omitempty"`
+	UsbManagedPort               *string `json:"UsbManagedPort,omitempty"`
+	UsbPorts                     *string `json:"UsbPorts,omitempty"`
+	WorkloadConfiguration        *string `json:"WorkloadConfiguration,omitempty"`
+	WorkloadProfile              *string `json:"WorkloadProfile,omitempty"`
+	WriteCache                   *string `json:"WriteCache,omitempty"`
+	WriteDataCrc                 *string `json:"WriteDataCrc,omitempty"`
+	WyseP25BIOSAccess            *string `json:"WyseP25BIOSAccess,omitempty"`
+	XptPrefetch                  *string `json:"XptPrefetch,omitempty"`
+}
+
+// ApiprotoBIOSSettingsAttributes defines model for apiprotoBIOSSettingsAttributes.
+type ApiprotoBIOSSettingsAttributes struct {
+	AcPwrRcvry                   *string `json:"AcPwrRcvry,omitempty"`
+	AcPwrRcvryDelay              *string `json:"AcPwrRcvryDelay,omitempty"`
+	AcPwrRcvryUserDelay          *int32  `json:"AcPwrRcvryUserDelay,omitempty"`
+	AutoDiscovery                *string `json:"AutoDiscovery,omitempty"`
+	AvxIccpPreGrantLevel         *string `json:"AvxIccpPreGrantLevel,omitempty"`
+	AvxIccpPreGrantLicense       *string `json:"AvxIccpPreGrantLicense,omitempty"`
+	BootMode                     *string `json:"BootMode,omitempty"`
+	BootSeqRetry                 *string `json:"BootSeqRetry,omitempty"`
+	CECriticalSEL                *string `json:"CECriticalSEL,omitempty"`
+	ConTermType                  *string `json:"ConTermType,omitempty"`
+	ControlledTurbo              *string `json:"ControlledTurbo,omitempty"`
+	CorrEccSmi                   *string `json:"CorrEccSmi,omitempty"`
+	CpuInterconnectBusLinkPower  *string `json:"CpuInterconnectBusLinkPower,omitempty"`
+	CpuInterconnectBusSpeed      *string `json:"CpuInterconnectBusSpeed,omitempty"`
+	DcuIpPrefetcher              *string `json:"DcuIpPrefetcher,omitempty"`
+	DcuStreamerPrefetcher        *string `json:"DcuStreamerPrefetcher,omitempty"`
+	DeadLineLlcAlloc             *string `json:"DeadLineLlcAlloc,omitempty"`
+	DirectoryAtoS                *string `json:"DirectoryAtoS,omitempty"`
+	DirectoryMode                *string `json:"DirectoryMode,omitempty"`
+	DramRefreshDelay             *string `json:"DramRefreshDelay,omitempty"`
+	DynamicCoreAllocation        *string `json:"DynamicCoreAllocation,omitempty"`
+	DynamicL1                    *string `json:"DynamicL1,omitempty"`
+	EmbSata                      *string `json:"EmbSata,omitempty"`
+	EmbVideo                     *string `json:"EmbVideo,omitempty"`
+	EnergyPerformanceBias        *string `json:"EnergyPerformanceBias,omitempty"`
+	ErrPrompt                    *string `json:"ErrPrompt,omitempty"`
+	ExtSerialConnector           *string `json:"ExtSerialConnector,omitempty"`
+	FailSafeBaud                 *string `json:"FailSafeBaud,omitempty"`
+	ForceInt10                   *string `json:"ForceInt10,omitempty"`
+	HddFailover                  *string `json:"HddFailover,omitempty"`
+	InBandManageabilityInterface *string `json:"InBandManageabilityInterface,omitempty"`
+	InternalUsb                  *string `json:"InternalUsb,omitempty"`
+	IoatEngine                   *string `json:"IoatEngine,omitempty"`
+	LlcPrefetch                  *string `json:"LlcPrefetch,omitempty"`
+	LogicalProc                  *string `json:"LogicalProc,omitempty"`
+	MadtCoreEnumeration          *string `json:"MadtCoreEnumeration,omitempty"`
+	MemFrequency                 *string `json:"MemFrequency,omitempty"`
+	MemOpMode                    *string `json:"MemOpMode,omitempty"`
+	MemPatrolScrub               *string `json:"MemPatrolScrub,omitempty"`
+	MemRefreshRate               *string `json:"MemRefreshRate,omitempty"`
+	MemTest                      *string `json:"MemTest,omitempty"`
+	MemoryEncryption             *string `json:"MemoryEncryption,omitempty"`
+	MemoryMappedIOH              *string `json:"MemoryMappedIOH,omitempty"`
+	MemoryTraining               *string `json:"MemoryTraining,omitempty"`
+	MmioAbove4Gb                 *string `json:"MmioAbove4Gb,omitempty"`
+	MonitorMwait                 *string `json:"MonitorMwait,omitempty"`
+	NodeInterleave               *string `json:"NodeInterleave,omitempty"`
+	NumLock                      *string `json:"NumLock,omitempty"`
+	OneTimeBootMode              *string `json:"OneTimeBootMode,omitempty"`
+	OppSrefEn                    *string `json:"OppSrefEn,omitempty"`
+	OptimizerMode                *string `json:"OptimizerMode,omitempty"`
+	OsAcpiCx                     *string `json:"OsAcpiCx,omitempty"`
+	OsWatchdogTimer              *string `json:"OsWatchdogTimer,omitempty"`
+	PCIRootDeviceUnhide          *string `json:"PCIRootDeviceUnhide,omitempty"`
+	PasswordStatus               *string `json:"PasswordStatus,omitempty"`
+	PcieAspmL1                   *string `json:"PcieAspmL1,omitempty"`
+	PowerCycleRequest            *string `json:"PowerCycleRequest,omitempty"`
+	Proc1TurboCoreNum            *string `json:"Proc1TurboCoreNum,omitempty"`
+	Proc2TurboCoreNum            *string `json:"Proc2TurboCoreNum,omitempty"`
+	ProcAdjCacheLine             *string `json:"ProcAdjCacheLine,omitempty"`
+	ProcAvxP1                    *string `json:"ProcAvxP1,omitempty"`
+	ProcC1E                      *string `json:"ProcC1E,omitempty"`
+	ProcCStates                  *string `json:"ProcCStates,omitempty"`
+	ProcCores                    *string `json:"ProcCores,omitempty"`
+	ProcHwPrefetcher             *string `json:"ProcHwPrefetcher,omitempty"`
+	ProcPwrPerf                  *string `json:"ProcPwrPerf,omitempty"`
+	ProcSwPrefetcher             *string `json:"ProcSwPrefetcher,omitempty"`
+	ProcTurboMode                *string `json:"ProcTurboMode,omitempty"`
+	ProcVirtualization           *string `json:"ProcVirtualization,omitempty"`
+	ProcX2Apic                   *string `json:"ProcX2Apic,omitempty"`
+	ProcessorC1AutoDemotion      *string `json:"ProcessorC1AutoDemotion,omitempty"`
+	ProcessorC1AutoUnDemotion    *string `json:"ProcessorC1AutoUnDemotion,omitempty"`
+	ProcessorGpssTimer           *string `json:"ProcessorGpssTimer,omitempty"`
+	ProcessorRaplPrioritization  *string `json:"ProcessorRaplPrioritization,omitempty"`
+	PwrButton                    *string `json:"PwrButton,omitempty"`
+	PxeDev1EnDis                 *string `json:"PxeDev1EnDis,omitempty"`
+	PxeDev1Interface             *string `json:"PxeDev1Interface,omitempty"`
+	PxeDev2EnDis                 *string `json:"PxeDev2EnDis,omitempty"`
+	PxeDev2Interface             *string `json:"PxeDev2Interface,omitempty"`
+	PxeDev3EnDis                 *string `json:"PxeDev3EnDis,omitempty"`
+	PxeDev3Interface             *string `json:"PxeDev3Interface,omitempty"`
+	PxeDev4EnDis                 *string `json:"PxeDev4EnDis,omitempty"`
+	PxeDev4Interface             *string `json:"PxeDev4Interface,omitempty"`
+	RedirAfterBoot               *string `json:"RedirAfterBoot,omitempty"`
+	RedundantOsLocation          *string `json:"RedundantOsLocation,omitempty"`
+	SecurityFreezeLock           *string `json:"SecurityFreezeLock,omitempty"`
+	SerialComm                   *string `json:"SerialComm,omitempty"`
+	SerialPortAddress            *string `json:"SerialPortAddress,omitempty"`
+	SetBootOrderDis              *string `json:"SetBootOrderDis,omitempty"`
+	SetBootOrderEn               *string `json:"SetBootOrderEn,omitempty"`
+	SetBootOrderFqdd1            *string `json:"SetBootOrderFqdd1,omitempty"`
+	SetBootOrderFqdd2            *string `json:"SetBootOrderFqdd2,omitempty"`
+	SetBootOrderFqdd3            *string `json:"SetBootOrderFqdd3,omitempty"`
+	SetBootOrderFqdd4            *string `json:"SetBootOrderFqdd4,omitempty"`
+	SetLegacyHddOrderFqdd1       *string `json:"SetLegacyHddOrderFqdd1,omitempty"`
+	SetLegacyHddOrderFqdd2       *string `json:"SetLegacyHddOrderFqdd2,omitempty"`
+	Slot1                        *string `json:"Slot1,omitempty"`
+	Slot2                        *string `json:"Slot2,omitempty"`
+	Slot3                        *string `json:"Slot3,omitempty"`
+	SnoopHldOff                  *string `json:"SnoopHldOff,omitempty"`
+	SriovGlobalEnable            *string `json:"SriovGlobalEnable,omitempty"`
+	SubNumaCluster               *string `json:"SubNumaCluster,omitempty"`
+	SysProfile                   *string `json:"SysProfile,omitempty"`
+	TpmSecurity                  *string `json:"TpmSecurity,omitempty"`
+	UefiVariableAccess           *string `json:"UefiVariableAccess,omitempty"`
+	UncoreFrequency              *string `json:"UncoreFrequency,omitempty"`
+	UpiPrefetch                  *string `json:"UpiPrefetch,omitempty"`
+	UsbManagedPort               *string `json:"UsbManagedPort,omitempty"`
+	UsbPorts                     *string `json:"UsbPorts,omitempty"`
+	WorkloadConfiguration        *string `json:"WorkloadConfiguration,omitempty"`
+	WorkloadProfile              *string `json:"WorkloadProfile,omitempty"`
+	WriteCache                   *string `json:"WriteCache,omitempty"`
+	WriteDataCrc                 *string `json:"WriteDataCrc,omitempty"`
+	WyseP25BIOSAccess            *string `json:"WyseP25BIOSAccess,omitempty"`
+	XptPrefetch                  *string `json:"XptPrefetch,omitempty"`
+}
+
+// ApiprotoBIOSSpec defines model for apiprotoBIOSSpec.
+type ApiprotoBIOSSpec struct {
+	Attributes *ApiprotoBIOSSettingsAttributes `json:"Attributes,omitempty"`
+}
+
+// ApiprotoBMCAttributesSpec defines model for apiprotoBMCAttributesSpec.
+type ApiprotoBMCAttributesSpec struct {
+	DNSDomainName            *string `json:"DNSDomainName,omitempty"`
+	DNSRacName               *string `json:"DNSRacName,omitempty"`
+	IPMILanEnable            *string `json:"IPMILanEnable,omitempty"`
+	OSBMCPassThroughState    *string `json:"OSBMCPassThroughState,omitempty"`
+	RFSIgnoreCertWarning     *string `json:"RFSIgnoreCertWarning,omitempty"`
+	SNMPAgentCommunityName   *string `json:"SNMPAgentCommunityName,omitempty"`
+	SNMPAgentEnable          *string `json:"SNMPAgentEnable,omitempty"`
+	SNMPDiscoveryPortNumber  *int32  `json:"SNMPDiscoveryPortNumber,omitempty"`
+	SNMPProtocol             *string `json:"SNMPProtocol,omitempty"`
+	SerialRedirectEnable     *string `json:"SerialRedirectEnable,omitempty"`
+	TimeZone                 *string `json:"TimeZone,omitempty"`
+	TopologyLLDP             *string `json:"TopologyLLDP,omitempty"`
+	VLANEnable               *string `json:"VLANEnable,omitempty"`
+	VLANID                   *int32  `json:"VLANID,omitempty"`
+	VirtualConsolePluginType *string `json:"VirtualConsolePluginType,omitempty"`
+}
+
+// ApiprotoBMCAttributesStatus defines model for apiprotoBMCAttributesStatus.
+type ApiprotoBMCAttributesStatus struct {
+	DNSDomainName            *string `json:"DNSDomainName,omitempty"`
+	DNSRacName               *string `json:"DNSRacName,omitempty"`
+	IPMILanEnable            *string `json:"IPMILanEnable,omitempty"`
+	OSBMCPassThroughState    *string `json:"OSBMCPassThroughState,omitempty"`
+	RFSIgnoreCertWarning     *string `json:"RFSIgnoreCertWarning,omitempty"`
+	SNMPAgentCommunityName   *string `json:"SNMPAgentCommunityName,omitempty"`
+	SNMPAgentEnable          *string `json:"SNMPAgentEnable,omitempty"`
+	SNMPDiscoveryPortNumber  *int32  `json:"SNMPDiscoveryPortNumber,omitempty"`
+	SNMPProtocol             *string `json:"SNMPProtocol,omitempty"`
+	SerialRedirectEnable     *string `json:"SerialRedirectEnable,omitempty"`
+	TimeZone                 *string `json:"TimeZone,omitempty"`
+	TopologyLLDP             *string `json:"TopologyLLDP,omitempty"`
+	VLANEnable               *string `json:"VLANEnable,omitempty"`
+	VLANID                   *int32  `json:"VLANID,omitempty"`
+	VirtualConsolePluginType *string `json:"VirtualConsolePluginType,omitempty"`
+}
+
+// ApiprotoBMCEventSubscriptionSpec defines model for apiprotoBMCEventSubscriptionSpec.
+type ApiprotoBMCEventSubscriptionSpec struct {
+	CreateEventSubscriptions *[]ApiprotoCreateBMCEventSubscription `json:"CreateEventSubscriptions,omitempty"`
+	DeleteEventSubscriptions *[]ApiprotoDeleteBMCEventSubscription `json:"DeleteEventSubscriptions,omitempty"`
+}
+
+// ApiprotoBMCEventSubscriptionStatus defines model for apiprotoBMCEventSubscriptionStatus.
+type ApiprotoBMCEventSubscriptionStatus struct {
+	Description   *string   `json:"Description,omitempty"`
+	Destination   *string   `json:"Destination,omitempty"`
+	EventType     *string   `json:"EventType,omitempty"`
+	ID            *string   `json:"ID,omitempty"`
+	ResourceTypes *[]string `json:"ResourceTypes,omitempty"`
+}
+
+// ApiprotoBMCLogForwardSpec defines model for apiprotoBMCLogForwardSpec.
+type ApiprotoBMCLogForwardSpec struct {
+	EventSubscriptions *ApiprotoBMCEventSubscriptionSpec `json:"EventSubscriptions,omitempty"`
+	ServiceEnabled     *string                           `json:"ServiceEnabled,omitempty"`
+}
+
+// ApiprotoBMCLogForwardStatus defines model for apiprotoBMCLogForwardStatus.
+type ApiprotoBMCLogForwardStatus struct {
+	EventSubscriptions *[]ApiprotoBMCEventSubscriptionStatus `json:"EventSubscriptions,omitempty"`
+	ServiceEnabled     *string                               `json:"ServiceEnabled,omitempty"`
+}
+
+// ApiprotoBMCNICDetails defines model for apiprotoBMCNICDetails.
+type ApiprotoBMCNICDetails struct {
+	HostName            *string                  `json:"HostName,omitempty"`
+	ID                  *string                  `json:"ID,omitempty"`
+	IPv4Add             *[]ApiprotoIPv4Addresses `json:"IPv4Add,omitempty"`
+	InterfaceEnabled    *bool                    `json:"InterfaceEnabled,omitempty"`
+	MTUSize             *int32                   `json:"MTUSize,omitempty"`
+	MacAddress          *string                  `json:"MacAddress,omitempty"`
+	NameServers         *[]string                `json:"NameServers,omitempty"`
+	PermanentMACAddress *string                  `json:"PermanentMACAddress,omitempty"`
+	SpeedMbps           *int32                   `json:"SpeedMbps,omitempty"`
+	Status              *ApiprotoStatusSpec      `json:"Status,omitempty"`
+	VlanDetail          *ApiprotoVLAN            `json:"VlanDetail,omitempty"`
+}
+
+// ApiprotoBMCNICSettings defines model for apiprotoBMCNICSettings.
+type ApiprotoBMCNICSettings struct {
+	DNSFromDHCP *string                        `json:"DNSFromDHCP,omitempty"`
+	IPv4Add     *[]ApiprotoIPv4AddressSettings `json:"IPv4Add,omitempty"`
+	NameServers *[]string                      `json:"NameServers,omitempty"`
+}
+
+// ApiprotoBMCNTPSettings defines model for apiprotoBMCNTPSettings.
+type ApiprotoBMCNTPSettings struct {
+	NTPServers      *[]string `json:"NTPServers,omitempty"`
+	ProtocolEnabled *bool     `json:"ProtocolEnabled,omitempty"`
+}
+
+// ApiprotoBMCSpec defines model for apiprotoBMCSpec.
+type ApiprotoBMCSpec struct {
+	Attributes  *ApiprotoBMCAttributesSpec `json:"Attributes,omitempty"`
+	BMCUsers    *ApiprotoBMCUserActions    `json:"BMCUsers,omitempty"`
+	NICSettings *[]ApiprotoBMCNICSettings  `json:"NICSettings,omitempty"`
+	NTPSettings *ApiprotoBMCNTPSettings    `json:"NTPSettings,omitempty"`
+}
+
+// ApiprotoBMCStatus defines model for apiprotoBMCStatus.
+type ApiprotoBMCStatus struct {
+	Attributes      *ApiprotoBMCAttributesStatus `json:"Attributes,omitempty"`
+	BMCUsers        *[]ApiprotoBMCUser           `json:"BMCUsers,omitempty"`
+	FirmwareVersion *string                      `json:"FirmwareVersion,omitempty"`
+	Licenses        *[]ApiprotoLicenseStatus     `json:"Licenses,omitempty"`
+	Model           *string                      `json:"Model,omitempty"`
+	NICDetails      *[]ApiprotoBMCNICDetails     `json:"NICDetails,omitempty"`
+	NTPSettings     *ApiprotoBMCNTPSettings      `json:"NTPSettings,omitempty"`
+	PowerState      *string                      `json:"PowerState,omitempty"`
+	Status          *ApiprotoStatusSpec          `json:"Status,omitempty"`
+	UUID            *string                      `json:"UUID,omitempty"`
+	VMedia          *[]ApiprotoVirtualMedia      `json:"VMedia,omitempty"`
+}
+
+// ApiprotoBMCUser defines model for apiprotoBMCUser.
+type ApiprotoBMCUser struct {
+	Enabled       *bool   `json:"Enabled,omitempty"`
+	Password      *string `json:"Password,omitempty"`
+	ResetPassword *bool   `json:"ResetPassword,omitempty"`
+	RoleID        *string `json:"RoleID,omitempty"`
+	UserName      *string `json:"UserName,omitempty"`
+}
+
+// ApiprotoBMCUserActions defines model for apiprotoBMCUserActions.
+type ApiprotoBMCUserActions struct {
+	BMCCreateUsers *[]ApiprotoBMCUser `json:"BMCCreateUsers,omitempty"`
+	BMCDeleteUsers *[]ApiprotoBMCUser `json:"BMCDeleteUsers,omitempty"`
+	BMCUpdateUsers *[]ApiprotoBMCUser `json:"BMCUpdateUsers,omitempty"`
+}
+
 // ApiprotoBaseResource defines model for apiprotoBaseResource.
 type ApiprotoBaseResource struct {
 	CreatedAt            *string `json:"createdAt,omitempty"`
@@ -67,12 +501,243 @@ type ApiprotoBaseResource struct {
 	Visibility           *string `json:"visibility,omitempty"`
 }
 
+// ApiprotoBiosAttrMigChange defines model for apiprotoBiosAttrMigChange.
+type ApiprotoBiosAttrMigChange struct {
+	NewValue *string `json:"NewValue,omitempty"`
+	OldValue *string `json:"OldValue,omitempty"`
+}
+
+// ApiprotoBiosMigrationSummary defines model for apiprotoBiosMigrationSummary.
+type ApiprotoBiosMigrationSummary struct {
+	FromVersion        *string                               `json:"FromVersion,omitempty"`
+	MigrationTimeStamp *string                               `json:"MigrationTimeStamp,omitempty"`
+	ToVersion          *string                               `json:"ToVersion,omitempty"`
+	UpdatedAttributes  *map[string]ApiprotoBiosAttrMigChange `json:"UpdatedAttributes,omitempty"`
+}
+
+// ApiprotoBiosStatus defines model for apiprotoBiosStatus.
+type ApiprotoBiosStatus struct {
+	Attributes       *ApiprotoBIOSAttributes         `json:"Attributes,omitempty"`
+	ID               *string                         `json:"ID,omitempty"`
+	MigrationSummary *[]ApiprotoBiosMigrationSummary `json:"MigrationSummary,omitempty"`
+	Name             *string                         `json:"Name,omitempty"`
+}
+
+// ApiprotoBootSpec defines model for apiprotoBootSpec.
+type ApiprotoBootSpec struct {
+	BootOrder *[]string `json:"BootOrder,omitempty"`
+	HddOrder  *[]string `json:"HddOrder,omitempty"`
+}
+
+// ApiprotoBootStatus defines model for apiprotoBootStatus.
+type ApiprotoBootStatus struct {
+	AliasBootOrder               *[]string `json:"AliasBootOrder,omitempty"`
+	BootNext                     *string   `json:"BootNext,omitempty"`
+	BootOptions                  *string   `json:"BootOptions,omitempty"`
+	BootOrder                    *[]string `json:"BootOrder,omitempty"`
+	BootOrderPropertySelection   *string   `json:"BootOrderPropertySelection,omitempty"`
+	BootSourceOverrideEnabled    *string   `json:"BootSourceOverrideEnabled,omitempty"`
+	BootSourceOverrideMode       *string   `json:"BootSourceOverrideMode,omitempty"`
+	BootSourceOverrideTarget     *string   `json:"BootSourceOverrideTarget,omitempty"`
+	HddOrder                     *[]string `json:"HddOrder,omitempty"`
+	UefiTargetBootSourceOverride *string   `json:"UefiTargetBootSourceOverride,omitempty"`
+}
+
+// ApiprotoCacheSummarySpec defines model for apiprotoCacheSummarySpec.
+type ApiprotoCacheSummarySpec struct {
+	TotalCacheSizeMiB *int32 `json:"TotalCacheSizeMiB,omitempty"`
+}
+
 // ApiprotoCloud defines model for apiprotoCloud.
 type ApiprotoCloud struct {
 	CloudDeploymentMode *string                             `json:"cloudDeploymentMode,omitempty"`
 	CloudType           *CloudCloudType                     `json:"cloudType,omitempty"`
 	ComputeSelectors    *map[string]ApiprotoComputeSelector `json:"computeSelectors,omitempty"`
 	MgmtCloudDid        *string                             `json:"mgmtCloudDid,omitempty"`
+}
+
+// ApiprotoCompleteBMCAttributes defines model for apiprotoCompleteBMCAttributes.
+type ApiprotoCompleteBMCAttributes struct {
+	// Attributes `Any` contains an arbitrary serialized protocol buffer message along with a
+	// URL that describes the type of the serialized message.
+	//
+	// Protobuf library provides support to pack/unpack Any values in the form
+	// of utility functions or additional generated methods of the Any type.
+	//
+	// Example 1: Pack and unpack a message in C++.
+	//
+	//     Foo foo = ...;
+	//     Any any;
+	//     any.PackFrom(foo);
+	//     ...
+	//     if (any.UnpackTo(&foo)) {
+	//       ...
+	//     }
+	//
+	// Example 2: Pack and unpack a message in Java.
+	//
+	//     Foo foo = ...;
+	//     Any any = Any.pack(foo);
+	//     ...
+	//     if (any.is(Foo.class)) {
+	//       foo = any.unpack(Foo.class);
+	//     }
+	//
+	//  Example 3: Pack and unpack a message in Python.
+	//
+	//     foo = Foo(...)
+	//     any = Any()
+	//     any.Pack(foo)
+	//     ...
+	//     if any.Is(Foo.DESCRIPTOR):
+	//       any.Unpack(foo)
+	//       ...
+	//
+	//  Example 4: Pack and unpack a message in Go
+	//
+	//      foo := &pb.Foo{...}
+	//      any, err := anypb.New(foo)
+	//      if err != nil {
+	//        ...
+	//      }
+	//      ...
+	//      foo := &pb.Foo{}
+	//      if err := any.UnmarshalTo(foo); err != nil {
+	//        ...
+	//      }
+	//
+	// The pack methods provided by protobuf library will by default use
+	// 'type.googleapis.com/full.type.name' as the type URL and the unpack
+	// methods only use the fully qualified type name after the last '/'
+	// in the type URL, for example "foo.bar.com/x/y.z" will yield type
+	// name "y.z".
+	//
+	//
+	// JSON
+	// ====
+	// The JSON representation of an `Any` value uses the regular
+	// representation of the deserialized, embedded message, with an
+	// additional field `@type` which contains the type URL. Example:
+	//
+	//     package google.profile;
+	//     message Person {
+	//       string first_name = 1;
+	//       string last_name = 2;
+	//     }
+	//
+	//     {
+	//       "@type": "type.googleapis.com/google.profile.Person",
+	//       "firstName": <string>,
+	//       "lastName": <string>
+	//     }
+	//
+	// If the embedded message type is well-known and has a custom JSON
+	// representation, that representation will be embedded adding a field
+	// `value` which holds the custom JSON in addition to the `@type`
+	// field. Example (for message [google.protobuf.Duration][]):
+	//
+	//     {
+	//       "@type": "type.googleapis.com/google.protobuf.Duration",
+	//       "value": "1.212s"
+	//     }
+	Attributes *ProtobufAny `json:"attributes,omitempty"`
+}
+
+// ApiprotoCompleteBMCStatus defines model for apiprotoCompleteBMCStatus.
+type ApiprotoCompleteBMCStatus struct {
+	Attributes *ApiprotoCompleteBMCAttributes `json:"Attributes,omitempty"`
+}
+
+// ApiprotoCompleteBiosAttributes defines model for apiprotoCompleteBiosAttributes.
+type ApiprotoCompleteBiosAttributes struct {
+	// Attributes `Any` contains an arbitrary serialized protocol buffer message along with a
+	// URL that describes the type of the serialized message.
+	//
+	// Protobuf library provides support to pack/unpack Any values in the form
+	// of utility functions or additional generated methods of the Any type.
+	//
+	// Example 1: Pack and unpack a message in C++.
+	//
+	//     Foo foo = ...;
+	//     Any any;
+	//     any.PackFrom(foo);
+	//     ...
+	//     if (any.UnpackTo(&foo)) {
+	//       ...
+	//     }
+	//
+	// Example 2: Pack and unpack a message in Java.
+	//
+	//     Foo foo = ...;
+	//     Any any = Any.pack(foo);
+	//     ...
+	//     if (any.is(Foo.class)) {
+	//       foo = any.unpack(Foo.class);
+	//     }
+	//
+	//  Example 3: Pack and unpack a message in Python.
+	//
+	//     foo = Foo(...)
+	//     any = Any()
+	//     any.Pack(foo)
+	//     ...
+	//     if any.Is(Foo.DESCRIPTOR):
+	//       any.Unpack(foo)
+	//       ...
+	//
+	//  Example 4: Pack and unpack a message in Go
+	//
+	//      foo := &pb.Foo{...}
+	//      any, err := anypb.New(foo)
+	//      if err != nil {
+	//        ...
+	//      }
+	//      ...
+	//      foo := &pb.Foo{}
+	//      if err := any.UnmarshalTo(foo); err != nil {
+	//        ...
+	//      }
+	//
+	// The pack methods provided by protobuf library will by default use
+	// 'type.googleapis.com/full.type.name' as the type URL and the unpack
+	// methods only use the fully qualified type name after the last '/'
+	// in the type URL, for example "foo.bar.com/x/y.z" will yield type
+	// name "y.z".
+	//
+	//
+	// JSON
+	// ====
+	// The JSON representation of an `Any` value uses the regular
+	// representation of the deserialized, embedded message, with an
+	// additional field `@type` which contains the type URL. Example:
+	//
+	//     package google.profile;
+	//     message Person {
+	//       string first_name = 1;
+	//       string last_name = 2;
+	//     }
+	//
+	//     {
+	//       "@type": "type.googleapis.com/google.profile.Person",
+	//       "firstName": <string>,
+	//       "lastName": <string>
+	//     }
+	//
+	// If the embedded message type is well-known and has a custom JSON
+	// representation, that representation will be embedded adding a field
+	// `value` which holds the custom JSON in addition to the `@type`
+	// field. Example (for message [google.protobuf.Duration][]):
+	//
+	//     {
+	//       "@type": "type.googleapis.com/google.protobuf.Duration",
+	//       "value": "1.212s"
+	//     }
+	Attributes *ProtobufAny `json:"attributes,omitempty"`
+}
+
+// ApiprotoCompleteBiosStatus defines model for apiprotoCompleteBiosStatus.
+type ApiprotoCompleteBiosStatus struct {
+	Attributes *ApiprotoCompleteBiosAttributes `json:"Attributes,omitempty"`
 }
 
 // ApiprotoCompute defines model for apiprotoCompute.
@@ -123,11 +788,48 @@ type ApiprotoComputeSelector struct {
 // ApiprotoComputeSelectorRole defines model for apiprotoComputeSelectorRole.
 type ApiprotoComputeSelectorRole = interface{}
 
+// ApiprotoContactInfo defines model for apiprotoContactInfo.
+type ApiprotoContactInfo struct {
+	ContactName  *string `json:"ContactName,omitempty"`
+	EmailAddress *string `json:"EmailAddress,omitempty"`
+	PhoneNumber  *string `json:"PhoneNumber,omitempty"`
+}
+
+// ApiprotoCoordinate defines model for apiprotoCoordinate.
+type ApiprotoCoordinate struct {
+	Latitude  *float32 `json:"latitude,omitempty"`
+	Longitude *float32 `json:"longitude,omitempty"`
+}
+
+// ApiprotoCreateBMCEventSubscription defines model for apiprotoCreateBMCEventSubscription.
+type ApiprotoCreateBMCEventSubscription struct {
+	Destination   *string   `json:"Destination,omitempty"`
+	EventType     *string   `json:"EventType,omitempty"`
+	ResourceTypes *[]string `json:"ResourceTypes,omitempty"`
+}
+
 // ApiprotoCreateResourceResp defines model for apiprotoCreateResourceResp.
 type ApiprotoCreateResourceResp struct {
 	Resource *ApiprotoResource `json:"Resource,omitempty"`
 	Resp     *ApiprotoResponse `json:"Resp,omitempty"`
 	Tenant   *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoDecommissionSpec defines model for apiprotoDecommissionSpec.
+type ApiprotoDecommissionSpec struct {
+	SecureEraseDrives *bool `json:"SecureEraseDrives,omitempty"`
+}
+
+// ApiprotoDecommissionStatus defines model for apiprotoDecommissionStatus.
+type ApiprotoDecommissionStatus struct {
+	OperationFlag     *bool   `json:"OperationFlag,omitempty"`
+	SecureEraseDrives *string `json:"SecureEraseDrives,omitempty"`
+}
+
+// ApiprotoDeleteBMCEventSubscription defines model for apiprotoDeleteBMCEventSubscription.
+type ApiprotoDeleteBMCEventSubscription struct {
+	Destination *string `json:"Destination,omitempty"`
+	EventType   *string `json:"EventType,omitempty"`
 }
 
 // ApiprotoDeleteResourceResp defines model for apiprotoDeleteResourceResp.
@@ -184,11 +886,143 @@ type ApiprotoDeploymentStatus struct {
 	SubServicesStatus *string `json:"SubServicesStatus,omitempty"`
 }
 
+// ApiprotoDriftData defines model for apiprotoDriftData.
+type ApiprotoDriftData struct {
+	CoreCount       *ApiprotodriftValues `json:"CoreCount,omitempty"`
+	FirmwareVersion *ApiprotodriftValues `json:"FirmwareVersion,omitempty"`
+	HwModel         *ApiprotodriftValues `json:"HwModel,omitempty"`
+}
+
+// ApiprotoDriftReports defines model for apiprotoDriftReports.
+type ApiprotoDriftReports struct {
+	DriftTemplateIDs *[]string                          `json:"DriftTemplateIDs,omitempty"`
+	Drifts           *map[string]map[string]interface{} `json:"Drifts,omitempty"`
+	LastScan         *string                            `json:"LastScan,omitempty"`
+	State            *string                            `json:"State,omitempty"`
+	Status           *string                            `json:"Status,omitempty"`
+}
+
+// ApiprotoDriftReportsBrief defines model for apiprotoDriftReportsBrief.
+type ApiprotoDriftReportsBrief struct {
+	LastScan *string `json:"LastScan,omitempty"`
+	State    *string `json:"State,omitempty"`
+	Status   *string `json:"Status,omitempty"`
+}
+
+// ApiprotoDrive defines model for apiprotoDrive.
+type ApiprotoDrive struct {
+	BlockSizeBytes                *int32                  `json:"BlockSizeBytes,omitempty"`
+	CapableSpeedGbs               *int32                  `json:"CapableSpeedGbs,omitempty"`
+	CapacityBytes                 *string                 `json:"CapacityBytes,omitempty"`
+	Description                   *string                 `json:"Description,omitempty"`
+	DeviceProtocol                *string                 `json:"DeviceProtocol,omitempty"`
+	EncryptionAbility             *string                 `json:"EncryptionAbility,omitempty"`
+	EncryptionStatus              *string                 `json:"EncryptionStatus,omitempty"`
+	FailurePredicted              *bool                   `json:"FailurePredicted,omitempty"`
+	HotspareType                  *string                 `json:"HotspareType,omitempty"`
+	ID                            *string                 `json:"ID,omitempty"`
+	Identifiers                   *[]ApiprotoIdentifier   `json:"Identifiers,omitempty"`
+	Location                      *[]ApiprotoLocationSpec `json:"Location,omitempty"`
+	Manufacturer                  *string                 `json:"Manufacturer,omitempty"`
+	MediaType                     *string                 `json:"MediaType,omitempty"`
+	Model                         *string                 `json:"Model,omitempty"`
+	Name                          *string                 `json:"Name,omitempty"`
+	NegotiatedSpeedGbs            *int32                  `json:"NegotiatedSpeedGbs,omitempty"`
+	Operations                    *[]ApiprotoOperation    `json:"Operations,omitempty"`
+	PartNumber                    *string                 `json:"PartNumber,omitempty"`
+	PhysicalLocation              *ApiprotoLocationSpec   `json:"PhysicalLocation,omitempty"`
+	PredictedMediaLifeLeftPercent *float32                `json:"PredictedMediaLifeLeftPercent,omitempty"`
+	Protocol                      *string                 `json:"Protocol,omitempty"`
+	Revision                      *string                 `json:"Revision,omitempty"`
+	RotationSpeedRPM              *int32                  `json:"RotationSpeedRPM,omitempty"`
+	SerialNumber                  *string                 `json:"SerialNumber,omitempty"`
+	Status                        *ApiprotoStatusSpec     `json:"Status,omitempty"`
+	VolumeIDs                     *[]string               `json:"VolumeIDs,omitempty"`
+	VolumesCount                  *int32                  `json:"VolumesCount,omitempty"`
+}
+
+// ApiprotoEthernetInterfaceSpec defines model for apiprotoEthernetInterfaceSpec.
+type ApiprotoEthernetInterfaceSpec struct {
+	AutoNeg               *bool               `json:"AutoNeg,omitempty"`
+	Description           *string             `json:"Description,omitempty"`
+	EthernetInterfaceType *string             `json:"EthernetInterfaceType,omitempty"`
+	ID                    *string             `json:"ID,omitempty"`
+	LinkStatus            *string             `json:"LinkStatus,omitempty"`
+	MACAddress            *string             `json:"MACAddress,omitempty"`
+	MTUSize               *int32              `json:"MTUSize,omitempty"`
+	Name                  *string             `json:"Name,omitempty"`
+	PermanentMACAddress   *string             `json:"PermanentMACAddress,omitempty"`
+	SpeedMbps             *int32              `json:"SpeedMbps,omitempty"`
+	Status                *ApiprotoStatusSpec `json:"Status,omitempty"`
+}
+
+// ApiprotoFPGA defines model for apiprotoFPGA.
+type ApiprotoFPGA struct {
+	BoardPartNumber   *string `json:"BoardPartNumber,omitempty"`
+	DeviceDescription *string `json:"DeviceDescription,omitempty"`
+	FQDD              *string `json:"FQDD,omitempty"`
+	Model             *string `json:"Model,omitempty"`
+	Name              *string `json:"Name,omitempty"`
+}
+
+// ApiprotoFactoryResetCompletedStatus defines model for apiprotoFactoryResetCompletedStatus.
+type ApiprotoFactoryResetCompletedStatus struct {
+	BIOS      *bool `json:"BIOS,omitempty"`
+	BMC       *bool `json:"BMC,omitempty"`
+	ClearJobs *bool `json:"ClearJobs,omitempty"`
+	Storage   *bool `json:"Storage,omitempty"`
+}
+
+// ApiprotoFactoryResetSpec defines model for apiprotoFactoryResetSpec.
+type ApiprotoFactoryResetSpec struct {
+	BIOS         *bool   `json:"BIOS,omitempty"`
+	BMC          *bool   `json:"BMC,omitempty"`
+	BMCResetType *string `json:"BMCResetType,omitempty"`
+	ClearJobs    *bool   `json:"ClearJobs,omitempty"`
+	Storage      *bool   `json:"Storage,omitempty"`
+}
+
 // ApiprotoFilter defines model for apiprotoFilter.
 type ApiprotoFilter struct {
 	Key      *string         `json:"Key,omitempty"`
 	Values   *[]string       `json:"Values,omitempty"`
 	Operator *FilterOperator `json:"operator,omitempty"`
+}
+
+// ApiprotoFirmwareSpec defines model for apiprotoFirmwareSpec.
+type ApiprotoFirmwareSpec struct {
+	Description     *string             `json:"Description,omitempty"`
+	ID              *string             `json:"ID,omitempty"`
+	Name            *string             `json:"Name,omitempty"`
+	PreviousVersion *string             `json:"PreviousVersion,omitempty"`
+	SoftwareID      *string             `json:"SoftwareID,omitempty"`
+	Status          *ApiprotoStatusSpec `json:"Status,omitempty"`
+	Updateable      *bool               `json:"Updateable,omitempty"`
+	Version         *string             `json:"Version,omitempty"`
+}
+
+// ApiprotoGetInvRetentionPolicyResp defines model for apiprotoGetInvRetentionPolicyResp.
+type ApiprotoGetInvRetentionPolicyResp struct {
+	Error           *ApiprotoAPIError `json:"Error,omitempty"`
+	Message         *string           `json:"Message,omitempty"`
+	RetentionPeriod *int32            `json:"RetentionPeriod,omitempty"`
+	Tenant          *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetLocationInventoryResp defines model for apiprotoGetLocationInventoryResp.
+type ApiprotoGetLocationInventoryResp struct {
+	Error    *ApiprotoAPIError          `json:"Error,omitempty"`
+	Location *ApiprotoLocationInventory `json:"Location,omitempty"`
+	Status   *ApiprotoStatus            `json:"Status,omitempty"`
+	Tenant   *string                    `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetLocationsInventoryResp defines model for apiprotoGetLocationsInventoryResp.
+type ApiprotoGetLocationsInventoryResp struct {
+	Error     *ApiprotoAPIError            `json:"Error,omitempty"`
+	Locations *[]ApiprotoLocationInventory `json:"Locations,omitempty"`
+	Status    *ApiprotoStatus              `json:"Status,omitempty"`
+	Tenant    *string                      `json:"Tenant,omitempty"`
 }
 
 // ApiprotoGetResourceDeploymentsResp defines model for apiprotoGetResourceDeploymentsResp.
@@ -197,6 +1031,30 @@ type ApiprotoGetResourceDeploymentsResp struct {
 	Id          *string                 `json:"Id,omitempty"`
 	Resp        *ApiprotoResponse       `json:"Resp,omitempty"`
 	Tenant      *string                 `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetResourceInvResp defines model for apiprotoGetResourceInvResp.
+type ApiprotoGetResourceInvResp struct {
+	Error    *ApiprotoAPIError    `json:"Error,omitempty"`
+	Resource *ApiprotoResourceInv `json:"Resource,omitempty"`
+	Status   *ApiprotoStatus      `json:"Status,omitempty"`
+	Tenant   *string              `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetResourcePoolInventoryResp defines model for apiprotoGetResourcePoolInventoryResp.
+type ApiprotoGetResourcePoolInventoryResp struct {
+	Error  *ApiprotoAPIError              `json:"Error,omitempty"`
+	Rp     *ApiprotoResourcePoolInventory `json:"Rp,omitempty"`
+	Status *ApiprotoStatus                `json:"Status,omitempty"`
+	Tenant *string                        `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetResourcePoolsInventoryResp defines model for apiprotoGetResourcePoolsInventoryResp.
+type ApiprotoGetResourcePoolsInventoryResp struct {
+	Error  *ApiprotoAPIError                `json:"Error,omitempty"`
+	Rps    *[]ApiprotoResourcePoolInventory `json:"Rps,omitempty"`
+	Status *ApiprotoStatus                  `json:"Status,omitempty"`
+	Tenant *string                          `json:"Tenant,omitempty"`
 }
 
 // ApiprotoGetResourceResp defines model for apiprotoGetResourceResp.
@@ -220,6 +1078,14 @@ type ApiprotoGetResourceSubscriptionsResp struct {
 	Resp                 *ApiprotoResponse                   `json:"Resp,omitempty"`
 }
 
+// ApiprotoGetResourcesInvResp defines model for apiprotoGetResourcesInvResp.
+type ApiprotoGetResourcesInvResp struct {
+	Error     *ApiprotoAPIError      `json:"Error,omitempty"`
+	Resources *[]ApiprotoResourceInv `json:"Resources,omitempty"`
+	Status    *ApiprotoStatus        `json:"Status,omitempty"`
+	Tenant    *string                `json:"Tenant,omitempty"`
+}
+
 // ApiprotoGetResourcesResp defines model for apiprotoGetResourcesResp.
 type ApiprotoGetResourcesResp struct {
 	Pagination *ApiprotoPagination `json:"Pagination,omitempty"`
@@ -228,15 +1094,117 @@ type ApiprotoGetResourcesResp struct {
 	Tenant     *string             `json:"Tenant,omitempty"`
 }
 
+// ApiprotoGetServerInventoryResp defines model for apiprotoGetServerInventoryResp.
+type ApiprotoGetServerInventoryResp struct {
+	Error  *ApiprotoAPIError `json:"Error,omitempty"`
+	Server *ApiprotoServer   `json:"Server,omitempty"`
+}
+
+// ApiprotoGetServersInventoryResp defines model for apiprotoGetServersInventoryResp.
+type ApiprotoGetServersInventoryResp struct {
+	CachedServers *[]ApiprotoServerBrief `json:"CachedServers,omitempty"`
+	Error         *ApiprotoAPIError      `json:"Error,omitempty"`
+	ServerCount   *string                `json:"ServerCount,omitempty"`
+	Servers       *[]ApiprotoServer      `json:"Servers,omitempty"`
+}
+
+// ApiprotoGetSiteInventoryResp defines model for apiprotoGetSiteInventoryResp.
+type ApiprotoGetSiteInventoryResp struct {
+	Error  *ApiprotoAPIError      `json:"Error,omitempty"`
+	Site   *ApiprotoSiteInventory `json:"Site,omitempty"`
+	Status *ApiprotoStatus        `json:"Status,omitempty"`
+	Tenant *string                `json:"Tenant,omitempty"`
+}
+
+// ApiprotoGetSitesInventoryResp defines model for apiprotoGetSitesInventoryResp.
+type ApiprotoGetSitesInventoryResp struct {
+	Error  *ApiprotoAPIError        `json:"Error,omitempty"`
+	Sites  *[]ApiprotoSiteInventory `json:"Sites,omitempty"`
+	Status *ApiprotoStatus          `json:"Status,omitempty"`
+	Tenant *string                  `json:"Tenant,omitempty"`
+}
+
 // ApiprotoGroups defines model for apiprotoGroups.
 type ApiprotoGroups struct {
 	Group *[]string `json:"group,omitempty"`
+}
+
+// ApiprotoIPv4AddressSettings defines model for apiprotoIPv4AddressSettings.
+type ApiprotoIPv4AddressSettings struct {
+	Address    *string `json:"Address,omitempty"`
+	Gateway    *string `json:"Gateway,omitempty"`
+	SubnetMask *string `json:"SubnetMask,omitempty"`
+}
+
+// ApiprotoIPv4Addresses defines model for apiprotoIPv4Addresses.
+type ApiprotoIPv4Addresses struct {
+	Address       *string `json:"Address,omitempty"`
+	AddressOrigin *string `json:"AddressOrigin,omitempty"`
+	Gateway       *string `json:"Gateway,omitempty"`
+	SubnetMask    *string `json:"SubnetMask,omitempty"`
+}
+
+// ApiprotoIdentifier defines model for apiprotoIdentifier.
+type ApiprotoIdentifier struct {
+	DurableName       *string `json:"DurableName,omitempty"`
+	DurableNameFormat *string `json:"DurableNameFormat,omitempty"`
+}
+
+// ApiprotoInputRange defines model for apiprotoInputRange.
+type ApiprotoInputRange struct {
+	InputType          *string `json:"InputType,omitempty"`
+	MaximumFrequencyHz *int32  `json:"MaximumFrequencyHz,omitempty"`
+	MaximumVoltage     *int32  `json:"MaximumVoltage,omitempty"`
+	MinimumFrequencyHz *int32  `json:"MinimumFrequencyHz,omitempty"`
+	MinimumVoltage     *int32  `json:"MinimumVoltage,omitempty"`
+	OutputWattage      *int32  `json:"OutputWattage,omitempty"`
+}
+
+// ApiprotoInstalledOsConfigSpec defines model for apiprotoInstalledOsConfigSpec.
+type ApiprotoInstalledOsConfigSpec struct {
+	NICBonding *[]ApiprotoNICBondingDetailsSpec `json:"NICBonding,omitempty"`
+	OsIP       *string                          `json:"OsIP,omitempty"`
+	Password   *string                          `json:"Password,omitempty"`
+	UserName   *string                          `json:"UserName,omitempty"`
 }
 
 // ApiprotoLabel defines model for apiprotoLabel.
 type ApiprotoLabel struct {
 	Key   *string `json:"Key,omitempty"`
 	Value *string `json:"Value,omitempty"`
+}
+
+// ApiprotoLicenseStatus defines model for apiprotoLicenseStatus.
+type ApiprotoLicenseStatus struct {
+	LicenseDescription *string `json:"LicenseDescription,omitempty"`
+}
+
+// ApiprotoLocationInventory defines model for apiprotoLocationInventory.
+type ApiprotoLocationInventory struct {
+	Address          *ApiprotoAddress        `json:"Address,omitempty"`
+	Coordinate       *ApiprotoCoordinate     `json:"Coordinate,omitempty"`
+	DeletedAt        *string                 `json:"DeletedAt,omitempty"`
+	Description      *string                 `json:"Description,omitempty"`
+	GlobalLocationId *string                 `json:"GlobalLocationId,omitempty"`
+	Id               *string                 `json:"Id,omitempty"`
+	IsDeleted        *bool                   `json:"IsDeleted,omitempty"`
+	Labels           *[]ApiprotoLabel        `json:"Labels,omitempty"`
+	Name             *string                 `json:"Name,omitempty"`
+	Sites            *ApiprotoSitesInventory `json:"Sites,omitempty"`
+	State            *string                 `json:"State,omitempty"`
+}
+
+// ApiprotoLocationSpec defines model for apiprotoLocationSpec.
+type ApiprotoLocationSpec struct {
+	AltitudeMeters *int32                     `json:"AltitudeMeters,omitempty"`
+	Contacts       *[]ApiprotoContactInfo     `json:"Contacts,omitempty"`
+	Info           *string                    `json:"Info,omitempty"`
+	InfoFormat     *string                    `json:"InfoFormat,omitempty"`
+	Latitude       *float64                   `json:"Latitude,omitempty"`
+	Longitude      *float64                   `json:"Longitude,omitempty"`
+	PartLocation   *ApiprotoPartLocationSpec  `json:"PartLocation,omitempty"`
+	Placement      *ApiprotoPlacementSpec     `json:"Placement,omitempty"`
+	PostalAddress  *ApiprotoPostalAddressSpec `json:"PostalAddress,omitempty"`
 }
 
 // ApiprotoLom defines model for apiprotoLom.
@@ -258,6 +1226,285 @@ type ApiprotoLom struct {
 	User *string `json:"user,omitempty"`
 }
 
+// ApiprotoMemorySpec defines model for apiprotoMemorySpec.
+type ApiprotoMemorySpec struct {
+	AllowedSpeedsMHz                        *[]int32            `json:"AllowedSpeedsMHz,omitempty"`
+	BaseModuleType                          *string             `json:"BaseModuleType,omitempty"`
+	BusWidthBits                            *int32              `json:"BusWidthBits,omitempty"`
+	CacheSizeMiB                            *int32              `json:"CacheSizeMiB,omitempty"`
+	CapacityMiB                             *int32              `json:"CapacityMiB,omitempty"`
+	DataWidthBits                           *int32              `json:"DataWidthBits,omitempty"`
+	Description                             *string             `json:"Description,omitempty"`
+	DeviceLocator                           *string             `json:"DeviceLocator,omitempty"`
+	ErrorCorrection                         *string             `json:"ErrorCorrection,omitempty"`
+	FirmwareRevision                        *string             `json:"FirmwareRevision,omitempty"`
+	ID                                      *string             `json:"ID,omitempty"`
+	LogicalSizeMiB                          *int32              `json:"LogicalSizeMiB,omitempty"`
+	Manufacturer                            *string             `json:"Manufacturer,omitempty"`
+	MaxTDPMilliWatts                        *[]int32            `json:"MaxTDPMilliWatts,omitempty"`
+	MemoryDeviceType                        *string             `json:"MemoryDeviceType,omitempty"`
+	MemorySubsystemControllerManufacturerID *string             `json:"MemorySubsystemControllerManufacturerID,omitempty"`
+	MemorySubsystemControllerProductID      *string             `json:"MemorySubsystemControllerProductID,omitempty"`
+	MemoryType                              *string             `json:"MemoryType,omitempty"`
+	ModuleManufacturerID                    *string             `json:"ModuleManufacturerID,omitempty"`
+	ModuleProductID                         *string             `json:"ModuleProductID,omitempty"`
+	Name                                    *string             `json:"Name,omitempty"`
+	NonVolatileSizeMiB                      *int32              `json:"NonVolatileSizeMiB,omitempty"`
+	OperatingMemoryModes                    *[]string           `json:"OperatingMemoryModes,omitempty"`
+	OperatingSpeedMhz                       *int32              `json:"OperatingSpeedMhz,omitempty"`
+	PartNumber                              *string             `json:"PartNumber,omitempty"`
+	RankCount                               *int32              `json:"RankCount,omitempty"`
+	SerialNumber                            *string             `json:"SerialNumber,omitempty"`
+	Status                                  *ApiprotoStatusSpec `json:"Status,omitempty"`
+	VolatileSizeMiB                         *int32              `json:"VolatileSizeMiB,omitempty"`
+}
+
+// ApiprotoMetricReportSpec defines model for apiprotoMetricReportSpec.
+type ApiprotoMetricReportSpec struct {
+	Name *string `json:"Name,omitempty"`
+}
+
+// ApiprotoMetricReportStatus defines model for apiprotoMetricReportStatus.
+type ApiprotoMetricReportStatus struct {
+	MetricValues *[]ApiprotoMetricValue `json:"MetricValues,omitempty"`
+	Name         *string                `json:"Name,omitempty"`
+}
+
+// ApiprotoMetricSpec defines model for apiprotoMetricSpec.
+type ApiprotoMetricSpec struct {
+	MetricReports     *[]ApiprotoMetricReportSpec `json:"MetricReports,omitempty"`
+	PollFrequencyMins *int32                      `json:"PollFrequencyMins,omitempty"`
+}
+
+// ApiprotoMetricStatus defines model for apiprotoMetricStatus.
+type ApiprotoMetricStatus struct {
+	MetricReports     *[]ApiprotoMetricReportStatus `json:"MetricReports,omitempty"`
+	NextPoll          *string                       `json:"NextPoll,omitempty"`
+	PollFrequencyMins *int32                        `json:"PollFrequencyMins,omitempty"`
+}
+
+// ApiprotoMetricValue defines model for apiprotoMetricValue.
+type ApiprotoMetricValue struct {
+	MetricID   *string `json:"MetricID,omitempty"`
+	SourceFQDD *string `json:"SourceFQDD,omitempty"`
+	TimeStamp  *string `json:"TimeStamp,omitempty"`
+	Value      *string `json:"Value,omitempty"`
+}
+
+// ApiprotoNICBondingDetails defines model for apiprotoNICBondingDetails.
+type ApiprotoNICBondingDetails struct {
+	BondingName *string `json:"BondingName,omitempty"`
+}
+
+// ApiprotoNICBondingDetailsSpec defines model for apiprotoNICBondingDetailsSpec.
+type ApiprotoNICBondingDetailsSpec struct {
+	BondingName *string   `json:"BondingName,omitempty"`
+	Miion       *string   `json:"Miion,omitempty"`
+	Mode        *string   `json:"Mode,omitempty"`
+	NICCards    *[]string `json:"NICCards,omitempty"`
+}
+
+// ApiprotoNetworkAdapterGlobalSettingsSpec defines model for apiprotoNetworkAdapterGlobalSettingsSpec.
+type ApiprotoNetworkAdapterGlobalSettingsSpec struct {
+	AdapterErrorRecovery *string `json:"AdapterErrorRecovery,omitempty"`
+	BannerMessageTimeout *int32  `json:"BannerMessageTimeout,omitempty"`
+	HideSetupPrompt      *string `json:"HideSetupPrompt,omitempty"`
+	MaxPfMsixVectors     *int32  `json:"MaxPfMsixVectors,omitempty"`
+	SetupKey             *string `json:"SetupKey,omitempty"`
+	VirtualizationMode   *string `json:"VirtualizationMode,omitempty"`
+}
+
+// ApiprotoNetworkAdapterGlobalSettingsStatus defines model for apiprotoNetworkAdapterGlobalSettingsStatus.
+type ApiprotoNetworkAdapterGlobalSettingsStatus struct {
+	AdapterErrorRecovery *string `json:"AdapterErrorRecovery,omitempty"`
+	BannerMessageTimeout *int32  `json:"BannerMessageTimeout,omitempty"`
+	HideSetupPrompt      *string `json:"HideSetupPrompt,omitempty"`
+	MaxPfMsixVectors     *int32  `json:"MaxPfMsixVectors,omitempty"`
+	SetupKey             *string `json:"SetupKey,omitempty"`
+	VirtualizationMode   *string `json:"VirtualizationMode,omitempty"`
+}
+
+// ApiprotoNetworkAdapterPortSettingsSpec defines model for apiprotoNetworkAdapterPortSettingsSpec.
+type ApiprotoNetworkAdapterPortSettingsSpec struct {
+	ANProtocol              *string `json:"ANProtocol,omitempty"`
+	BootOptionROM           *string `json:"BootOptionROM,omitempty"`
+	BootRetryCnt            *string `json:"BootRetryCnt,omitempty"`
+	BootStrapType           *string `json:"BootStrapType,omitempty"`
+	DCBX                    *string `json:"DCBX,omitempty"`
+	DefaultEVBMode          *string `json:"DefaultEVBMode,omitempty"`
+	ForwardErrorCorrection  *string `json:"ForwardErrorCorrection,omitempty"`
+	LegacyBootProto         *string `json:"LegacyBootProto,omitempty"`
+	MediaAutoDetect         *string `json:"MediaAutoDetect,omitempty"`
+	MsixVectorsPerVf        *int32  `json:"MsixVectorsPerVf,omitempty"`
+	OperationalLnkSpeed     *string `json:"OperationalLnkSpeed,omitempty"`
+	PermitTotalPortShutdown *string `json:"PermitTotalPortShutdown,omitempty"`
+	PortLinkTraining        *string `json:"PortLinkTraining,omitempty"`
+	RDMANICModeOnPort       *string `json:"RDMANICModeOnPort,omitempty"`
+	VLanMode                *string `json:"VLanMode,omitempty"`
+	WakeOnLan               *string `json:"WakeOnLan,omitempty"`
+}
+
+// ApiprotoNetworkAdapterPortSettingsStatus defines model for apiprotoNetworkAdapterPortSettingsStatus.
+type ApiprotoNetworkAdapterPortSettingsStatus struct {
+	ANProtocol                 *string `json:"ANProtocol,omitempty"`
+	AutodetectSpeedExcludeMask *int32  `json:"AutodetectSpeedExcludeMask,omitempty"`
+	BlnkLeds                   *int32  `json:"BlnkLeds,omitempty"`
+	BootOptionROM              *string `json:"BootOptionROM,omitempty"`
+	BootRetryCnt               *string `json:"BootRetryCnt,omitempty"`
+	BootStrapType              *string `json:"BootStrapType,omitempty"`
+	DCBX                       *string `json:"DCBX,omitempty"`
+	DefaultEVBMode             *string `json:"DefaultEVBMode,omitempty"`
+	ForwardErrorCorrection     *string `json:"ForwardErrorCorrection,omitempty"`
+	LegacyBootProto            *string `json:"LegacyBootProto,omitempty"`
+	MediaAutoDetect            *string `json:"MediaAutoDetect,omitempty"`
+	MsixVectorsPerVf           *int32  `json:"MsixVectorsPerVf,omitempty"`
+	NumberVFAdvertised         *int32  `json:"NumberVFAdvertised,omitempty"`
+	OperationalLnkSpeed        *string `json:"OperationalLnkSpeed,omitempty"`
+	PXEBootSupport             *string `json:"PXEBootSupport,omitempty"`
+	PermitTotalPortShutdown    *string `json:"PermitTotalPortShutdown,omitempty"`
+	PortLinkTraining           *string `json:"PortLinkTraining,omitempty"`
+	RDMANICModeOnPort          *string `json:"RDMANICModeOnPort,omitempty"`
+	VLanMode                   *string `json:"VLanMode,omitempty"`
+	WakeOnLan                  *string `json:"WakeOnLan,omitempty"`
+}
+
+// ApiprotoNetworkAdapterPortsSpec defines model for apiprotoNetworkAdapterPortsSpec.
+type ApiprotoNetworkAdapterPortsSpec struct {
+	Attributes *ApiprotoNetworkAdapterPortSettingsSpec `json:"Attributes,omitempty"`
+	ID         *string                                 `json:"ID,omitempty"`
+}
+
+// ApiprotoNetworkAdapterPortsStatus defines model for apiprotoNetworkAdapterPortsStatus.
+type ApiprotoNetworkAdapterPortsStatus struct {
+	AssociatedNetworkAddresses *[]string                                 `json:"AssociatedNetworkAddresses,omitempty"`
+	Attributes                 *ApiprotoNetworkAdapterPortSettingsStatus `json:"Attributes,omitempty"`
+	ID                         *string                                   `json:"ID,omitempty"`
+	LinkStatus                 *string                                   `json:"LinkStatus,omitempty"`
+	Name                       *string                                   `json:"Name,omitempty"`
+	PhysicalPortNumber         *string                                   `json:"PhysicalPortNumber,omitempty"`
+	SupportedLinkCapabilities  *[]ApiprotoSupportedLinkCapability        `json:"SupportedLinkCapabilities,omitempty"`
+}
+
+// ApiprotoNetworkAdapterStatus defines model for apiprotoNetworkAdapterStatus.
+type ApiprotoNetworkAdapterStatus struct {
+	Attributes       *ApiprotoNetworkAdapterGlobalSettingsStatus `json:"Attributes,omitempty"`
+	Manufacturer     *string                                     `json:"Manufacturer,omitempty"`
+	Model            *string                                     `json:"Model,omitempty"`
+	NetworkAdapterID *string                                     `json:"NetworkAdapterID,omitempty"`
+	NetworkPorts     *[]ApiprotoNetworkAdapterPortsStatus        `json:"NetworkPorts,omitempty"`
+	PartNumber       *string                                     `json:"PartNumber,omitempty"`
+	SerialNumber     *string                                     `json:"SerialNumber,omitempty"`
+	Version          *string                                     `json:"Version,omitempty"`
+}
+
+// ApiprotoNetworkInterfaceSpec defines model for apiprotoNetworkInterfaceSpec.
+type ApiprotoNetworkInterfaceSpec = map[string]interface{}
+
+// ApiprotoNicAdapterSpec defines model for apiprotoNicAdapterSpec.
+type ApiprotoNicAdapterSpec struct {
+	Attributes       *ApiprotoNetworkAdapterGlobalSettingsSpec `json:"Attributes,omitempty"`
+	NetworkAdapterID *string                                   `json:"NetworkAdapterID,omitempty"`
+	NicPorts         *[]ApiprotoNetworkAdapterPortsSpec        `json:"NicPorts,omitempty"`
+}
+
+// ApiprotoNicFirmwareInfo defines model for apiprotoNicFirmwareInfo.
+type ApiprotoNicFirmwareInfo struct {
+	NicFwVersion *string `json:"NicFwVersion,omitempty"`
+	NicId        *string `json:"NicId,omitempty"`
+}
+
+// ApiprotoOSDetailsStatus defines model for apiprotoOSDetailsStatus.
+type ApiprotoOSDetailsStatus struct {
+	DNSSearch     *[]string                     `json:"DNSSearch,omitempty"`
+	DNSServer     *[]string                     `json:"DNSServer,omitempty"`
+	DriverDetails *[]ApiprotoOSDriverDetails    `json:"DriverDetails,omitempty"`
+	HostName      *string                       `json:"HostName,omitempty"`
+	IPAddrDetails *[]ApiprotoOSIPAddressDetails `json:"IPAddrDetails,omitempty"`
+	NICBonding    *[]ApiprotoNICBondingDetails  `json:"NICBonding,omitempty"`
+	NTPServer     *[]string                     `json:"NTPServer,omitempty"`
+	OSVersion     *string                       `json:"OSVersion,omitempty"`
+}
+
+// ApiprotoOSDriverDetails defines model for apiprotoOSDriverDetails.
+type ApiprotoOSDriverDetails struct {
+	Type    *string `json:"Type,omitempty"`
+	Version *string `json:"Version,omitempty"`
+}
+
+// ApiprotoOSIPAddressDetails defines model for apiprotoOSIPAddressDetails.
+type ApiprotoOSIPAddressDetails struct {
+	IPAddress *string `json:"IPAddress,omitempty"`
+	NICName   *string `json:"NICName,omitempty"`
+}
+
+// ApiprotoOSIPAddressDetailsSpec defines model for apiprotoOSIPAddressDetailsSpec.
+type ApiprotoOSIPAddressDetailsSpec struct {
+	Gateway   *string `json:"Gateway,omitempty"`
+	IPAddress *string `json:"IPAddress,omitempty"`
+	NICName   *string `json:"NICName,omitempty"`
+	NetMask   *string `json:"NetMask,omitempty"`
+}
+
+// ApiprotoOSInstallVolumeMeta defines model for apiprotoOSInstallVolumeMeta.
+type ApiprotoOSInstallVolumeMeta struct {
+	Name *string `json:"Name,omitempty"`
+	Type *string `json:"Type,omitempty"`
+}
+
+// ApiprotoOSNetworkingDetails defines model for apiprotoOSNetworkingDetails.
+type ApiprotoOSNetworkingDetails struct {
+	BootProto *string                         `json:"BootProto,omitempty"`
+	DNSSearch *[]string                       `json:"DNSSearch,omitempty"`
+	DNSServer *[]string                       `json:"DNSServer,omitempty"`
+	HostName  *string                         `json:"HostName,omitempty"`
+	IPDetails *ApiprotoOSIPAddressDetailsSpec `json:"IPDetails,omitempty"`
+	NTPServer *[]string                       `json:"NTPServer,omitempty"`
+	VLAN      *string                         `json:"VLAN,omitempty"`
+}
+
+// ApiprotoOSVolumeDetails defines model for apiprotoOSVolumeDetails.
+type ApiprotoOSVolumeDetails struct {
+	DeviceType          *string `json:"DeviceType,omitempty"`
+	OSInstallVolumeFQDD *string `json:"OSInstallVolumeFQDD,omitempty"`
+	OSInstallVolumeID   *string `json:"OSInstallVolumeID,omitempty"`
+	PickFirstVolume     *string `json:"PickFirstVolume,omitempty"`
+	SASAddress          *string `json:"SASAddress,omitempty"`
+	SerialNumber        *string `json:"SerialNumber,omitempty"`
+	Target              *string `json:"Target,omitempty"`
+}
+
+// ApiprotoObjectMeta defines model for apiprotoObjectMeta.
+type ApiprotoObjectMeta struct {
+	CreationTimestamp *string            `json:"creationTimestamp,omitempty"`
+	Generation        *string            `json:"generation,omitempty"`
+	Labels            *map[string]string `json:"labels,omitempty"`
+	Name              *string            `json:"name,omitempty"`
+	Namespace         *string            `json:"namespace,omitempty"`
+	ResourceVersion   *string            `json:"resourceVersion,omitempty"`
+	Uid               *string            `json:"uid,omitempty"`
+}
+
+// ApiprotoOperatingSystemConfig defines model for apiprotoOperatingSystemConfig.
+type ApiprotoOperatingSystemConfig struct {
+	AutoConfigureBoss      *bool                          `json:"AutoConfigureBoss,omitempty"`
+	BootMenuOption         *string                        `json:"BootMenuOption,omitempty"`
+	ConfigData             *string                        `json:"ConfigData,omitempty"`
+	ConfigType             *string                        `json:"ConfigType,omitempty"`
+	InstallVerifyType      *string                        `json:"InstallVerifyType,omitempty"`
+	InstallVolumeID        *string                        `json:"InstallVolumeID,omitempty"`
+	InstallVolumeTypeOrder *[]ApiprotoOSInstallVolumeMeta `json:"InstallVolumeTypeOrder,omitempty"`
+	MinimumDiskSize        *string                        `json:"MinimumDiskSize,omitempty"`
+	NetworkingDetails      *ApiprotoOSNetworkingDetails   `json:"NetworkingDetails,omitempty"`
+	OSDrivers              *[]string                      `json:"OSDrivers,omitempty"`
+}
+
+// ApiprotoOperation defines model for apiprotoOperation.
+type ApiprotoOperation struct {
+	AssociatedTask     *string  `json:"AssociatedTask,omitempty"`
+	OperationName      *string  `json:"OperationName,omitempty"`
+	PercentageComplete *float32 `json:"PercentageComplete,omitempty"`
+}
+
 // ApiprotoOs defines model for apiprotoOs.
 type ApiprotoOs struct {
 	ConfigData  *string `json:"configData,omitempty"`
@@ -277,11 +1524,235 @@ type ApiprotoOs struct {
 	Version     *string `json:"version,omitempty"`
 }
 
+// ApiprotoPCIeDeviceSpec defines model for apiprotoPCIeDeviceSpec.
+type ApiprotoPCIeDeviceSpec struct {
+	Description     *string             `json:"Description,omitempty"`
+	DeviceType      *string             `json:"DeviceType,omitempty"`
+	FirmwareVersion *string             `json:"FirmwareVersion,omitempty"`
+	ID              *string             `json:"ID,omitempty"`
+	Manufacturer    *string             `json:"Manufacturer,omitempty"`
+	Model           *string             `json:"Model,omitempty"`
+	Name            *string             `json:"Name,omitempty"`
+	PCIeSlotLanes   *int32              `json:"PCIeSlotLanes,omitempty"`
+	PCIeSlotNumber  *int32              `json:"PCIeSlotNumber,omitempty"`
+	PartNumber      *string             `json:"PartNumber,omitempty"`
+	SKU             *string             `json:"SKU,omitempty"`
+	SerialNumber    *string             `json:"SerialNumber,omitempty"`
+	Status          *ApiprotoStatusSpec `json:"Status,omitempty"`
+}
+
 // ApiprotoPagination defines model for apiprotoPagination.
 type ApiprotoPagination struct {
 	Limit  *int64 `json:"limit,omitempty"`
 	Offset *int64 `json:"offset,omitempty"`
 	Total  *int64 `json:"total,omitempty"`
+}
+
+// ApiprotoPartLocationSpec defines model for apiprotoPartLocationSpec.
+type ApiprotoPartLocationSpec struct {
+	LocationOrdinalValue *int32  `json:"LocationOrdinalValue,omitempty"`
+	LocationType         *string `json:"LocationType,omitempty"`
+	Orientation          *string `json:"Orientation,omitempty"`
+	Reference            *string `json:"Reference,omitempty"`
+	ServiceLabel         *string `json:"ServiceLabel,omitempty"`
+}
+
+// ApiprotoPlacementSpec defines model for apiprotoPlacementSpec.
+type ApiprotoPlacementSpec struct {
+	AdditionalInfo *string `json:"AdditionalInfo,omitempty"`
+	Rack           *string `json:"Rack,omitempty"`
+	RackOffset     *int32  `json:"RackOffset,omitempty"`
+	RackUnits      *string `json:"RackUnits,omitempty"`
+	Row            *string `json:"Row,omitempty"`
+}
+
+// ApiprotoPostalAddressSpec defines model for apiprotoPostalAddressSpec.
+type ApiprotoPostalAddressSpec struct {
+	AdditionalCode         *string `json:"AdditionalCode,omitempty"`
+	AdditionalInfo         *string `json:"AdditionalInfo,omitempty"`
+	Building               *string `json:"Building,omitempty"`
+	City                   *string `json:"City,omitempty"`
+	Community              *string `json:"Community,omitempty"`
+	Country                *int32  `json:"Country,omitempty"`
+	District               *string `json:"District,omitempty"`
+	Division               *string `json:"Division,omitempty"`
+	Floor                  *string `json:"Floor,omitempty"`
+	GPSCoords              *string `json:"GPSCoords,omitempty"`
+	HouseNumber            *int32  `json:"HouseNumber,omitempty"`
+	HouseNumberSuffix      *string `json:"HouseNumberSuffix,omitempty"`
+	Landmark               *string `json:"Landmark,omitempty"`
+	LeadingStreetDirection *string `json:"LeadingStreetDirection,omitempty"`
+	Location               *string `json:"Location,omitempty"`
+	Name                   *string `json:"Name,omitempty"`
+	Neighborhood           *string `json:"Neighborhood,omitempty"`
+	POBox                  *string `json:"POBox,omitempty"`
+	PlaceType              *string `json:"PlaceType,omitempty"`
+	PostalCode             *string `json:"PostalCode,omitempty"`
+	Road                   *string `json:"Road,omitempty"`
+	RoadBranch             *string `json:"RoadBranch,omitempty"`
+	RoadPostModifier       *string `json:"RoadPostModifier,omitempty"`
+	RoadPreModifier        *string `json:"RoadPreModifier,omitempty"`
+	RoadSection            *string `json:"RoadSection,omitempty"`
+	RoadSubBranch          *string `json:"RoadSubBranch,omitempty"`
+	Room                   *string `json:"Room,omitempty"`
+	Seat                   *string `json:"Seat,omitempty"`
+	Street                 *string `json:"Street,omitempty"`
+	StreetSuffix           *string `json:"StreetSuffix,omitempty"`
+	Territory              *string `json:"Territory,omitempty"`
+	TrailingStreetSuffix   *string `json:"TrailingStreetSuffix,omitempty"`
+	Unit                   *string `json:"Unit,omitempty"`
+}
+
+// ApiprotoPowerControl defines model for apiprotoPowerControl.
+type ApiprotoPowerControl struct {
+	Description         *string                  `json:"Description,omitempty"`
+	ID                  *string                  `json:"ID,omitempty"`
+	MemberID            *string                  `json:"MemberID,omitempty"`
+	Name                *string                  `json:"Name,omitempty"`
+	PhysicalContext     *string                  `json:"PhysicalContext,omitempty"`
+	PowerAllocatedWatts *float32                 `json:"PowerAllocatedWatts,omitempty"`
+	PowerAvailableWatts *float32                 `json:"PowerAvailableWatts,omitempty"`
+	PowerCapacityWatts  *float32                 `json:"PowerCapacityWatts,omitempty"`
+	PowerConsumedWatts  *float32                 `json:"PowerConsumedWatts,omitempty"`
+	PowerLimit          *ApiprotoPowerLimitSpec  `json:"PowerLimit,omitempty"`
+	PowerMetrics        *ApiprotoPowerMetricSpec `json:"PowerMetrics,omitempty"`
+	PowerRequestedWatts *int32                   `json:"PowerRequestedWatts,omitempty"`
+	Status              *ApiprotoStatusSpec      `json:"Status,omitempty"`
+}
+
+// ApiprotoPowerLimitSpec defines model for apiprotoPowerLimitSpec.
+type ApiprotoPowerLimitSpec struct {
+	CorrectionInMs *string  `json:"CorrectionInMs,omitempty"`
+	LimitException *string  `json:"LimitException,omitempty"`
+	LimitInWatts   *float32 `json:"LimitInWatts,omitempty"`
+}
+
+// ApiprotoPowerMetricSpec defines model for apiprotoPowerMetricSpec.
+type ApiprotoPowerMetricSpec struct {
+	AverageConsumedWatts *float32 `json:"AverageConsumedWatts,omitempty"`
+	IntervalInMin        *int32   `json:"IntervalInMin,omitempty"`
+	MaxConsumedWatts     *float32 `json:"MaxConsumedWatts,omitempty"`
+	MinConsumedWatts     *float32 `json:"MinConsumedWatts,omitempty"`
+}
+
+// ApiprotoPowerSpec defines model for apiprotoPowerSpec.
+type ApiprotoPowerSpec struct {
+	Description        *string                   `json:"Description,omitempty"`
+	ID                 *string                   `json:"ID,omitempty"`
+	IndicatorLED       *string                   `json:"IndicatorLED,omitempty"`
+	Name               *string                   `json:"Name,omitempty"`
+	PowerControl       *[]ApiprotoPowerControl   `json:"PowerControl,omitempty"`
+	PowerControlCount  *int32                    `json:"PowerControlCount,omitempty"`
+	PowerSupplies      *[]ApiprotoPowerSupply    `json:"PowerSupplies,omitempty"`
+	PowerSuppliesCount *int32                    `json:"PowerSuppliesCount,omitempty"`
+	Redundancy         *[]ApiprotoRedundancySpec `json:"Redundancy,omitempty"`
+	RedundancyCount    *int32                    `json:"RedundancyCount,omitempty"`
+	Voltages           *[]ApiprotoVoltage        `json:"Voltages,omitempty"`
+	VoltagesCount      *int32                    `json:"VoltagesCount,omitempty"`
+}
+
+// ApiprotoPowerSupply defines model for apiprotoPowerSupply.
+type ApiprotoPowerSupply struct {
+	Description          *string                   `json:"Description,omitempty"`
+	EfficiencyPercent    *float64                  `json:"EfficiencyPercent,omitempty"`
+	FirmwareVersion      *string                   `json:"FirmwareVersion,omitempty"`
+	HotPluggable         *bool                     `json:"HotPluggable,omitempty"`
+	ID                   *string                   `json:"ID,omitempty"`
+	IndicatorLED         *string                   `json:"IndicatorLED,omitempty"`
+	InputRanges          *[]ApiprotoInputRange     `json:"InputRanges,omitempty"`
+	LastPowerOutputWatts *float32                  `json:"LastPowerOutputWatts,omitempty"`
+	LineInputVoltage     *int32                    `json:"LineInputVoltage,omitempty"`
+	LineInputVoltageType *string                   `json:"LineInputVoltageType,omitempty"`
+	Manufacturer         *string                   `json:"Manufacturer,omitempty"`
+	MemberID             *string                   `json:"MemberID,omitempty"`
+	Model                *string                   `json:"Model,omitempty"`
+	Name                 *string                   `json:"Name,omitempty"`
+	PartNumber           *string                   `json:"PartNumber,omitempty"`
+	PowerCapacityWatts   *float32                  `json:"PowerCapacityWatts,omitempty"`
+	PowerInputWatts      *float32                  `json:"PowerInputWatts,omitempty"`
+	PowerOutputWatts     *float32                  `json:"PowerOutputWatts,omitempty"`
+	PowerSupplyType      *string                   `json:"PowerSupplyType,omitempty"`
+	Redundancy           *[]ApiprotoRedundancySpec `json:"Redundancy,omitempty"`
+	RedundancyCount      *int32                    `json:"RedundancyCount,omitempty"`
+	SerialNumber         *string                   `json:"SerialNumber,omitempty"`
+	SparePartNumber      *string                   `json:"SparePartNumber,omitempty"`
+	Status               *ApiprotoStatusSpec       `json:"Status,omitempty"`
+}
+
+// ApiprotoProcessorSpec defines model for apiprotoProcessorSpec.
+type ApiprotoProcessorSpec struct {
+	Description           *string                  `json:"Description,omitempty"`
+	FPGA                  *ApiprotoFPGA            `json:"FPGA,omitempty"`
+	FirmwareVersion       *string                  `json:"FirmwareVersion,omitempty"`
+	ID                    *string                  `json:"ID,omitempty"`
+	InstructionSet        *string                  `json:"InstructionSet,omitempty"`
+	Manufacturer          *string                  `json:"Manufacturer,omitempty"`
+	MaxSpeedMHz           *int32                   `json:"MaxSpeedMHz,omitempty"`
+	Model                 *string                  `json:"Model,omitempty"`
+	Name                  *string                  `json:"Name,omitempty"`
+	PartNumber            *string                  `json:"PartNumber,omitempty"`
+	ProcessorArchitecture *string                  `json:"ProcessorArchitecture,omitempty"`
+	ProcessorID           *ApiprotoprocessorIDSpec `json:"ProcessorID,omitempty"`
+	ProcessorType         *string                  `json:"ProcessorType,omitempty"`
+	SerialNumber          *string                  `json:"SerialNumber,omitempty"`
+	Socket                *string                  `json:"Socket,omitempty"`
+	Status                *ApiprotoStatusSpec      `json:"Status,omitempty"`
+	TotalCores            *int32                   `json:"TotalCores,omitempty"`
+	TotalThreads          *int32                   `json:"TotalThreads,omitempty"`
+}
+
+// ApiprotoRAIDConversion defines model for apiprotoRAIDConversion.
+type ApiprotoRAIDConversion struct {
+	ConvertTo     *string   `json:"ConvertTo,omitempty"`
+	StorageDrives *[]string `json:"StorageDrives,omitempty"`
+}
+
+// ApiprotoRAIDConversionResponse defines model for apiprotoRAIDConversionResponse.
+type ApiprotoRAIDConversionResponse struct {
+	FailedDrives     *[]string `json:"FailedDrives,omitempty"`
+	SuccessfulDrives *[]string `json:"SuccessfulDrives,omitempty"`
+}
+
+// ApiprotoRAIDOperationFlags defines model for apiprotoRAIDOperationFlags.
+type ApiprotoRAIDOperationFlags struct {
+	AutoCfgRaidBoss          *bool `json:"AutoCfgRaidBoss,omitempty"`
+	AutoConfigureBoss        *bool `json:"AutoConfigureBoss,omitempty"`
+	DeleteNonMatchingVolumes *bool `json:"DeleteNonMatchingVolumes,omitempty"`
+}
+
+// ApiprotoRAIDSpec defines model for apiprotoRAIDSpec.
+type ApiprotoRAIDSpec struct {
+	AutoConfigureBoss        *bool                   `json:"AutoConfigureBoss,omitempty"`
+	DeleteNonMatchingVolumes *bool                   `json:"DeleteNonMatchingVolumes,omitempty"`
+	RAIDConv                 *ApiprotoRAIDConversion `json:"RAIDConv,omitempty"`
+	RAIDVolumes              *[]ApiprotoRAIDVolume   `json:"RAIDVolumes,omitempty"`
+}
+
+// ApiprotoRAIDVolume defines model for apiprotoRAIDVolume.
+type ApiprotoRAIDVolume struct {
+	MaxCapacityBytes *string `json:"MaxCapacityBytes,omitempty"`
+	MediaType        *string `json:"MediaType,omitempty"`
+	MinCapacityBytes *string `json:"MinCapacityBytes,omitempty"`
+	NVMeRaidVolume   *bool   `json:"NVMeRaidVolume,omitempty"`
+	Name             *string `json:"Name,omitempty"`
+	NumberOfDrives   *int32  `json:"NumberOfDrives,omitempty"`
+	RAIDType         *string `json:"RAIDType,omitempty"`
+	SwRaid           *string `json:"SwRaid,omitempty"`
+}
+
+// ApiprotoRedundancySpec defines model for apiprotoRedundancySpec.
+type ApiprotoRedundancySpec struct {
+	Description        *string             `json:"Description,omitempty"`
+	ID                 *string             `json:"ID,omitempty"`
+	MaxNumSupported    *int32              `json:"MaxNumSupported,omitempty"`
+	MemberID           *string             `json:"MemberID,omitempty"`
+	MinNumNeeded       *int32              `json:"MinNumNeeded,omitempty"`
+	Mode               *string             `json:"Mode,omitempty"`
+	Name               *string             `json:"Name,omitempty"`
+	RedundancyEnabled  *bool               `json:"RedundancyEnabled,omitempty"`
+	RedundancySet      *[]string           `json:"RedundancySet,omitempty"`
+	RedundancySetCount *int32              `json:"RedundancySetCount,omitempty"`
+	Status             *ApiprotoStatusSpec `json:"Status,omitempty"`
 }
 
 // ApiprotoResource defines model for apiprotoResource.
@@ -356,6 +1827,22 @@ type ApiprotoResourceDetails struct {
 	Subscribed *string `json:"Subscribed,omitempty"`
 }
 
+// ApiprotoResourceInv defines model for apiprotoResourceInv.
+type ApiprotoResourceInv struct {
+	Allocated   *bool            `json:"Allocated,omitempty"`
+	DeletedAt   *string          `json:"DeletedAt,omitempty"`
+	Description *string          `json:"Description,omitempty"`
+	Id          *string          `json:"Id,omitempty"`
+	IsDeleted   *bool            `json:"IsDeleted,omitempty"`
+	Labels      *[]ApiprotoLabel `json:"Labels,omitempty"`
+	LocationId  *string          `json:"LocationId,omitempty"`
+	Name        *string          `json:"Name,omitempty"`
+	RpId        *string          `json:"RpId,omitempty"`
+	SiteId      *string          `json:"SiteId,omitempty"`
+	State       *string          `json:"State,omitempty"`
+	Type        *string          `json:"Type,omitempty"`
+}
+
 // ApiprotoResourcePool defines model for apiprotoResourcePool.
 type ApiprotoResourcePool struct {
 	DefaultRp   *bool                     `json:"DefaultRp,omitempty"`
@@ -370,10 +1857,30 @@ type ApiprotoResourcePool struct {
 	Status      *ApiprotoDeploymentStatus `json:"Status,omitempty"`
 }
 
+// ApiprotoResourcePoolInventory defines model for apiprotoResourcePoolInventory.
+type ApiprotoResourcePoolInventory struct {
+	DeletedAt     *string               `json:"DeletedAt,omitempty"`
+	Description   *string               `json:"Description,omitempty"`
+	Id            *string               `json:"Id,omitempty"`
+	IsDefault     *bool                 `json:"IsDefault,omitempty"`
+	IsDeleted     *bool                 `json:"IsDeleted,omitempty"`
+	Labels        *[]ApiprotoLabel      `json:"Labels,omitempty"`
+	Name          *string               `json:"Name,omitempty"`
+	ResourceCount *int32                `json:"ResourceCount,omitempty"`
+	Resources     *ApiprotoResourcesInv `json:"Resources,omitempty"`
+	SiteId        *string               `json:"SiteId,omitempty"`
+	State         *string               `json:"State,omitempty"`
+}
+
 // ApiprotoResourcePoolResp defines model for apiprotoResourcePoolResp.
 type ApiprotoResourcePoolResp struct {
 	ResourcePool *ApiprotoResourcePool `json:"ResourcePool,omitempty"`
 	Resp         *ApiprotoResponse     `json:"Resp,omitempty"`
+}
+
+// ApiprotoResourcePoolsInventory defines model for apiprotoResourcePoolsInventory.
+type ApiprotoResourcePoolsInventory struct {
+	Rps *[]ApiprotoResourcePoolInventory `json:"rps,omitempty"`
 }
 
 // ApiprotoResourcePoolsResp defines model for apiprotoResourcePoolsResp.
@@ -402,6 +1909,11 @@ type ApiprotoResourceSubscriptionsFilter struct {
 	SiteId      *string `json:"SiteId,omitempty"`
 }
 
+// ApiprotoResourcesInv defines model for apiprotoResourcesInv.
+type ApiprotoResourcesInv struct {
+	Resources *[]ApiprotoResourceInv `json:"Resources,omitempty"`
+}
+
 // ApiprotoResponse defines model for apiprotoResponse.
 type ApiprotoResponse struct {
 	DebugMsg *string                 `json:"debugMsg,omitempty"`
@@ -414,16 +1926,287 @@ type ApiprotoResponse struct {
 // ApiprotoResponseStatus defines model for apiprotoResponseStatus.
 type ApiprotoResponseStatus = interface{}
 
+// ApiprotoSDCardSpec defines model for apiprotoSDCardSpec.
+type ApiprotoSDCardSpec struct {
+	ConnectorLayout *string `json:"ConnectorLayout,omitempty"`
+	DeviceFQDD      *string `json:"DeviceFQDD,omitempty"`
+	Name            *string `json:"Name,omitempty"`
+	Number          *int32  `json:"Number,omitempty"`
+}
+
+// ApiprotoSecureBootSpec defines model for apiprotoSecureBootSpec.
+type ApiprotoSecureBootSpec = map[string]interface{}
+
+// ApiprotoServer defines model for apiprotoServer.
+type ApiprotoServer struct {
+	Allocated    *bool                 `json:"Allocated,omitempty"`
+	CloudName    *string               `json:"CloudName,omitempty"`
+	CloudType    *string               `json:"CloudType,omitempty"`
+	CloudVersion *string               `json:"CloudVersion,omitempty"`
+	DeletedAt    *string               `json:"DeletedAt,omitempty"`
+	DriftStatus  *ApiprotoDriftReports `json:"DriftStatus,omitempty"`
+	IsDeleted    *bool                 `json:"IsDeleted,omitempty"`
+	Labels       *[]ApiprotoLabel      `json:"Labels,omitempty"`
+	Location     *string               `json:"Location,omitempty"`
+	ResourcePool *string               `json:"ResourcePool,omitempty"`
+	Site         *string               `json:"Site,omitempty"`
+	ApiVersion   *string               `json:"apiVersion,omitempty"`
+	Metadata     *ApiprotoObjectMeta   `json:"metadata,omitempty"`
+	Spec         *ApiprotoServerSpec   `json:"spec,omitempty"`
+	Status       *ApiprotoServerStatus `json:"status,omitempty"`
+}
+
+// ApiprotoServerBrief defines model for apiprotoServerBrief.
+type ApiprotoServerBrief struct {
+	Allocated          *bool                      `json:"Allocated,omitempty"`
+	AvailableDIMMs     *string                    `json:"AvailableDIMMs,omitempty"`
+	BIOSVersion        *string                    `json:"BIOSVersion,omitempty"`
+	BMCFwVersion       *string                    `json:"BMCFwVersion,omitempty"`
+	CPUModel           *string                    `json:"CPUModel,omitempty"`
+	CloudName          *string                    `json:"CloudName,omitempty"`
+	CloudType          *string                    `json:"CloudType,omitempty"`
+	CloudVersion       *string                    `json:"CloudVersion,omitempty"`
+	Command            *string                    `json:"Command,omitempty"`
+	Compliant          *string                    `json:"Compliant,omitempty"`
+	DeletedAt          *string                    `json:"DeletedAt,omitempty"`
+	DeviceID           *string                    `json:"DeviceID,omitempty"`
+	DriftStatus        *ApiprotoDriftReportsBrief `json:"DriftStatus,omitempty"`
+	Health             *string                    `json:"Health,omitempty"`
+	ID                 *string                    `json:"ID,omitempty"`
+	IPAddress          *string                    `json:"IPAddress,omitempty"`
+	IsDeleted          *bool                      `json:"IsDeleted,omitempty"`
+	Labels             *[]ApiprotoLabel           `json:"Labels,omitempty"`
+	Location           *string                    `json:"Location,omitempty"`
+	Managed            *string                    `json:"Managed,omitempty"`
+	Memory             *string                    `json:"Memory,omitempty"`
+	Model              *string                    `json:"Model,omitempty"`
+	NICInfo            *[]ApiprotoNicFirmwareInfo `json:"NICInfo,omitempty"`
+	Name               *string                    `json:"Name,omitempty"`
+	OSHostName         *string                    `json:"OSHostName,omitempty"`
+	OSIPAddress        *string                    `json:"OSIPAddress,omitempty"`
+	OSName             *string                    `json:"OSName,omitempty"`
+	OSVersion          *string                    `json:"OSVersion,omitempty"`
+	PSU                *string                    `json:"PSU,omitempty"`
+	PartialMatch       *bool                      `json:"PartialMatch,omitempty"`
+	PowerState         *string                    `json:"PowerState,omitempty"`
+	Processors         *string                    `json:"Processors,omitempty"`
+	Profile            *string                    `json:"Profile,omitempty"`
+	ResourcePool       *string                    `json:"ResourcePool,omitempty"`
+	ResourceProfile    *string                    `json:"ResourceProfile,omitempty"`
+	SerialNumber       *string                    `json:"SerialNumber,omitempty"`
+	ServiceTag         *string                    `json:"ServiceTag,omitempty"`
+	Site               *string                    `json:"Site,omitempty"`
+	Status             *string                    `json:"Status,omitempty"`
+	Storage            *string                    `json:"Storage,omitempty"`
+	SystemManufacturer *string                    `json:"SystemManufacturer,omitempty"`
+	Tags               *string                    `json:"Tags,omitempty"`
+	Tenant             *string                    `json:"Tenant,omitempty"`
+	TotalCores         *string                    `json:"TotalCores,omitempty"`
+}
+
+// ApiprotoServerMeta defines model for apiprotoServerMeta.
+type ApiprotoServerMeta struct {
+	ID   *string            `json:"ID,omitempty"`
+	Tags *map[string]string `json:"Tags,omitempty"`
+}
+
+// ApiprotoServerSpec defines model for apiprotoServerSpec.
+type ApiprotoServerSpec struct {
+	Audit                  *ApiprotoAuditSpec             `json:"Audit,omitempty"`
+	BMC                    *[]ApiprotoBMCSpec             `json:"BMC,omitempty"`
+	BMCEndPoint            *string                        `json:"BMCEndPoint,omitempty"`
+	BMCLogForward          *ApiprotoBMCLogForwardSpec     `json:"BMCLogForward,omitempty"`
+	Bios                   *ApiprotoBIOSSpec              `json:"Bios,omitempty"`
+	Boot                   *ApiprotoBootSpec              `json:"Boot,omitempty"`
+	Decommission           *ApiprotoDecommissionSpec      `json:"Decommission,omitempty"`
+	FactoryReset           *ApiprotoFactoryResetSpec      `json:"FactoryReset,omitempty"`
+	FirmwareNames          *[]string                      `json:"FirmwareNames,omitempty"`
+	InstalledOsConfig      *ApiprotoInstalledOsConfigSpec `json:"InstalledOsConfig,omitempty"`
+	Location               *ApiprotoLocationSpec          `json:"Location,omitempty"`
+	Managed                *bool                          `json:"Managed,omitempty"`
+	Metadata               *ApiprotoServerMeta            `json:"Metadata,omitempty"`
+	Metric                 *ApiprotoMetricSpec            `json:"Metric,omitempty"`
+	NIC                    *[]ApiprotoNicAdapterSpec      `json:"NIC,omitempty"`
+	OSConfig               *ApiprotoOperatingSystemConfig `json:"OSConfig,omitempty"`
+	OSName                 *string                        `json:"OSName,omitempty"`
+	OverwriteInstallation  *bool                          `json:"OverwriteInstallation,omitempty"`
+	Password               *string                        `json:"Password,omitempty"`
+	PowerState             *string                        `json:"PowerState,omitempty"`
+	RAID                   *ApiprotoRAIDSpec              `json:"RAID,omitempty"`
+	ReInitialize           *bool                          `json:"ReInitialize,omitempty"`
+	ReconcileTelemetry     *bool                          `json:"ReconcileTelemetry,omitempty"`
+	TelemetryServiceEnable *string                        `json:"TelemetryServiceEnable,omitempty"`
+	TenantOp               *bool                          `json:"TenantOp,omitempty"`
+	UserName               *string                        `json:"UserName,omitempty"`
+}
+
+// ApiprotoServerStatus defines model for apiprotoServerStatus.
+type ApiprotoServerStatus struct {
+	AssetTag                         *string                              `json:"AssetTag,omitempty"`
+	Audit                            *ApiprotoAuditStatus                 `json:"Audit,omitempty"`
+	BMC                              *[]ApiprotoBMCStatus                 `json:"BMC,omitempty"`
+	BMCLogForward                    *ApiprotoBMCLogForwardStatus         `json:"BMCLogForward,omitempty"`
+	Bios                             *ApiprotoBiosStatus                  `json:"Bios,omitempty"`
+	Boot                             *[]ApiprotoBootStatus                `json:"Boot,omitempty"`
+	Command                          *string                              `json:"Command,omitempty"`
+	CompleteBMC                      *[]ApiprotoCompleteBMCStatus         `json:"CompleteBMC,omitempty"`
+	CompleteBios                     *ApiprotoCompleteBiosStatus          `json:"CompleteBios,omitempty"`
+	Decommission                     *ApiprotoDecommissionStatus          `json:"Decommission,omitempty"`
+	DefaultCredsHash                 *string                              `json:"DefaultCredsHash,omitempty"`
+	Errors                           *[]string                            `json:"Errors,omitempty"`
+	EthernetInterface                *[]ApiprotoEthernetInterfaceSpec     `json:"EthernetInterface,omitempty"`
+	FactoryResetCompletedStatus      *ApiprotoFactoryResetCompletedStatus `json:"FactoryResetCompletedStatus,omitempty"`
+	FailureBackOffTimeToRetry        *string                              `json:"FailureBackOffTimeToRetry,omitempty"`
+	FailureRetries                   *int32                               `json:"FailureRetries,omitempty"`
+	Firmware                         *[]ApiprotoFirmwareSpec              `json:"Firmware,omitempty"`
+	FirmwareNames                    *[]string                            `json:"FirmwareNames,omitempty"`
+	IPAddress                        *string                              `json:"IPAddress,omitempty"`
+	InitializationCompleted          *bool                                `json:"InitializationCompleted,omitempty"`
+	InventoryCompleted               *bool                                `json:"InventoryCompleted,omitempty"`
+	Location                         *ApiprotoLocationSpec                `json:"Location,omitempty"`
+	Manufacturer                     *string                              `json:"Manufacturer,omitempty"`
+	MaxDIMMSlots                     *int32                               `json:"MaxDIMMSlots,omitempty"`
+	Memory                           *[]ApiprotoMemorySpec                `json:"Memory,omitempty"`
+	Metric                           *ApiprotoMetricStatus                `json:"Metric,omitempty"`
+	Model                            *string                              `json:"Model,omitempty"`
+	NIC                              *[]ApiprotoNetworkAdapterStatus      `json:"NIC,omitempty"`
+	NetworkInterface                 *[]ApiprotoNetworkInterfaceSpec      `json:"NetworkInterface,omitempty"`
+	NextDefaultPasswordIndex         *int32                               `json:"NextDefaultPasswordIndex,omitempty"`
+	NextPoll                         *string                              `json:"NextPoll,omitempty"`
+	NonRaidToRaidConversionCompleted *bool                                `json:"NonRaidToRaidConversionCompleted,omitempty"`
+	NumOfProcessors                  *int32                               `json:"NumOfProcessors,omitempty"`
+	OSDetails                        *ApiprotoOSDetailsStatus             `json:"OSDetails,omitempty"`
+	OSInstallVolumeID                *string                              `json:"OSInstallVolumeID,omitempty"`
+	OSName                           *string                              `json:"OSName,omitempty"`
+	OSVolumeDetails                  *ApiprotoOSVolumeDetails             `json:"OSVolumeDetails,omitempty"`
+	OsInventoryCompleted             *bool                                `json:"OsInventoryCompleted,omitempty"`
+	PCIeDevice                       *[]ApiprotoPCIeDeviceSpec            `json:"PCIeDevice,omitempty"`
+	PartNumber                       *string                              `json:"PartNumber,omitempty"`
+	Power                            *[]ApiprotoPowerSpec                 `json:"Power,omitempty"`
+	PowerState                       *string                              `json:"PowerState,omitempty"`
+	Processors                       *[]ApiprotoProcessorSpec             `json:"Processors,omitempty"`
+	RAIDConversionDetails            *ApiprotoRAIDConversionResponse      `json:"RAIDConversionDetails,omitempty"`
+	RAIDFlags                        *ApiprotoRAIDOperationFlags          `json:"RAIDFlags,omitempty"`
+	RaidConversionCompleted          *bool                                `json:"RaidConversionCompleted,omitempty"`
+	SDCard                           *[]ApiprotoSDCardSpec                `json:"SDCard,omitempty"`
+	SKU                              *string                              `json:"SKU,omitempty"`
+	SecureBoot                       *[]ApiprotoSecureBootSpec            `json:"SecureBoot,omitempty"`
+	SerialNumber                     *string                              `json:"SerialNumber,omitempty"`
+	SimpleStorage                    *[]ApiprotoSimpleStorageSpec         `json:"SimpleStorage,omitempty"`
+	SoftwareRaidVolumeMapping        *[]ApiprotoSoftwareVolumeMapping     `json:"SoftwareRaidVolumeMapping,omitempty"`
+	State                            *string                              `json:"State,omitempty"`
+	Status                           *ApiprotoStatusSpec                  `json:"Status,omitempty"`
+	Storage                          *[]ApiprotoStorageSpec               `json:"Storage,omitempty"`
+	TelemetryInventoryCompleted      *bool                                `json:"TelemetryInventoryCompleted,omitempty"`
+	TelemetryStatus                  *string                              `json:"TelemetryStatus,omitempty"`
+	TotalCores                       *int32                               `json:"TotalCores,omitempty"`
+	TotalSystemMemory                *float32                             `json:"TotalSystemMemory,omitempty"`
+	TransactionStatus                *ApiprotoTransaction                 `json:"TransactionStatus,omitempty"`
+	UUID                             *string                              `json:"UUID,omitempty"`
+}
+
+// ApiprotoSimpleStorageSpec defines model for apiprotoSimpleStorageSpec.
+type ApiprotoSimpleStorageSpec = map[string]interface{}
+
+// ApiprotoSiteInventory defines model for apiprotoSiteInventory.
+type ApiprotoSiteInventory struct {
+	Address     *ApiprotoAddress                `json:"Address,omitempty"`
+	BmcId       *string                         `json:"BmcId,omitempty"`
+	Coordinate  *ApiprotoCoordinate             `json:"Coordinate,omitempty"`
+	DefaultRpId *string                         `json:"DefaultRpId,omitempty"`
+	DeletedAt   *string                         `json:"DeletedAt,omitempty"`
+	Description *string                         `json:"Description,omitempty"`
+	Id          *string                         `json:"Id,omitempty"`
+	IsDeleted   *bool                           `json:"IsDeleted,omitempty"`
+	Labels      *[]ApiprotoLabel                `json:"Labels,omitempty"`
+	LocationId  *string                         `json:"LocationId,omitempty"`
+	Name        *string                         `json:"Name,omitempty"`
+	Rps         *ApiprotoResourcePoolsInventory `json:"Rps,omitempty"`
+	State       *string                         `json:"State,omitempty"`
+}
+
+// ApiprotoSitesInventory defines model for apiprotoSitesInventory.
+type ApiprotoSitesInventory struct {
+	Sites *[]ApiprotoSiteInventory `json:"sites,omitempty"`
+}
+
+// ApiprotoSoftwareVolumeMapping defines model for apiprotoSoftwareVolumeMapping.
+type ApiprotoSoftwareVolumeMapping struct {
+	BMCRaidName *string `json:"BMCRaidName,omitempty"`
+	Name        *string `json:"Name,omitempty"`
+}
+
+// ApiprotoStatus defines model for apiprotoStatus.
+type ApiprotoStatus = interface{}
+
+// ApiprotoStatusSpec defines model for apiprotoStatusSpec.
+type ApiprotoStatusSpec struct {
+	Health *string `json:"Health,omitempty"`
+	State  *string `json:"State,omitempty"`
+}
+
+// ApiprotoStorageController defines model for apiprotoStorageController.
+type ApiprotoStorageController struct {
+	CacheSummary                 *ApiprotoCacheSummarySpec `json:"CacheSummary,omitempty"`
+	FirmwareVersion              *string                   `json:"FirmwareVersion,omitempty"`
+	ID                           *string                   `json:"ID,omitempty"`
+	Identifiers                  *[]ApiprotoIdentifier     `json:"Identifiers,omitempty"`
+	Manufacturer                 *string                   `json:"Manufacturer,omitempty"`
+	MemberID                     *string                   `json:"MemberID,omitempty"`
+	Model                        *string                   `json:"Model,omitempty"`
+	Name                         *string                   `json:"Name,omitempty"`
+	SerialNumber                 *string                   `json:"SerialNumber,omitempty"`
+	SpeedGbps                    *int32                    `json:"SpeedGbps,omitempty"`
+	Status                       *ApiprotoStatusSpec       `json:"Status,omitempty"`
+	SupportedControllerProtocols *[]string                 `json:"SupportedControllerProtocols,omitempty"`
+	SupportedDeviceProtocols     *[]string                 `json:"SupportedDeviceProtocols,omitempty"`
+	SupportedRaidtypes           *[]string                 `json:"SupportedRaidtypes,omitempty"`
+}
+
+// ApiprotoStorageSpec defines model for apiprotoStorageSpec.
+type ApiprotoStorageSpec struct {
+	CurrentControllerMode *string                      `json:"CurrentControllerMode,omitempty"`
+	Description           *string                      `json:"Description,omitempty"`
+	Drives                *[]ApiprotoDrive             `json:"Drives,omitempty"`
+	ID                    *string                      `json:"ID,omitempty"`
+	Name                  *string                      `json:"Name,omitempty"`
+	SlotCount             *int32                       `json:"SlotCount,omitempty"`
+	StorageControllers    *[]ApiprotoStorageController `json:"StorageControllers,omitempty"`
+	Volumes               *[]ApiprotoVolume            `json:"Volumes,omitempty"`
+}
+
 // ApiprotoSubscribeResourcesResp defines model for apiprotoSubscribeResourcesResp.
 type ApiprotoSubscribeResourcesResp struct {
 	Resp   *ApiprotoResponse `json:"Resp,omitempty"`
 	Tenant *string           `json:"Tenant,omitempty"`
 }
 
+// ApiprotoSupportedLinkCapability defines model for apiprotoSupportedLinkCapability.
+type ApiprotoSupportedLinkCapability struct {
+	AutoSpeedNegotiation  *bool    `json:"AutoSpeedNegotiation,omitempty"`
+	CapableLinkSpeedMbps  *[]int32 `json:"CapableLinkSpeedMbps,omitempty"`
+	LinkNetworkTechnology *string  `json:"LinkNetworkTechnology,omitempty"`
+}
+
+// ApiprotoTransaction defines model for apiprotoTransaction.
+type ApiprotoTransaction struct {
+	TransactionID       *string `json:"TransactionID,omitempty"`
+	TransactionProgress *string `json:"TransactionProgress,omitempty"`
+	TransactionState    *string `json:"TransactionState,omitempty"`
+}
+
 // ApiprotoUnsubscribeResourcesResp defines model for apiprotoUnsubscribeResourcesResp.
 type ApiprotoUnsubscribeResourcesResp struct {
 	Resp   *ApiprotoResponse `json:"Resp,omitempty"`
 	Tenant *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoUpdateInvRetentionPolicyResp defines model for apiprotoUpdateInvRetentionPolicyResp.
+type ApiprotoUpdateInvRetentionPolicyResp struct {
+	Error   *ApiprotoAPIError `json:"Error,omitempty"`
+	Message *string           `json:"Message,omitempty"`
+	Tenant  *string           `json:"Tenant,omitempty"`
+	UUID    *string           `json:"UUID,omitempty"`
 }
 
 // ApiprotoUpdateResource defines model for apiprotoUpdateResource.
@@ -443,6 +2226,85 @@ type ApiprotoUpdateResourceResp struct {
 	Resource *ApiprotoResource `json:"Resource,omitempty"`
 	Response *ApiprotoResponse `json:"Response,omitempty"`
 	Tenant   *string           `json:"Tenant,omitempty"`
+}
+
+// ApiprotoVLAN defines model for apiprotoVLAN.
+type ApiprotoVLAN struct {
+	VLANEnable *bool  `json:"VLANEnable,omitempty"`
+	VLANId     *int32 `json:"VLANId,omitempty"`
+}
+
+// ApiprotoVirtualMedia defines model for apiprotoVirtualMedia.
+type ApiprotoVirtualMedia struct {
+	ConnectedVia         *string   `json:"ConnectedVia,omitempty"`
+	ID                   *string   `json:"ID,omitempty"`
+	Image                *string   `json:"Image,omitempty"`
+	ImageName            *string   `json:"ImageName,omitempty"`
+	Inserted             *bool     `json:"Inserted,omitempty"`
+	MediaTypes           *[]string `json:"MediaTypes,omitempty"`
+	Name                 *string   `json:"Name,omitempty"`
+	Password             *string   `json:"Password,omitempty"`
+	TransferMethod       *string   `json:"TransferMethod,omitempty"`
+	TransferProtocolType *string   `json:"TransferProtocolType,omitempty"`
+	UserName             *string   `json:"UserName,omitempty"`
+	WriteProtected       *string   `json:"WriteProtected,omitempty"`
+}
+
+// ApiprotoVoltage defines model for apiprotoVoltage.
+type ApiprotoVoltage struct {
+	Description               *string             `json:"Description,omitempty"`
+	ID                        *string             `json:"ID,omitempty"`
+	LowerThresholdCritical    *int32              `json:"LowerThresholdCritical,omitempty"`
+	LowerThresholdFatal       *int32              `json:"LowerThresholdFatal,omitempty"`
+	LowerThresholdNonCritical *int32              `json:"LowerThresholdNonCritical,omitempty"`
+	MaxReadingRange           *int32              `json:"MaxReadingRange,omitempty"`
+	MemberID                  *string             `json:"MemberID,omitempty"`
+	MinReadingRange           *int32              `json:"MinReadingRange,omitempty"`
+	Name                      *string             `json:"Name,omitempty"`
+	PhysicalContext           *string             `json:"PhysicalContext,omitempty"`
+	ReadingVolts              *int32              `json:"ReadingVolts,omitempty"`
+	SensorNumber              *int32              `json:"SensorNumber,omitempty"`
+	Status                    *ApiprotoStatusSpec `json:"Status,omitempty"`
+	UpperThresholdCritical    *int32              `json:"UpperThresholdCritical,omitempty"`
+	UpperThresholdFatal       *int32              `json:"UpperThresholdFatal,omitempty"`
+	UpperThresholdNonCritical *int32              `json:"UpperThresholdNonCritical,omitempty"`
+}
+
+// ApiprotoVolume defines model for apiprotoVolume.
+type ApiprotoVolume struct {
+	BMCRaidName        *string               `json:"BMCRaidName,omitempty"`
+	BlockSizeBytes     *int32                `json:"BlockSizeBytes,omitempty"`
+	CapacityBytes      *string               `json:"CapacityBytes,omitempty"`
+	Description        *string               `json:"Description,omitempty"`
+	DriveIDs           *[]string             `json:"DriveIDs,omitempty"`
+	DrivesCount        *int32                `json:"DrivesCount,omitempty"`
+	Encrypted          *bool                 `json:"Encrypted,omitempty"`
+	EncryptionTypes    *[]string             `json:"EncryptionTypes,omitempty"`
+	ID                 *string               `json:"ID,omitempty"`
+	Identifiers        *[]ApiprotoIdentifier `json:"Identifiers,omitempty"`
+	Name               *string               `json:"Name,omitempty"`
+	Operations         *[]ApiprotoOperation  `json:"Operations,omitempty"`
+	OptimumIOSizeBytes *int32                `json:"OptimumIOSizeBytes,omitempty"`
+	RAIDType           *string               `json:"RAIDType,omitempty"`
+	Status             *ApiprotoStatusSpec   `json:"Status,omitempty"`
+	SwRaid             *string               `json:"SwRaid,omitempty"`
+	VolumeType         *string               `json:"VolumeType,omitempty"`
+}
+
+// ApiprotodriftValues defines model for apiprotodriftValues.
+type ApiprotodriftValues struct {
+	Actual   *string `json:"Actual,omitempty"`
+	Expected *string `json:"Expected,omitempty"`
+}
+
+// ApiprotoprocessorIDSpec defines model for apiprotoprocessorIDSpec.
+type ApiprotoprocessorIDSpec struct {
+	EffectiveFamily         *string `json:"EffectiveFamily,omitempty"`
+	EffectiveModel          *string `json:"EffectiveModel,omitempty"`
+	IdentificationRegisters *string `json:"IdentificationRegisters,omitempty"`
+	MicrocodeInfo           *string `json:"MicrocodeInfo,omitempty"`
+	Step                    *string `json:"Step,omitempty"`
+	VendorID                *string `json:"VendorID,omitempty"`
 }
 
 // GooglerpcStatus defines model for googlerpcStatus.
@@ -733,6 +2595,118 @@ type SubscribeResourcesBody struct {
 	Resources *[]string `json:"Resources,omitempty"`
 }
 
+// GetLocationsInventoryParams defines parameters for GetLocationsInventory.
+type GetLocationsInventoryParams struct {
+	// Id Example: loc3
+	Id *string `form:"id,omitempty" json:"id,omitempty"`
+
+	// Historical Example: false
+	Historical *bool `form:"historical,omitempty" json:"historical,omitempty"`
+
+	// IsDeleted Example: true
+	IsDeleted *bool `form:"isDeleted,omitempty" json:"isDeleted,omitempty"`
+}
+
+// GetLocationInventoryParams defines parameters for GetLocationInventory.
+type GetLocationInventoryParams struct {
+	// Depth Example: 1
+	Depth *int32 `form:"depth,omitempty" json:"depth,omitempty"`
+}
+
+// GetResourcePoolsInventoryParams defines parameters for GetResourcePoolsInventory.
+type GetResourcePoolsInventoryParams struct {
+	// Id Example: rp_dp
+	Id *string `form:"id,omitempty" json:"id,omitempty"`
+
+	// SiteId Example: gc-site
+	SiteId *string `form:"siteId,omitempty" json:"siteId,omitempty"`
+
+	// Historical Example: true
+	Historical *bool `form:"historical,omitempty" json:"historical,omitempty"`
+
+	// IsDeleted Example: true
+	IsDeleted *bool `form:"isDeleted,omitempty" json:"isDeleted,omitempty"`
+}
+
+// GetResourcePoolInventoryParams defines parameters for GetResourcePoolInventory.
+type GetResourcePoolInventoryParams struct {
+	// Depth Example: 1
+	Depth *int32 `form:"depth,omitempty" json:"depth,omitempty"`
+}
+
+// GetResourcesInventoryParams defines parameters for GetResourcesInventory.
+type GetResourcesInventoryParams struct {
+	// Id Example: test-resource
+	Id *string `form:"id,omitempty" json:"id,omitempty"`
+
+	// RpId Example: rp_dp
+	RpId    *string `form:"rpId,omitempty" json:"rpId,omitempty"`
+	ResType *string `form:"resType,omitempty" json:"resType,omitempty"`
+
+	// Historical Example: true
+	Historical *bool `form:"historical,omitempty" json:"historical,omitempty"`
+
+	// IsDeleted Example: false
+	IsDeleted *bool `form:"isDeleted,omitempty" json:"isDeleted,omitempty"`
+}
+
+// GetInvRetentionPolicyParams defines parameters for GetInvRetentionPolicy.
+type GetInvRetentionPolicyParams struct {
+	UUID *string `form:"UUID,omitempty" json:"UUID,omitempty"`
+}
+
+// UpdateInvRetentionPolicyJSONBody defines parameters for UpdateInvRetentionPolicy.
+type UpdateInvRetentionPolicyJSONBody struct {
+	RetentionPeriod *int32 `json:"RetentionPeriod,omitempty"`
+}
+
+// GetServersInventoryParams defines parameters for GetServersInventory.
+type GetServersInventoryParams struct {
+	Filters      *string                             `form:"filters,omitempty" json:"filters,omitempty"`
+	PageNumber   *string                             `form:"pageNumber,omitempty" json:"pageNumber,omitempty"`
+	PageSize     *string                             `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+	Id           *string                             `form:"id,omitempty" json:"id,omitempty"`
+	IsDeleted    *bool                               `form:"isDeleted,omitempty" json:"isDeleted,omitempty"`
+	Historical   *bool                               `form:"historical,omitempty" json:"historical,omitempty"`
+	Brief        *string                             `form:"brief,omitempty" json:"brief,omitempty"`
+	BiosVersion  *string                             `form:"biosVersion,omitempty" json:"biosVersion,omitempty"`
+	BmcFwVersion *string                             `form:"bmcFwVersion,omitempty" json:"bmcFwVersion,omitempty"`
+	OsVersion    *string                             `form:"osVersion,omitempty" json:"osVersion,omitempty"`
+	CloudName    *string                             `form:"cloudName,omitempty" json:"cloudName,omitempty"`
+	CloudType    *string                             `form:"cloudType,omitempty" json:"cloudType,omitempty"`
+	CloudVersion *string                             `form:"cloudVersion,omitempty" json:"cloudVersion,omitempty"`
+	NicFwVersion *string                             `form:"nicFwVersion,omitempty" json:"nicFwVersion,omitempty"`
+	Location     *string                             `form:"location,omitempty" json:"location,omitempty"`
+	Site         *string                             `form:"site,omitempty" json:"site,omitempty"`
+	ResourcePool *string                             `form:"resourcePool,omitempty" json:"resourcePool,omitempty"`
+	PartialMatch *bool                               `form:"partialMatch,omitempty" json:"partialMatch,omitempty"`
+	Allocated    *GetServersInventoryParamsAllocated `form:"allocated,omitempty" json:"allocated,omitempty"`
+	DriftStatus  *string                             `form:"driftStatus,omitempty" json:"driftStatus,omitempty"`
+	LabelFilter  *string                             `form:"labelFilter,omitempty" json:"labelFilter,omitempty"`
+}
+
+// GetServersInventoryParamsAllocated defines parameters for GetServersInventory.
+type GetServersInventoryParamsAllocated string
+
+// GetServerInventoryParams defines parameters for GetServerInventory.
+type GetServerInventoryParams struct {
+	UUID *string `form:"UUID,omitempty" json:"UUID,omitempty"`
+}
+
+// GetSitesInventoryParams defines parameters for GetSitesInventory.
+type GetSitesInventoryParams struct {
+	Id         *string `form:"id,omitempty" json:"id,omitempty"`
+	LocationId *string `form:"locationId,omitempty" json:"locationId,omitempty"`
+	Historical *bool   `form:"historical,omitempty" json:"historical,omitempty"`
+	IsDeleted  *bool   `form:"isDeleted,omitempty" json:"isDeleted,omitempty"`
+}
+
+// GetSiteInventoryParams defines parameters for GetSiteInventory.
+type GetSiteInventoryParams struct {
+	// Depth Example: 0
+	Depth *int32 `form:"depth,omitempty" json:"depth,omitempty"`
+}
+
 // CreateResourcePoolJSONBody defines parameters for CreateResourcePool.
 type CreateResourcePoolJSONBody struct {
 	ResourcePool *ApiprotoResourcePool `json:"ResourcePool,omitempty"`
@@ -801,6 +2775,9 @@ type GetResourceSubscriptionsJSONBody struct {
 
 // GetTokenJSONRequestBody defines body for GetToken for application/json ContentType.
 type GetTokenJSONRequestBody = RhprotoGetTokenReqBody
+
+// UpdateInvRetentionPolicyJSONRequestBody defines body for UpdateInvRetentionPolicy for application/json ContentType.
+type UpdateInvRetentionPolicyJSONRequestBody UpdateInvRetentionPolicyJSONBody
 
 // CreateResourceGroupJSONRequestBody defines body for CreateResourceGroup for application/json ContentType.
 type CreateResourceGroupJSONRequestBody = RhprotoCreateResourceGroupReqBody

@@ -94,6 +94,44 @@ type ClientInterface interface {
 
 	GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetLocationsInventory request
+	GetLocationsInventory(ctx context.Context, tenant string, params *GetLocationsInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetLocationInventory request
+	GetLocationInventory(ctx context.Context, tenant string, id string, params *GetLocationInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResourcePoolsInventory request
+	GetResourcePoolsInventory(ctx context.Context, tenant string, params *GetResourcePoolsInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResourcePoolInventory request
+	GetResourcePoolInventory(ctx context.Context, tenant string, id string, params *GetResourcePoolInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResourcesInventory request
+	GetResourcesInventory(ctx context.Context, tenant string, params *GetResourcesInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResourceInventory request
+	GetResourceInventory(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetInvRetentionPolicy request
+	GetInvRetentionPolicy(ctx context.Context, tenant string, params *GetInvRetentionPolicyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateInvRetentionPolicyWithBody request with any body
+	UpdateInvRetentionPolicyWithBody(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateInvRetentionPolicy(ctx context.Context, tenant string, body UpdateInvRetentionPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServersInventory request
+	GetServersInventory(ctx context.Context, tenant string, params *GetServersInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetServerInventory request
+	GetServerInventory(ctx context.Context, tenant string, id string, params *GetServerInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSitesInventory request
+	GetSitesInventory(ctx context.Context, tenant string, params *GetSitesInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSiteInventory request
+	GetSiteInventory(ctx context.Context, tenant string, id string, params *GetSiteInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// VerifyRequestStatus request
 	VerifyRequestStatus(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -184,6 +222,162 @@ func (c *Client) GetTokenWithBody(ctx context.Context, contentType string, body 
 
 func (c *Client) GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetTokenRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetLocationsInventory(ctx context.Context, tenant string, params *GetLocationsInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetLocationsInventoryRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetLocationInventory(ctx context.Context, tenant string, id string, params *GetLocationInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetLocationInventoryRequest(c.Server, tenant, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResourcePoolsInventory(ctx context.Context, tenant string, params *GetResourcePoolsInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourcePoolsInventoryRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResourcePoolInventory(ctx context.Context, tenant string, id string, params *GetResourcePoolInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourcePoolInventoryRequest(c.Server, tenant, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResourcesInventory(ctx context.Context, tenant string, params *GetResourcesInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourcesInventoryRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResourceInventory(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourceInventoryRequest(c.Server, tenant, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetInvRetentionPolicy(ctx context.Context, tenant string, params *GetInvRetentionPolicyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetInvRetentionPolicyRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInvRetentionPolicyWithBody(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateInvRetentionPolicyRequestWithBody(c.Server, tenant, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInvRetentionPolicy(ctx context.Context, tenant string, body UpdateInvRetentionPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateInvRetentionPolicyRequest(c.Server, tenant, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServersInventory(ctx context.Context, tenant string, params *GetServersInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServersInventoryRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServerInventory(ctx context.Context, tenant string, id string, params *GetServerInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServerInventoryRequest(c.Server, tenant, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSitesInventory(ctx context.Context, tenant string, params *GetSitesInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSitesInventoryRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSiteInventory(ctx context.Context, tenant string, id string, params *GetSiteInventoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSiteInventoryRequest(c.Server, tenant, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -566,6 +760,1194 @@ func NewGetTokenRequestWithBody(server string, contentType string, body io.Reade
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetLocationsInventoryRequest generates requests for GetLocationsInventory
+func NewGetLocationsInventoryRequest(server string, tenant string, params *GetLocationsInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/locations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Historical != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "historical", runtime.ParamLocationQuery, *params.Historical); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isDeleted", runtime.ParamLocationQuery, *params.IsDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetLocationInventoryRequest generates requests for GetLocationInventory
+func NewGetLocationInventoryRequest(server string, tenant string, id string, params *GetLocationInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "Id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/locations/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Depth != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "depth", runtime.ParamLocationQuery, *params.Depth); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetResourcePoolsInventoryRequest generates requests for GetResourcePoolsInventory
+func NewGetResourcePoolsInventoryRequest(server string, tenant string, params *GetResourcePoolsInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/resourcepools", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SiteId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "siteId", runtime.ParamLocationQuery, *params.SiteId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Historical != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "historical", runtime.ParamLocationQuery, *params.Historical); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isDeleted", runtime.ParamLocationQuery, *params.IsDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetResourcePoolInventoryRequest generates requests for GetResourcePoolInventory
+func NewGetResourcePoolInventoryRequest(server string, tenant string, id string, params *GetResourcePoolInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "Id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/resourcepools/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Depth != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "depth", runtime.ParamLocationQuery, *params.Depth); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetResourcesInventoryRequest generates requests for GetResourcesInventory
+func NewGetResourcesInventoryRequest(server string, tenant string, params *GetResourcesInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/resources", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RpId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "rpId", runtime.ParamLocationQuery, *params.RpId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ResType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "resType", runtime.ParamLocationQuery, *params.ResType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Historical != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "historical", runtime.ParamLocationQuery, *params.Historical); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isDeleted", runtime.ParamLocationQuery, *params.IsDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetResourceInventoryRequest generates requests for GetResourceInventory
+func NewGetResourceInventoryRequest(server string, tenant string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "Id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/resources/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetInvRetentionPolicyRequest generates requests for GetInvRetentionPolicy
+func NewGetInvRetentionPolicyRequest(server string, tenant string, params *GetInvRetentionPolicyParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/retention-policy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.UUID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "UUID", runtime.ParamLocationQuery, *params.UUID); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateInvRetentionPolicyRequest calls the generic UpdateInvRetentionPolicy builder with application/json body
+func NewUpdateInvRetentionPolicyRequest(server string, tenant string, body UpdateInvRetentionPolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateInvRetentionPolicyRequestWithBody(server, tenant, "application/json", bodyReader)
+}
+
+// NewUpdateInvRetentionPolicyRequestWithBody generates requests for UpdateInvRetentionPolicy with any type of body
+func NewUpdateInvRetentionPolicyRequestWithBody(server string, tenant string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/retention-policy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetServersInventoryRequest generates requests for GetServersInventory
+func NewGetServersInventoryRequest(server string, tenant string, params *GetServersInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/servers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Filters != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "filters", runtime.ParamLocationQuery, *params.Filters); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageNumber != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pageNumber", runtime.ParamLocationQuery, *params.PageNumber); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pageSize", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isDeleted", runtime.ParamLocationQuery, *params.IsDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Historical != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "historical", runtime.ParamLocationQuery, *params.Historical); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Brief != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "brief", runtime.ParamLocationQuery, *params.Brief); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.BiosVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "biosVersion", runtime.ParamLocationQuery, *params.BiosVersion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.BmcFwVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "bmcFwVersion", runtime.ParamLocationQuery, *params.BmcFwVersion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OsVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "osVersion", runtime.ParamLocationQuery, *params.OsVersion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CloudName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cloudName", runtime.ParamLocationQuery, *params.CloudName); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CloudType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cloudType", runtime.ParamLocationQuery, *params.CloudType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CloudVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cloudVersion", runtime.ParamLocationQuery, *params.CloudVersion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.NicFwVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "nicFwVersion", runtime.ParamLocationQuery, *params.NicFwVersion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Location != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "location", runtime.ParamLocationQuery, *params.Location); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Site != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "site", runtime.ParamLocationQuery, *params.Site); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ResourcePool != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "resourcePool", runtime.ParamLocationQuery, *params.ResourcePool); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PartialMatch != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "partialMatch", runtime.ParamLocationQuery, *params.PartialMatch); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Allocated != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "allocated", runtime.ParamLocationQuery, *params.Allocated); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DriftStatus != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "driftStatus", runtime.ParamLocationQuery, *params.DriftStatus); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.LabelFilter != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "labelFilter", runtime.ParamLocationQuery, *params.LabelFilter); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetServerInventoryRequest generates requests for GetServerInventory
+func NewGetServerInventoryRequest(server string, tenant string, id string, params *GetServerInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "Id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/servers/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.UUID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "UUID", runtime.ParamLocationQuery, *params.UUID); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSitesInventoryRequest generates requests for GetSitesInventory
+func NewGetSitesInventoryRequest(server string, tenant string, params *GetSitesInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/sites", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.LocationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "locationId", runtime.ParamLocationQuery, *params.LocationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Historical != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "historical", runtime.ParamLocationQuery, *params.Historical); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isDeleted", runtime.ParamLocationQuery, *params.IsDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSiteInventoryRequest generates requests for GetSiteInventory
+func NewGetSiteInventoryRequest(server string, tenant string, id string, params *GetSiteInventoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "Tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "Id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenants/%s/inventory/sites/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Depth != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "depth", runtime.ParamLocationQuery, *params.Depth); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -1527,6 +2909,44 @@ type ClientWithResponsesInterface interface {
 
 	GetTokenWithResponse(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetTokenResponse, error)
 
+	// GetLocationsInventoryWithResponse request
+	GetLocationsInventoryWithResponse(ctx context.Context, tenant string, params *GetLocationsInventoryParams, reqEditors ...RequestEditorFn) (*GetLocationsInventoryResponse, error)
+
+	// GetLocationInventoryWithResponse request
+	GetLocationInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetLocationInventoryParams, reqEditors ...RequestEditorFn) (*GetLocationInventoryResponse, error)
+
+	// GetResourcePoolsInventoryWithResponse request
+	GetResourcePoolsInventoryWithResponse(ctx context.Context, tenant string, params *GetResourcePoolsInventoryParams, reqEditors ...RequestEditorFn) (*GetResourcePoolsInventoryResponse, error)
+
+	// GetResourcePoolInventoryWithResponse request
+	GetResourcePoolInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetResourcePoolInventoryParams, reqEditors ...RequestEditorFn) (*GetResourcePoolInventoryResponse, error)
+
+	// GetResourcesInventoryWithResponse request
+	GetResourcesInventoryWithResponse(ctx context.Context, tenant string, params *GetResourcesInventoryParams, reqEditors ...RequestEditorFn) (*GetResourcesInventoryResponse, error)
+
+	// GetResourceInventoryWithResponse request
+	GetResourceInventoryWithResponse(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*GetResourceInventoryResponse, error)
+
+	// GetInvRetentionPolicyWithResponse request
+	GetInvRetentionPolicyWithResponse(ctx context.Context, tenant string, params *GetInvRetentionPolicyParams, reqEditors ...RequestEditorFn) (*GetInvRetentionPolicyResponse, error)
+
+	// UpdateInvRetentionPolicyWithBodyWithResponse request with any body
+	UpdateInvRetentionPolicyWithBodyWithResponse(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateInvRetentionPolicyResponse, error)
+
+	UpdateInvRetentionPolicyWithResponse(ctx context.Context, tenant string, body UpdateInvRetentionPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateInvRetentionPolicyResponse, error)
+
+	// GetServersInventoryWithResponse request
+	GetServersInventoryWithResponse(ctx context.Context, tenant string, params *GetServersInventoryParams, reqEditors ...RequestEditorFn) (*GetServersInventoryResponse, error)
+
+	// GetServerInventoryWithResponse request
+	GetServerInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetServerInventoryParams, reqEditors ...RequestEditorFn) (*GetServerInventoryResponse, error)
+
+	// GetSitesInventoryWithResponse request
+	GetSitesInventoryWithResponse(ctx context.Context, tenant string, params *GetSitesInventoryParams, reqEditors ...RequestEditorFn) (*GetSitesInventoryResponse, error)
+
+	// GetSiteInventoryWithResponse request
+	GetSiteInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetSiteInventoryParams, reqEditors ...RequestEditorFn) (*GetSiteInventoryResponse, error)
+
 	// VerifyRequestStatusWithResponse request
 	VerifyRequestStatusWithResponse(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error)
 
@@ -1620,6 +3040,282 @@ func (r GetTokenResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetLocationsInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetLocationsInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetLocationsInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetLocationsInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetLocationInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetLocationInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetLocationInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetLocationInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetResourcePoolsInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetResourcePoolsInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResourcePoolsInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResourcePoolsInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetResourcePoolInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetResourcePoolInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResourcePoolInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResourcePoolInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetResourcesInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetResourcesInvResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResourcesInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResourcesInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetResourceInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetResourceInvResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResourceInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResourceInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetInvRetentionPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetInvRetentionPolicyResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetInvRetentionPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetInvRetentionPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateInvRetentionPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoUpdateInvRetentionPolicyResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateInvRetentionPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateInvRetentionPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServersInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetServersInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServersInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServersInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServerInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetServerInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServerInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServerInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSitesInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetSitesInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSitesInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSitesInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSiteInventoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApiprotoGetSiteInventoryResp
+	JSONDefault  *GooglerpcStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSiteInventoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSiteInventoryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2080,6 +3776,122 @@ func (c *ClientWithResponses) GetTokenWithResponse(ctx context.Context, body Get
 	return ParseGetTokenResponse(rsp)
 }
 
+// GetLocationsInventoryWithResponse request returning *GetLocationsInventoryResponse
+func (c *ClientWithResponses) GetLocationsInventoryWithResponse(ctx context.Context, tenant string, params *GetLocationsInventoryParams, reqEditors ...RequestEditorFn) (*GetLocationsInventoryResponse, error) {
+	rsp, err := c.GetLocationsInventory(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetLocationsInventoryResponse(rsp)
+}
+
+// GetLocationInventoryWithResponse request returning *GetLocationInventoryResponse
+func (c *ClientWithResponses) GetLocationInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetLocationInventoryParams, reqEditors ...RequestEditorFn) (*GetLocationInventoryResponse, error) {
+	rsp, err := c.GetLocationInventory(ctx, tenant, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetLocationInventoryResponse(rsp)
+}
+
+// GetResourcePoolsInventoryWithResponse request returning *GetResourcePoolsInventoryResponse
+func (c *ClientWithResponses) GetResourcePoolsInventoryWithResponse(ctx context.Context, tenant string, params *GetResourcePoolsInventoryParams, reqEditors ...RequestEditorFn) (*GetResourcePoolsInventoryResponse, error) {
+	rsp, err := c.GetResourcePoolsInventory(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResourcePoolsInventoryResponse(rsp)
+}
+
+// GetResourcePoolInventoryWithResponse request returning *GetResourcePoolInventoryResponse
+func (c *ClientWithResponses) GetResourcePoolInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetResourcePoolInventoryParams, reqEditors ...RequestEditorFn) (*GetResourcePoolInventoryResponse, error) {
+	rsp, err := c.GetResourcePoolInventory(ctx, tenant, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResourcePoolInventoryResponse(rsp)
+}
+
+// GetResourcesInventoryWithResponse request returning *GetResourcesInventoryResponse
+func (c *ClientWithResponses) GetResourcesInventoryWithResponse(ctx context.Context, tenant string, params *GetResourcesInventoryParams, reqEditors ...RequestEditorFn) (*GetResourcesInventoryResponse, error) {
+	rsp, err := c.GetResourcesInventory(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResourcesInventoryResponse(rsp)
+}
+
+// GetResourceInventoryWithResponse request returning *GetResourceInventoryResponse
+func (c *ClientWithResponses) GetResourceInventoryWithResponse(ctx context.Context, tenant string, id string, reqEditors ...RequestEditorFn) (*GetResourceInventoryResponse, error) {
+	rsp, err := c.GetResourceInventory(ctx, tenant, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResourceInventoryResponse(rsp)
+}
+
+// GetInvRetentionPolicyWithResponse request returning *GetInvRetentionPolicyResponse
+func (c *ClientWithResponses) GetInvRetentionPolicyWithResponse(ctx context.Context, tenant string, params *GetInvRetentionPolicyParams, reqEditors ...RequestEditorFn) (*GetInvRetentionPolicyResponse, error) {
+	rsp, err := c.GetInvRetentionPolicy(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetInvRetentionPolicyResponse(rsp)
+}
+
+// UpdateInvRetentionPolicyWithBodyWithResponse request with arbitrary body returning *UpdateInvRetentionPolicyResponse
+func (c *ClientWithResponses) UpdateInvRetentionPolicyWithBodyWithResponse(ctx context.Context, tenant string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateInvRetentionPolicyResponse, error) {
+	rsp, err := c.UpdateInvRetentionPolicyWithBody(ctx, tenant, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInvRetentionPolicyResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateInvRetentionPolicyWithResponse(ctx context.Context, tenant string, body UpdateInvRetentionPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateInvRetentionPolicyResponse, error) {
+	rsp, err := c.UpdateInvRetentionPolicy(ctx, tenant, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInvRetentionPolicyResponse(rsp)
+}
+
+// GetServersInventoryWithResponse request returning *GetServersInventoryResponse
+func (c *ClientWithResponses) GetServersInventoryWithResponse(ctx context.Context, tenant string, params *GetServersInventoryParams, reqEditors ...RequestEditorFn) (*GetServersInventoryResponse, error) {
+	rsp, err := c.GetServersInventory(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServersInventoryResponse(rsp)
+}
+
+// GetServerInventoryWithResponse request returning *GetServerInventoryResponse
+func (c *ClientWithResponses) GetServerInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetServerInventoryParams, reqEditors ...RequestEditorFn) (*GetServerInventoryResponse, error) {
+	rsp, err := c.GetServerInventory(ctx, tenant, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServerInventoryResponse(rsp)
+}
+
+// GetSitesInventoryWithResponse request returning *GetSitesInventoryResponse
+func (c *ClientWithResponses) GetSitesInventoryWithResponse(ctx context.Context, tenant string, params *GetSitesInventoryParams, reqEditors ...RequestEditorFn) (*GetSitesInventoryResponse, error) {
+	rsp, err := c.GetSitesInventory(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSitesInventoryResponse(rsp)
+}
+
+// GetSiteInventoryWithResponse request returning *GetSiteInventoryResponse
+func (c *ClientWithResponses) GetSiteInventoryWithResponse(ctx context.Context, tenant string, id string, params *GetSiteInventoryParams, reqEditors ...RequestEditorFn) (*GetSiteInventoryResponse, error) {
+	rsp, err := c.GetSiteInventory(ctx, tenant, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSiteInventoryResponse(rsp)
+}
+
 // VerifyRequestStatusWithResponse request returning *VerifyRequestStatusResponse
 func (c *ClientWithResponses) VerifyRequestStatusWithResponse(ctx context.Context, tenant string, jobid string, reqEditors ...RequestEditorFn) (*VerifyRequestStatusResponse, error) {
 	rsp, err := c.VerifyRequestStatus(ctx, tenant, jobid, reqEditors...)
@@ -2346,6 +4158,402 @@ func ParseGetTokenResponse(rsp *http.Response) (*GetTokenResponse, error) {
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest RhprotoGooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetLocationsInventoryResponse parses an HTTP response from a GetLocationsInventoryWithResponse call
+func ParseGetLocationsInventoryResponse(rsp *http.Response) (*GetLocationsInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetLocationsInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetLocationsInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetLocationInventoryResponse parses an HTTP response from a GetLocationInventoryWithResponse call
+func ParseGetLocationInventoryResponse(rsp *http.Response) (*GetLocationInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetLocationInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetLocationInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetResourcePoolsInventoryResponse parses an HTTP response from a GetResourcePoolsInventoryWithResponse call
+func ParseGetResourcePoolsInventoryResponse(rsp *http.Response) (*GetResourcePoolsInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResourcePoolsInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetResourcePoolsInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetResourcePoolInventoryResponse parses an HTTP response from a GetResourcePoolInventoryWithResponse call
+func ParseGetResourcePoolInventoryResponse(rsp *http.Response) (*GetResourcePoolInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResourcePoolInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetResourcePoolInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetResourcesInventoryResponse parses an HTTP response from a GetResourcesInventoryWithResponse call
+func ParseGetResourcesInventoryResponse(rsp *http.Response) (*GetResourcesInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResourcesInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetResourcesInvResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetResourceInventoryResponse parses an HTTP response from a GetResourceInventoryWithResponse call
+func ParseGetResourceInventoryResponse(rsp *http.Response) (*GetResourceInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResourceInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetResourceInvResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetInvRetentionPolicyResponse parses an HTTP response from a GetInvRetentionPolicyWithResponse call
+func ParseGetInvRetentionPolicyResponse(rsp *http.Response) (*GetInvRetentionPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetInvRetentionPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetInvRetentionPolicyResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateInvRetentionPolicyResponse parses an HTTP response from a UpdateInvRetentionPolicyWithResponse call
+func ParseUpdateInvRetentionPolicyResponse(rsp *http.Response) (*UpdateInvRetentionPolicyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateInvRetentionPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoUpdateInvRetentionPolicyResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServersInventoryResponse parses an HTTP response from a GetServersInventoryWithResponse call
+func ParseGetServersInventoryResponse(rsp *http.Response) (*GetServersInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServersInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetServersInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServerInventoryResponse parses an HTTP response from a GetServerInventoryWithResponse call
+func ParseGetServerInventoryResponse(rsp *http.Response) (*GetServerInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServerInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetServerInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSitesInventoryResponse parses an HTTP response from a GetSitesInventoryWithResponse call
+func ParseGetSitesInventoryResponse(rsp *http.Response) (*GetSitesInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSitesInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetSitesInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSiteInventoryResponse parses an HTTP response from a GetSiteInventoryWithResponse call
+func ParseGetSiteInventoryResponse(rsp *http.Response) (*GetSiteInventoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSiteInventoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApiprotoGetSiteInventoryResp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest GooglerpcStatus
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
