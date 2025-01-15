@@ -134,19 +134,19 @@ type ServerInterface interface {
 	// (GET /hardware-manager/inventory/v1/api_versions)
 	GetMinorVersions(w http.ResponseWriter, r *http.Request)
 	// Retrieve the list of resource pools
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools)
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools)
 	GetResourcePools(w http.ResponseWriter, r *http.Request, hwMgrId string)
-	// Retrieve the list of resources for a given resource pool
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/${resourcePoolId}/resources)
-	GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string)
 	// Retrieve exactly one resource pool
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/{resourcePoolId})
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId})
 	GetResourcePool(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string)
+	// Retrieve the list of resources for a given resource pool
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}/resources)
+	GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string)
 	// Retrieve the list of resources
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resources)
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources)
 	GetResources(w http.ResponseWriter, r *http.Request, hwMgrId string)
 	// Retrieve exactly one resource
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resources/{resourceId})
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId})
 	GetResource(w http.ResponseWriter, r *http.Request, hwMgrId string, resourceId string)
 	// Get API versions
 	// (GET /o2ims-infrastructureMonitoring/api_versions)
@@ -201,40 +201,6 @@ func (siw *ServerInterfaceWrapper) GetResourcePools(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
-// GetResourcePoolResources operation middleware
-func (siw *ServerInterfaceWrapper) GetResourcePoolResources(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "hwMgrId" -------------
-	var hwMgrId string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "hwMgrId", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "resourcePoolId" -------------
-	var resourcePoolId string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "resourcePoolId", r.PathValue("resourcePoolId"), &resourcePoolId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "resourcePoolId", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetResourcePoolResources(w, r, hwMgrId, resourcePoolId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetResourcePool operation middleware
 func (siw *ServerInterfaceWrapper) GetResourcePool(w http.ResponseWriter, r *http.Request) {
 
@@ -260,6 +226,40 @@ func (siw *ServerInterfaceWrapper) GetResourcePool(w http.ResponseWriter, r *htt
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetResourcePool(w, r, hwMgrId, resourcePoolId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetResourcePoolResources operation middleware
+func (siw *ServerInterfaceWrapper) GetResourcePoolResources(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "hwMgrId" -------------
+	var hwMgrId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "hwMgrId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "resourcePoolId" -------------
+	var resourcePoolId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "resourcePoolId", r.PathValue("resourcePoolId"), &resourcePoolId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "resourcePoolId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetResourcePoolResources(w, r, hwMgrId, resourcePoolId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -463,11 +463,11 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	}
 
 	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/api_versions", wrapper.GetMinorVersions)
-	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools", wrapper.GetResourcePools)
-	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/${resourcePoolId}/resources", wrapper.GetResourcePoolResources)
-	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/{resourcePoolId}", wrapper.GetResourcePool)
-	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/${hwMgrId}/resources", wrapper.GetResources)
-	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/${hwMgrId}/resources/{resourceId}", wrapper.GetResource)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools", wrapper.GetResourcePools)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}", wrapper.GetResourcePool)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}/resources", wrapper.GetResourcePoolResources)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resources", wrapper.GetResources)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId}", wrapper.GetResource)
 	m.HandleFunc("GET "+options.BaseURL+"/o2ims-infrastructureMonitoring/api_versions", wrapper.GetAllVersions)
 
 	return m
@@ -551,42 +551,6 @@ func (response GetResourcePools500ApplicationProblemPlusJSONResponse) VisitGetRe
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetResourcePoolResourcesRequestObject struct {
-	HwMgrId        string `json:"hwMgrId"`
-	ResourcePoolId string `json:"resourcePoolId"`
-}
-
-type GetResourcePoolResourcesResponseObject interface {
-	VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error
-}
-
-type GetResourcePoolResources200JSONResponse []ResourceInfo
-
-func (response GetResourcePoolResources200JSONResponse) VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetResourcePoolResources400ApplicationProblemPlusJSONResponse ProblemDetails
-
-func (response GetResourcePoolResources400ApplicationProblemPlusJSONResponse) VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/problem+json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetResourcePoolResources500ApplicationProblemPlusJSONResponse ProblemDetails
-
-func (response GetResourcePoolResources500ApplicationProblemPlusJSONResponse) VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/problem+json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type GetResourcePoolRequestObject struct {
 	HwMgrId        string `json:"hwMgrId"`
 	ResourcePoolId string `json:"resourcePoolId"`
@@ -626,6 +590,42 @@ func (response GetResourcePool404ApplicationProblemPlusJSONResponse) VisitGetRes
 type GetResourcePool500ApplicationProblemPlusJSONResponse ProblemDetails
 
 func (response GetResourcePool500ApplicationProblemPlusJSONResponse) VisitGetResourcePoolResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetResourcePoolResourcesRequestObject struct {
+	HwMgrId        string `json:"hwMgrId"`
+	ResourcePoolId string `json:"resourcePoolId"`
+}
+
+type GetResourcePoolResourcesResponseObject interface {
+	VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error
+}
+
+type GetResourcePoolResources200JSONResponse []ResourceInfo
+
+func (response GetResourcePoolResources200JSONResponse) VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetResourcePoolResources400ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetResourcePoolResources400ApplicationProblemPlusJSONResponse) VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetResourcePoolResources500ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetResourcePoolResources500ApplicationProblemPlusJSONResponse) VisitGetResourcePoolResourcesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(500)
 
@@ -752,19 +752,19 @@ type StrictServerInterface interface {
 	// (GET /hardware-manager/inventory/v1/api_versions)
 	GetMinorVersions(ctx context.Context, request GetMinorVersionsRequestObject) (GetMinorVersionsResponseObject, error)
 	// Retrieve the list of resource pools
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools)
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools)
 	GetResourcePools(ctx context.Context, request GetResourcePoolsRequestObject) (GetResourcePoolsResponseObject, error)
-	// Retrieve the list of resources for a given resource pool
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/${resourcePoolId}/resources)
-	GetResourcePoolResources(ctx context.Context, request GetResourcePoolResourcesRequestObject) (GetResourcePoolResourcesResponseObject, error)
 	// Retrieve exactly one resource pool
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/{resourcePoolId})
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId})
 	GetResourcePool(ctx context.Context, request GetResourcePoolRequestObject) (GetResourcePoolResponseObject, error)
+	// Retrieve the list of resources for a given resource pool
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}/resources)
+	GetResourcePoolResources(ctx context.Context, request GetResourcePoolResourcesRequestObject) (GetResourcePoolResourcesResponseObject, error)
 	// Retrieve the list of resources
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resources)
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources)
 	GetResources(ctx context.Context, request GetResourcesRequestObject) (GetResourcesResponseObject, error)
 	// Retrieve exactly one resource
-	// (GET /hardware-manager/inventory/v1/manager/${hwMgrId}/resources/{resourceId})
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId})
 	GetResource(ctx context.Context, request GetResourceRequestObject) (GetResourceResponseObject, error)
 	// Get API versions
 	// (GET /o2ims-infrastructureMonitoring/api_versions)
@@ -850,33 +850,6 @@ func (sh *strictHandler) GetResourcePools(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// GetResourcePoolResources operation middleware
-func (sh *strictHandler) GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string) {
-	var request GetResourcePoolResourcesRequestObject
-
-	request.HwMgrId = hwMgrId
-	request.ResourcePoolId = resourcePoolId
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetResourcePoolResources(ctx, request.(GetResourcePoolResourcesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetResourcePoolResources")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetResourcePoolResourcesResponseObject); ok {
-		if err := validResponse.VisitGetResourcePoolResourcesResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // GetResourcePool operation middleware
 func (sh *strictHandler) GetResourcePool(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string) {
 	var request GetResourcePoolRequestObject
@@ -897,6 +870,33 @@ func (sh *strictHandler) GetResourcePool(w http.ResponseWriter, r *http.Request,
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetResourcePoolResponseObject); ok {
 		if err := validResponse.VisitGetResourcePoolResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetResourcePoolResources operation middleware
+func (sh *strictHandler) GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string) {
+	var request GetResourcePoolResourcesRequestObject
+
+	request.HwMgrId = hwMgrId
+	request.ResourcePoolId = resourcePoolId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetResourcePoolResources(ctx, request.(GetResourcePoolResourcesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetResourcePoolResources")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetResourcePoolResourcesResponseObject); ok {
+		if err := validResponse.VisitGetResourcePoolResourcesResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -984,37 +984,37 @@ func (sh *strictHandler) GetAllVersions(w http.ResponseWriter, r *http.Request) 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
