@@ -11,7 +11,7 @@ ok      github.com/openshift-kni/oran-hwmgr-plugin/test/adaptors/dell-hwmgr     
 ok      github.com/openshift-kni/oran-hwmgr-plugin/test/adaptors/loopback       30.584s coverage: [no statements]
 ```
 
-# Testing dependencies
+## Testing dependencies
 
 Both adaptors depend on the `Node` and `Nodepool` CRDs which belong to the `oran-o2ims` git repository, respectively: [o2ims-hardwaremanagement.oran.openshift.io_nodes.yaml](https://github.com/openshift-kni/oran-o2ims/blob/main/bundle/manifests/o2ims-hardwaremanagement.oran.openshift.io_nodes.yaml) and [o2ims-hardwaremanagement.oran.openshift.io_nodepools.yaml](https://github.com/openshift-kni/oran-o2ims/blob/main/bundle/manifests/o2ims-hardwaremanagement.oran.openshift.io_nodepools.yaml).
 
@@ -36,7 +36,7 @@ require (
 replace github.com/openshift-kni/oran-o2ims/api/hardwaremanagement => github.com/abraham2512/oran-o2ims/api/hardwaremanagement v0.0.0-20241118203154-4af906dd6096
 ```
 
-# Testing the dell-hwmgr adaptor
+## Testing the dell-hwmgr adaptor
 
 This adaptor has the particularity of leveraging auto generated code from the [oapi-codegen](https://github.com/oapi-codegen/oapi-codegen?tab=readme-ov-file#generating-api-models) tool to run a 'fake' Dell server, processing the server open api file. This server mocks the rest responses on a test basis.
 
@@ -57,15 +57,15 @@ In case that open api file is changed, we might need to adapt our logic accordin
 Let's assume the openapi has changed by any reason and follow these steps to update our tests:
 
 1. Run `make dell-api` to generate the new Golang logic.
-2. On the http infra side, examine the new contents of [server.go](test/adaptors/dell-hwmgr/dell-server/generated/server.go) to see any update. As explained before, this corresponds to the http infra the server uses , which can be quite complex,  but for our simple test intend we only need to focus on the interface exposed by that server for the rest endpoints. It is implemented in [dellserver.go](test/adaptors/dell-hwmgr/dell-server/dellserver.go)
 
-  New changes might be needed to satisfy that interface again. Besides, provide the new functions you might want to mock in the tests later as part of the interface implementation in that file.That is likely the  only reason to  implement an interface function; otherwise, if it is not mocked, leave it empty.
+2. On the http infra side, examine the new contents of [server.go](test/adaptors/dell-hwmgr/dell-server/generated/server.go) to see any update. As explained before, this corresponds to the http infra the server uses , which can be quite complex,  but for our simple test intend we only need to focus on the interface exposed by that server for the rest endpoints. It is implemented in [dellserver.go](test/adaptors/dell-hwmgr/dell-server/dellserver.go)
+New changes might be needed to satisfy that interface again. Besides, provide the new functions you might want to mock in the tests later as part of the interface implementation in that file.That is likely the  only reason to  implement an interface function; otherwise, if it is not mocked, leave it empty.
 
 3. On the data model side, examine the new contents of [types.go](https://github.com/openshift-kni/oran-hwmgr-plugin/tree/main/adaptors/dell-hwmgr/generated) to see any update.
 
- Finally, adapt the Golang tests under `dell-hwmgr` to leverage all this new generated logic.
+4. Finally, adapt the Golang tests under `dell-hwmgr` to leverage all this new generated logic.
 
-4. Run the tests again to check if these new changes have been properly adapted in the `dell-hwmgr` testsuite:
+5. Run the tests again to check if these new changes have been properly adapted in the `dell-hwmgr` testsuite:
 
 ```console
 $ make test

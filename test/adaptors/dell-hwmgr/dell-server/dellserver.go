@@ -107,3 +107,51 @@ func (s DellServer) GetResourceSubscription(w http.ResponseWriter, r *http.Reque
 func (s DellServer) GetSecrets(w http.ResponseWriter, r *http.Request, tenant, secretKey string) {
 	// To be implemented
 }
+
+func (s DellServer) GetLocationsInventory(w http.ResponseWriter, r *http.Request, tenant string, params apiserver.GetLocationsInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetLocationInventory(w http.ResponseWriter, r *http.Request, tenant, id string, params apiserver.GetLocationInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetResourcePoolsInventory(w http.ResponseWriter, r *http.Request, tenant string, params apiserver.GetResourcePoolsInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetResourcePoolInventory(w http.ResponseWriter, r *http.Request, tenant, id string, params apiserver.GetResourcePoolInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetResourcesInventory(w http.ResponseWriter, r *http.Request, tenant string, params apiserver.GetResourcesInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetResourceInventory(w http.ResponseWriter, r *http.Request, tenant, id string) {
+	// To be implemented
+}
+
+func (s DellServer) GetInvRetentionPolicy(w http.ResponseWriter, r *http.Request, tenant string, params apiserver.GetInvRetentionPolicyParams) {
+	// To be implemented
+}
+
+func (s DellServer) UpdateInvRetentionPolicy(w http.ResponseWriter, r *http.Request, tenant string) {
+	// To be implemented
+}
+
+func (s DellServer) GetServersInventory(w http.ResponseWriter, r *http.Request, tenant string, params apiserver.GetServersInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetServerInventory(w http.ResponseWriter, r *http.Request, tenant, id string, params apiserver.GetServerInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetSitesInventory(w http.ResponseWriter, r *http.Request, tenant string, params apiserver.GetSitesInventoryParams) {
+	// To be implemented
+}
+
+func (s DellServer) GetSiteInventory(w http.ResponseWriter, r *http.Request, tenant, id string, params apiserver.GetSiteInventoryParams) {
+	// To be implemented
+}
