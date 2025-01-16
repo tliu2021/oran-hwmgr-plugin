@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/server/api/generated"
 )
@@ -47,25 +46,25 @@ func (i *InventoryServer) GetMinorVersions(_ context.Context, _ generated.GetMin
 
 func (i *InventoryServer) GetResourcePools(ctx context.Context, request generated.GetResourcePoolsRequestObject) (generated.GetResourcePoolsResponseObject, error) {
 	// TODO implement me
-	return nil, fmt.Errorf("not implemented")
+	return generated.GetResourcePools200JSONResponse([]generated.ResourcePoolInfo{}), nil
 }
 
 func (i *InventoryServer) GetResourcePool(ctx context.Context, request generated.GetResourcePoolRequestObject) (generated.GetResourcePoolResponseObject, error) {
 	// TODO implement me
-	return nil, fmt.Errorf("not implemented")
+	return generated.GetResourcePool200JSONResponse{}, nil
 }
 
 func (i *InventoryServer) GetResourcePoolResources(ctx context.Context, request generated.GetResourcePoolResourcesRequestObject) (generated.GetResourcePoolResourcesResponseObject, error) {
 	// TODO implement me
-	return nil, fmt.Errorf("not implemented")
+	return generated.GetResourcePoolResources200JSONResponse([]generated.ResourceInfo{}), nil
 }
 
 func (i *InventoryServer) GetResources(ctx context.Context, request generated.GetResourcesRequestObject) (generated.GetResourcesResponseObject, error) {
 	// TODO implement me
-	return nil, fmt.Errorf("not implemented")
+	return generated.GetResources200JSONResponse([]generated.ResourceInfo{}), nil
 }
 
 func (i *InventoryServer) GetResource(ctx context.Context, request generated.GetResourceRequestObject) (generated.GetResourceResponseObject, error) {
 	// TODO implement me
-	return nil, fmt.Errorf("not implemented")
+	return generated.GetResource200JSONResponse{}, nil
 }

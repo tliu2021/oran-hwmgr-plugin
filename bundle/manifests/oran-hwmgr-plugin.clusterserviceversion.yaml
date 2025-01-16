@@ -244,13 +244,12 @@ spec:
               - args:
                 - --secure-listen-address=0.0.0.0:8443
                 - --upstream=http://127.0.0.1:8080/
-                - --logtostderr=true
                 - --v=0
                 image: quay.io/openshift/origin-kube-rbac-proxy:4.18
-                name: kube-rbac-proxy
+                name: metrics-proxy
                 ports:
                 - containerPort: 8443
-                  name: https
+                  name: https-metrics
                   protocol: TCP
                 resources:
                   limits:
@@ -265,8 +264,37 @@ spec:
                     drop:
                     - ALL
               - args:
+                - --secure-listen-address=0.0.0.0:6443
+                - --upstream=http://127.0.0.1:8082/
+                - --tls-cert-file=/secrets/tls/tls.crt
+                - --tls-private-key-file=/secrets/tls/tls.key
+                - --tls-min-version=VersionTLS12
+                - --v=0
+                image: quay.io/openshift/origin-kube-rbac-proxy:4.18
+                name: api-proxy
+                ports:
+                - containerPort: 6443
+                  name: https-api
+                  protocol: TCP
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 5m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+                volumeMounts:
+                - mountPath: /secrets/tls
+                  name: controller-manager-tls
+              - args:
                 - --health-probe-bind-address=:8081
                 - --metrics-bind-address=127.0.0.1:8080
+                - --api-bind-address=127.0.0.1:8082
                 - --leader-elect
                 command:
                 - /manager
@@ -288,6 +316,16 @@ spec:
                   initialDelaySeconds: 15
                   periodSeconds: 20
                 name: manager
+                ports:
+                - containerPort: 8080
+                  name: metrics
+                  protocol: TCP
+                - containerPort: 8081
+                  name: probes
+                  protocol: TCP
+                - containerPort: 8082
+                  name: api
+                  protocol: TCP
                 readinessProbe:
                   httpGet:
                     path: /readyz
@@ -310,6 +348,11 @@ spec:
                 runAsNonRoot: true
               serviceAccountName: oran-hwmgr-plugin-controller-manager
               terminationGracePeriodSeconds: 10
+              volumes:
+              - name: controller-manager-tls
+                secret:
+                  defaultMode: 256
+                  secretName: controller-manager-tls
       permissions:
       - rules:
         - apiGroups:

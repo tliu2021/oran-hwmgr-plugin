@@ -77,7 +77,7 @@ paths:
                 $ref: '#/components/schemas/ProblemDetails'
 
 
-  /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools:
+  /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools:
     get:
       operationId: GetResourcePools
       summary: Retrieve the list of resource pools
@@ -118,7 +118,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/{resourcePoolId}:
+  /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}:
     get:
       operationId: GetResourcePool
       summary: Retrieve exactly one resource pool
@@ -163,7 +163,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /hardware-manager/inventory/v1/manager/${hwMgrId}/resourcePools/${resourcePoolId}/resources:
+  /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}/resources:
     get:
       operationId: GetResourcePoolResources
       summary: Retrieve the list of resources for a given resource pool
@@ -204,7 +204,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /hardware-manager/inventory/v1/manager/${hwMgrId}/resources:
+  /hardware-manager/inventory/v1/manager/{hwMgrId}/resources:
     get:
       operationId: GetResources
       summary: Retrieve the list of resources
@@ -239,7 +239,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /hardware-manager/inventory/v1/manager/${hwMgrId}/resources/{resourceId}:
+  /hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId}:
     get:
       operationId: GetResource
       summary: Retrieve exactly one resource
