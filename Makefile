@@ -74,6 +74,7 @@ OPERATOR_SDK_VERSION ?= v1.38.0
 IMG ?= $(IMAGE_TAG_BASE):$(VERSION)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.28.3
+ENVTEST_VERSION = release-0.19
 # HWMGR_PLUGIN_NAMESPACE refers to the namespace of the hardware manager plugin.
 HWMGR_PLUGIN_NAMESPACE ?= oran-hwmgr-plugin
 
@@ -253,7 +254,7 @@ $(ENVTEST): $(LOCALBIN)
 ifeq ($(shell uname -s),Linux)
 	@chmod -R u+w $(LOCALBIN)
 endif
-	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_VERSION)
 
 .PHONY: operator-sdk
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
