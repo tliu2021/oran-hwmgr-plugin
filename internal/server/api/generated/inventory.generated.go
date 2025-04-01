@@ -20,6 +20,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for ResourceInfoAdminState.
@@ -181,6 +182,32 @@ type ResourcePoolInfo struct {
 	SiteId *string `json:"siteId,omitempty"`
 }
 
+// Subscription Information about an inventory subscription.
+type Subscription struct {
+	// Callback The fully qualified URI to a consumer procedure which can process a Post of the
+	// ResourceChangeNotification.
+	Callback string `json:"callback"`
+
+	// ConsumerSubscriptionId Identifier for the consumer of events sent due to the Subscription request.
+	ConsumerSubscriptionId *openapi_types.UUID `json:"consumerSubscriptionId,omitempty"`
+
+	// Filter Criteria for events which do not need to be reported or will be filtered by the subscription
+	// notification service. Therefore, if a filter is not provided then all events are reported.
+	Filter *string `json:"filter,omitempty"`
+
+	// SubscriptionId Identifier for the Subscription. This identifier is allocated by the Hardware Manager.
+	SubscriptionId *openapi_types.UUID `json:"subscriptionId,omitempty"`
+}
+
+// HwMgrId defines model for hwMgrId.
+type HwMgrId = string
+
+// SubscriptionId defines model for subscriptionId.
+type SubscriptionId = openapi_types.UUID
+
+// CreateSubscriptionJSONRequestBody defines body for CreateSubscription for application/json ContentType.
+type CreateSubscriptionJSONRequestBody = Subscription
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get API versions
@@ -191,19 +218,31 @@ type ServerInterface interface {
 	GetMinorVersions(w http.ResponseWriter, r *http.Request)
 	// Retrieve the list of resource pools
 	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools)
-	GetResourcePools(w http.ResponseWriter, r *http.Request, hwMgrId string)
+	GetResourcePools(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId)
 	// Retrieve exactly one resource pool
 	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId})
-	GetResourcePool(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string)
+	GetResourcePool(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, resourcePoolId string)
 	// Retrieve the list of resources for a given resource pool
 	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}/resources)
-	GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string)
+	GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, resourcePoolId string)
 	// Retrieve the list of resources
 	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources)
-	GetResources(w http.ResponseWriter, r *http.Request, hwMgrId string)
+	GetResources(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId)
 	// Retrieve exactly one resource
 	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId})
-	GetResource(w http.ResponseWriter, r *http.Request, hwMgrId string, resourceId string)
+	GetResource(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, resourceId string)
+	// Retrieve the list of inventory subscriptions
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions)
+	GetSubscriptions(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId)
+	// Create subscription
+	// (POST /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions)
+	CreateSubscription(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId)
+	// Delete subscription
+	// (DELETE /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions/{subscriptionId})
+	DeleteSubscription(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, subscriptionId SubscriptionId)
+	// Get subscription
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions/{subscriptionId})
+	GetSubscription(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, subscriptionId SubscriptionId)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -249,7 +288,7 @@ func (siw *ServerInterfaceWrapper) GetResourcePools(w http.ResponseWriter, r *ht
 	var err error
 
 	// ------------- Path parameter "hwMgrId" -------------
-	var hwMgrId string
+	var hwMgrId HwMgrId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -274,7 +313,7 @@ func (siw *ServerInterfaceWrapper) GetResourcePool(w http.ResponseWriter, r *htt
 	var err error
 
 	// ------------- Path parameter "hwMgrId" -------------
-	var hwMgrId string
+	var hwMgrId HwMgrId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -308,7 +347,7 @@ func (siw *ServerInterfaceWrapper) GetResourcePoolResources(w http.ResponseWrite
 	var err error
 
 	// ------------- Path parameter "hwMgrId" -------------
-	var hwMgrId string
+	var hwMgrId HwMgrId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -342,7 +381,7 @@ func (siw *ServerInterfaceWrapper) GetResources(w http.ResponseWriter, r *http.R
 	var err error
 
 	// ------------- Path parameter "hwMgrId" -------------
-	var hwMgrId string
+	var hwMgrId HwMgrId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -367,7 +406,7 @@ func (siw *ServerInterfaceWrapper) GetResource(w http.ResponseWriter, r *http.Re
 	var err error
 
 	// ------------- Path parameter "hwMgrId" -------------
-	var hwMgrId string
+	var hwMgrId HwMgrId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -386,6 +425,124 @@ func (siw *ServerInterfaceWrapper) GetResource(w http.ResponseWriter, r *http.Re
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetResource(w, r, hwMgrId, resourceId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSubscriptions operation middleware
+func (siw *ServerInterfaceWrapper) GetSubscriptions(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "hwMgrId" -------------
+	var hwMgrId HwMgrId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "hwMgrId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSubscriptions(w, r, hwMgrId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateSubscription operation middleware
+func (siw *ServerInterfaceWrapper) CreateSubscription(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "hwMgrId" -------------
+	var hwMgrId HwMgrId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "hwMgrId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateSubscription(w, r, hwMgrId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteSubscription operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSubscription(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "hwMgrId" -------------
+	var hwMgrId HwMgrId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "hwMgrId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "subscriptionId" -------------
+	var subscriptionId SubscriptionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "subscriptionId", r.PathValue("subscriptionId"), &subscriptionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "subscriptionId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteSubscription(w, r, hwMgrId, subscriptionId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSubscription operation middleware
+func (siw *ServerInterfaceWrapper) GetSubscription(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "hwMgrId" -------------
+	var hwMgrId HwMgrId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "hwMgrId", r.PathValue("hwMgrId"), &hwMgrId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "hwMgrId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "subscriptionId" -------------
+	var subscriptionId SubscriptionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "subscriptionId", r.PathValue("subscriptionId"), &subscriptionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "subscriptionId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSubscription(w, r, hwMgrId, subscriptionId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -522,6 +679,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resourcePools/{resourcePoolId}/resources", wrapper.GetResourcePoolResources)
 	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resources", wrapper.GetResources)
 	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId}", wrapper.GetResource)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions", wrapper.GetSubscriptions)
+	m.HandleFunc("POST "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions", wrapper.CreateSubscription)
+	m.HandleFunc("DELETE "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions/{subscriptionId}", wrapper.DeleteSubscription)
+	m.HandleFunc("GET "+options.BaseURL+"/hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions/{subscriptionId}", wrapper.GetSubscription)
 
 	return m
 }
@@ -595,7 +756,7 @@ func (response GetMinorVersions500ApplicationProblemPlusJSONResponse) VisitGetMi
 }
 
 type GetResourcePoolsRequestObject struct {
-	HwMgrId string `json:"hwMgrId"`
+	HwMgrId HwMgrId `json:"hwMgrId"`
 }
 
 type GetResourcePoolsResponseObject interface {
@@ -657,8 +818,8 @@ func (response GetResourcePools503ApplicationProblemPlusJSONResponse) VisitGetRe
 }
 
 type GetResourcePoolRequestObject struct {
-	HwMgrId        string `json:"hwMgrId"`
-	ResourcePoolId string `json:"resourcePoolId"`
+	HwMgrId        HwMgrId `json:"hwMgrId"`
+	ResourcePoolId string  `json:"resourcePoolId"`
 }
 
 type GetResourcePoolResponseObject interface {
@@ -702,8 +863,8 @@ func (response GetResourcePool500ApplicationProblemPlusJSONResponse) VisitGetRes
 }
 
 type GetResourcePoolResourcesRequestObject struct {
-	HwMgrId        string `json:"hwMgrId"`
-	ResourcePoolId string `json:"resourcePoolId"`
+	HwMgrId        HwMgrId `json:"hwMgrId"`
+	ResourcePoolId string  `json:"resourcePoolId"`
 }
 
 type GetResourcePoolResourcesResponseObject interface {
@@ -738,7 +899,7 @@ func (response GetResourcePoolResources500ApplicationProblemPlusJSONResponse) Vi
 }
 
 type GetResourcesRequestObject struct {
-	HwMgrId string `json:"hwMgrId"`
+	HwMgrId HwMgrId `json:"hwMgrId"`
 }
 
 type GetResourcesResponseObject interface {
@@ -791,8 +952,8 @@ func (response GetResources503ApplicationProblemPlusJSONResponse) VisitGetResour
 }
 
 type GetResourceRequestObject struct {
-	HwMgrId    string `json:"hwMgrId"`
-	ResourceId string `json:"resourceId"`
+	HwMgrId    HwMgrId `json:"hwMgrId"`
+	ResourceId string  `json:"resourceId"`
 }
 
 type GetResourceResponseObject interface {
@@ -835,6 +996,229 @@ func (response GetResource500ApplicationProblemPlusJSONResponse) VisitGetResourc
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetSubscriptionsRequestObject struct {
+	HwMgrId HwMgrId `json:"hwMgrId"`
+}
+
+type GetSubscriptionsResponseObject interface {
+	VisitGetSubscriptionsResponse(w http.ResponseWriter) error
+}
+
+type GetSubscriptions200JSONResponse []Subscription
+
+func (response GetSubscriptions200JSONResponse) VisitGetSubscriptionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscriptions400ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscriptions400ApplicationProblemPlusJSONResponse) VisitGetSubscriptionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscriptions401ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscriptions401ApplicationProblemPlusJSONResponse) VisitGetSubscriptionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscriptions403ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscriptions403ApplicationProblemPlusJSONResponse) VisitGetSubscriptionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscriptions500ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscriptions500ApplicationProblemPlusJSONResponse) VisitGetSubscriptionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateSubscriptionRequestObject struct {
+	HwMgrId HwMgrId `json:"hwMgrId"`
+	Body    *CreateSubscriptionJSONRequestBody
+}
+
+type CreateSubscriptionResponseObject interface {
+	VisitCreateSubscriptionResponse(w http.ResponseWriter) error
+}
+
+type CreateSubscription201JSONResponse Subscription
+
+func (response CreateSubscription201JSONResponse) VisitCreateSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateSubscription400ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response CreateSubscription400ApplicationProblemPlusJSONResponse) VisitCreateSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateSubscription401ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response CreateSubscription401ApplicationProblemPlusJSONResponse) VisitCreateSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateSubscription403ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response CreateSubscription403ApplicationProblemPlusJSONResponse) VisitCreateSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateSubscription500ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response CreateSubscription500ApplicationProblemPlusJSONResponse) VisitCreateSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteSubscriptionRequestObject struct {
+	HwMgrId        HwMgrId        `json:"hwMgrId"`
+	SubscriptionId SubscriptionId `json:"subscriptionId"`
+}
+
+type DeleteSubscriptionResponseObject interface {
+	VisitDeleteSubscriptionResponse(w http.ResponseWriter) error
+}
+
+type DeleteSubscription200Response struct {
+}
+
+func (response DeleteSubscription200Response) VisitDeleteSubscriptionResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteSubscription401ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response DeleteSubscription401ApplicationProblemPlusJSONResponse) VisitDeleteSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteSubscription403ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response DeleteSubscription403ApplicationProblemPlusJSONResponse) VisitDeleteSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteSubscription404ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response DeleteSubscription404ApplicationProblemPlusJSONResponse) VisitDeleteSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteSubscription500ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response DeleteSubscription500ApplicationProblemPlusJSONResponse) VisitDeleteSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscriptionRequestObject struct {
+	HwMgrId        HwMgrId        `json:"hwMgrId"`
+	SubscriptionId SubscriptionId `json:"subscriptionId"`
+}
+
+type GetSubscriptionResponseObject interface {
+	VisitGetSubscriptionResponse(w http.ResponseWriter) error
+}
+
+type GetSubscription200JSONResponse Subscription
+
+func (response GetSubscription200JSONResponse) VisitGetSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscription400ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscription400ApplicationProblemPlusJSONResponse) VisitGetSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscription401ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscription401ApplicationProblemPlusJSONResponse) VisitGetSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscription403ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscription403ApplicationProblemPlusJSONResponse) VisitGetSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscription404ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscription404ApplicationProblemPlusJSONResponse) VisitGetSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSubscription500ApplicationProblemPlusJSONResponse ProblemDetails
+
+func (response GetSubscription500ApplicationProblemPlusJSONResponse) VisitGetSubscriptionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get API versions
@@ -858,6 +1242,18 @@ type StrictServerInterface interface {
 	// Retrieve exactly one resource
 	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/resources/{resourceId})
 	GetResource(ctx context.Context, request GetResourceRequestObject) (GetResourceResponseObject, error)
+	// Retrieve the list of inventory subscriptions
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions)
+	GetSubscriptions(ctx context.Context, request GetSubscriptionsRequestObject) (GetSubscriptionsResponseObject, error)
+	// Create subscription
+	// (POST /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions)
+	CreateSubscription(ctx context.Context, request CreateSubscriptionRequestObject) (CreateSubscriptionResponseObject, error)
+	// Delete subscription
+	// (DELETE /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions/{subscriptionId})
+	DeleteSubscription(ctx context.Context, request DeleteSubscriptionRequestObject) (DeleteSubscriptionResponseObject, error)
+	// Get subscription
+	// (GET /hardware-manager/inventory/v1/manager/{hwMgrId}/subscriptions/{subscriptionId})
+	GetSubscription(ctx context.Context, request GetSubscriptionRequestObject) (GetSubscriptionResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -938,7 +1334,7 @@ func (sh *strictHandler) GetMinorVersions(w http.ResponseWriter, r *http.Request
 }
 
 // GetResourcePools operation middleware
-func (sh *strictHandler) GetResourcePools(w http.ResponseWriter, r *http.Request, hwMgrId string) {
+func (sh *strictHandler) GetResourcePools(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId) {
 	var request GetResourcePoolsRequestObject
 
 	request.HwMgrId = hwMgrId
@@ -964,7 +1360,7 @@ func (sh *strictHandler) GetResourcePools(w http.ResponseWriter, r *http.Request
 }
 
 // GetResourcePool operation middleware
-func (sh *strictHandler) GetResourcePool(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string) {
+func (sh *strictHandler) GetResourcePool(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, resourcePoolId string) {
 	var request GetResourcePoolRequestObject
 
 	request.HwMgrId = hwMgrId
@@ -991,7 +1387,7 @@ func (sh *strictHandler) GetResourcePool(w http.ResponseWriter, r *http.Request,
 }
 
 // GetResourcePoolResources operation middleware
-func (sh *strictHandler) GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId string, resourcePoolId string) {
+func (sh *strictHandler) GetResourcePoolResources(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, resourcePoolId string) {
 	var request GetResourcePoolResourcesRequestObject
 
 	request.HwMgrId = hwMgrId
@@ -1018,7 +1414,7 @@ func (sh *strictHandler) GetResourcePoolResources(w http.ResponseWriter, r *http
 }
 
 // GetResources operation middleware
-func (sh *strictHandler) GetResources(w http.ResponseWriter, r *http.Request, hwMgrId string) {
+func (sh *strictHandler) GetResources(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId) {
 	var request GetResourcesRequestObject
 
 	request.HwMgrId = hwMgrId
@@ -1044,7 +1440,7 @@ func (sh *strictHandler) GetResources(w http.ResponseWriter, r *http.Request, hw
 }
 
 // GetResource operation middleware
-func (sh *strictHandler) GetResource(w http.ResponseWriter, r *http.Request, hwMgrId string, resourceId string) {
+func (sh *strictHandler) GetResource(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, resourceId string) {
 	var request GetResourceRequestObject
 
 	request.HwMgrId = hwMgrId
@@ -1070,47 +1466,169 @@ func (sh *strictHandler) GetResource(w http.ResponseWriter, r *http.Request, hwM
 	}
 }
 
+// GetSubscriptions operation middleware
+func (sh *strictHandler) GetSubscriptions(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId) {
+	var request GetSubscriptionsRequestObject
+
+	request.HwMgrId = hwMgrId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSubscriptions(ctx, request.(GetSubscriptionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSubscriptions")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetSubscriptionsResponseObject); ok {
+		if err := validResponse.VisitGetSubscriptionsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateSubscription operation middleware
+func (sh *strictHandler) CreateSubscription(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId) {
+	var request CreateSubscriptionRequestObject
+
+	request.HwMgrId = hwMgrId
+
+	var body CreateSubscriptionJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateSubscription(ctx, request.(CreateSubscriptionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateSubscription")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateSubscriptionResponseObject); ok {
+		if err := validResponse.VisitCreateSubscriptionResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteSubscription operation middleware
+func (sh *strictHandler) DeleteSubscription(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, subscriptionId SubscriptionId) {
+	var request DeleteSubscriptionRequestObject
+
+	request.HwMgrId = hwMgrId
+	request.SubscriptionId = subscriptionId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteSubscription(ctx, request.(DeleteSubscriptionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteSubscription")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteSubscriptionResponseObject); ok {
+		if err := validResponse.VisitDeleteSubscriptionResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetSubscription operation middleware
+func (sh *strictHandler) GetSubscription(w http.ResponseWriter, r *http.Request, hwMgrId HwMgrId, subscriptionId SubscriptionId) {
+	var request GetSubscriptionRequestObject
+
+	request.HwMgrId = hwMgrId
+	request.SubscriptionId = subscriptionId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSubscription(ctx, request.(GetSubscriptionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSubscription")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetSubscriptionResponseObject); ok {
+		if err := validResponse.VisitGetSubscriptionResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
