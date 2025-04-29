@@ -48,9 +48,9 @@ func (a *Adaptor) createHostFirmwareSettings(ctx context.Context, hfs *metal3v1a
 func (a *Adaptor) updateHostFirmwareSettings(ctx context.Context, name types.NamespacedName, settings metal3v1alpha1.HostFirmwareSettings) error {
 	// nolint: wrapcheck
 	return retry.OnError(retry.DefaultRetry, errors.IsConflict, func() error {
-		existingHFS := &metal3v1alpha1.HostFirmwareSettings{}
+		existingHFS, err := a.getHostFirmwareSettings(ctx, name.Name, name.Namespace)
 
-		if err := a.Get(ctx, name, existingHFS); err != nil {
+		if err != nil {
 			return fmt.Errorf("failed to fetch BMH %s/%s: %w", name.Namespace, name.Name, err)
 		}
 		existingHFS.Spec.Settings = settings.Spec.Settings
@@ -73,20 +73,28 @@ func (a *Adaptor) IsBiosUpdateRequired(ctx context.Context, bmh *metal3v1alpha1.
 	return a.checkAndUpdateFirmwareSettings(ctx, existingHFS, &hfs)
 }
 
-func (a *Adaptor) isFirmwareSettingsChangeDetected(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost) (bool, error) {
-	hfs := &metal3v1alpha1.HostFirmwareSettings{}
-	err := a.Client.Get(ctx, types.NamespacedName{Name: bmh.Name, Namespace: bmh.Namespace}, hfs)
+func (a *Adaptor) isFirmwareSettingsChangeDetectedAndValid(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost) (bool, error) {
+	hfs, err := a.getHostFirmwareSettings(ctx, bmh.Name, bmh.Namespace)
 
 	if err != nil {
 		return false, fmt.Errorf("failed to get HostFirmwareSettings %s/%s: %w", bmh.Namespace, bmh.Name, err)
 	}
-	return meta.IsStatusConditionTrue(hfs.Status.Conditions, string(metal3v1alpha1.FirmwareSettingsChangeDetected)), nil
+	changeDetectedCond := meta.FindStatusCondition(hfs.Status.Conditions, string(metal3v1alpha1.FirmwareSettingsChangeDetected))
+	if changeDetectedCond == nil {
+		return false, fmt.Errorf("failed to get HostFirmwareSettings %s condition %s/%s: %w",
+			metal3v1alpha1.FirmwareSettingsChangeDetected, bmh.Namespace, bmh.Name, err)
+	}
+
+	changeDetected := changeDetectedCond.Status == metav1.ConditionTrue
+	valid := meta.IsStatusConditionTrue(hfs.Status.Conditions, string(metal3v1alpha1.FirmwareSettingsValid))
+	observed := changeDetectedCond.ObservedGeneration == hfs.Generation
+
+	return changeDetected && valid && observed, nil
 }
 
 // Retrieves existing HostFirmwareSettings or creates a new one if not found.
 func (a *Adaptor) getOrCreateHostFirmwareSettings(ctx context.Context, hfs *metal3v1alpha1.HostFirmwareSettings) (*metal3v1alpha1.HostFirmwareSettings, error) {
-	existingHFS := &metal3v1alpha1.HostFirmwareSettings{}
-	err := a.Client.Get(ctx, types.NamespacedName{Name: hfs.Name, Namespace: hfs.Namespace}, existingHFS)
+	existingHFS, err := a.getHostFirmwareSettings(ctx, hfs.Name, hfs.Namespace)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -98,10 +106,19 @@ func (a *Adaptor) getOrCreateHostFirmwareSettings(ctx context.Context, hfs *meta
 			return hfs.DeepCopy(), nil
 		}
 		a.Logger.InfoContext(ctx, "Failed to get HostFirmwareSettings", slog.String("HFS", hfs.Name))
-		return nil, fmt.Errorf("failed to get HostFirmwareSettings %s/%s: %w", hfs.Namespace, hfs.Name, err)
+		return nil, err
 	}
 
 	return existingHFS, nil
+}
+
+func (a *Adaptor) getHostFirmwareSettings(ctx context.Context, name, namespace string) (*metal3v1alpha1.HostFirmwareSettings, error) {
+	hfs := &metal3v1alpha1.HostFirmwareSettings{}
+	err := a.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, hfs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get HostFirmwareSettings %s/%s: %w", namespace, name, err)
+	}
+	return hfs, nil
 }
 
 // Validates the BIOS settings against the firmware schema.

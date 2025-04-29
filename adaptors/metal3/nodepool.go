@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	metal3v1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
@@ -195,6 +196,12 @@ func (a *Adaptor) handleInProgressUpdate(ctx context.Context, nodelist *hwmgmtv1
 
 		return utils.RequeueImmediately(), true, nil
 	}
+
+	if bmh.Status.OperationalStatus == metal3v1alpha1.OperationalStatusError {
+		a.Logger.InfoContext(ctx, "BMH update failed", slog.String("BMH", bmh.Name))
+		return ctrl.Result{}, false, fmt.Errorf("failed to apply changes for BMH %s/%s", bmh.Namespace, bmh.Name)
+	}
+
 	a.Logger.InfoContext(ctx, "BMH config in progress", slog.String("bmh", bmh.Name))
 	return utils.RequeueWithMediumInterval(), true, nil
 }
@@ -279,7 +286,23 @@ func (a *Adaptor) handleNodePoolConfiguring(
 	}
 
 	// STEP 3: Process any node that is already in the update-in-progress state.
-	if res, handled, err := a.handleInProgressUpdate(ctx, nodelist); err != nil || handled {
+	res, handled, err := a.handleInProgressUpdate(ctx, nodelist)
+	if err != nil {
+		if !handled {
+			a.Logger.InfoContext(ctx, "Not handled", slog.String("error", err.Error()))
+			if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
+				hwmgmtv1alpha1.Configured, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
+				"Servicing Error"); err != nil {
+				a.Logger.InfoContext(ctx, "failed to update nodepool status", slog.String("error", err.Error()))
+				return utils.RequeueWithMediumInterval(),
+					fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+			}
+			a.Logger.InfoContext(ctx, "updated nodepool status", slog.String("nodepool", nodepool.Name))
+			return utils.DoNotRequeue(), nil
+		}
+		return res, err
+	}
+	if handled {
 		return res, err
 	}
 
@@ -303,18 +326,22 @@ func (a *Adaptor) HandleNodePoolSpecChanged(
 	hwmgr *pluginv1alpha1.HardwareManager,
 	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
 
-	if err := utils.UpdateNodePoolStatusCondition(
-		ctx,
-		a.Client,
-		nodepool,
-		hwmgmtv1alpha1.Configured,
-		hwmgmtv1alpha1.ConfigUpdate,
-		metav1.ConditionFalse,
-		string(hwmgmtv1alpha1.AwaitConfig)); err != nil {
-		return utils.RequeueWithMediumInterval(),
-			fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+	configuredCondition := meta.FindStatusCondition(
+		nodepool.Status.Conditions,
+		string(hwmgmtv1alpha1.Configured))
+	if configuredCondition == nil {
+		if err := utils.UpdateNodePoolStatusCondition(
+			ctx,
+			a.Client,
+			nodepool,
+			hwmgmtv1alpha1.Configured,
+			hwmgmtv1alpha1.ConfigUpdate,
+			metav1.ConditionFalse,
+			string(hwmgmtv1alpha1.AwaitConfig)); err != nil {
+			return utils.RequeueWithMediumInterval(),
+				fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+		}
 	}
-
 	return a.handleNodePoolConfiguring(ctx, nodepool)
 }
 
