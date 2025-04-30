@@ -482,6 +482,11 @@ func (a *Adaptor) handleTransitionNodes(ctx context.Context, nodelist *hwmgmtv1a
 			bmh.Annotations = make(map[string]string)
 		}
 
+		if postInstall {
+			if err := a.evaluateCRForReboot(ctx, bmh); err != nil {
+				return true, err
+			}
+		}
 		updateCases := []struct {
 			AnnotationKey string
 			Reason        string
@@ -496,11 +501,7 @@ func (a *Adaptor) handleTransitionNodes(ctx context.Context, nodelist *hwmgmtv1a
 			if _, exists := bmh.Annotations[uc.AnnotationKey]; !exists {
 				continue
 			}
-			if postInstall {
-				if err := a.evaluateCRForReboot(ctx, bmh, uc.AnnotationKey); err != nil {
-					return true, err
-				}
-			}
+
 			if err := a.processBMHUpdateCase(ctx, &node, bmh, uc, postInstall); err != nil {
 				return true, err
 			}
@@ -519,31 +520,54 @@ func (a *Adaptor) addRebootAnnotation(ctx context.Context, bmh *metal3v1alpha1.B
 	return nil
 }
 
-func (a *Adaptor) evaluateCRForReboot(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost, annotation string) error {
+func (a *Adaptor) evaluateCRForReboot(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost) error {
+	// Check if both annotations are present
+	hasBiosAnnotation := bmh.Annotations[BiosUpdateNeededAnnotation] != ""
+	hasFirmwareAnnotation := bmh.Annotations[FirmwareUpdateNeededAnnotation] != ""
 
-	var changeDetected bool
+	var biosChange, firmwareChange bool
 	var err error
 
-	switch annotation {
-	case BiosUpdateNeededAnnotation:
-		changeDetected, err = a.isFirmwareSettingsChangeDetectedAndValid(ctx, bmh)
+	// If both annotations are present, require both checks to pass
+	if hasBiosAnnotation && hasFirmwareAnnotation {
+		biosChange, err = a.isFirmwareSettingsChangeDetectedAndValid(ctx, bmh)
 		if err != nil {
 			return fmt.Errorf("failed to evaluate FirmwareSettings status: %w", err)
 		}
 
-	case FirmwareUpdateNeededAnnotation:
-		changeDetected, err = a.isHostFirmwareComponentsChangeDetectedAndValid(ctx, bmh)
+		firmwareChange, err = a.isHostFirmwareComponentsChangeDetectedAndValid(ctx, bmh)
 		if err != nil {
 			return fmt.Errorf("failed to evaluate HostFirmwareComponents status: %w", err)
 		}
-	default:
-		a.Logger.ErrorContext(ctx, "unsupported", slog.String("annotation", annotation))
+
+		if biosChange && firmwareChange {
+			return a.addRebootAnnotation(ctx, bmh)
+		}
 		return nil
 	}
 
-	if changeDetected {
-		return a.addRebootAnnotation(ctx, bmh)
+	// If only BIOS annotation is present
+	if hasBiosAnnotation {
+		biosChange, err = a.isFirmwareSettingsChangeDetectedAndValid(ctx, bmh)
+		if err != nil {
+			return fmt.Errorf("failed to evaluate FirmwareSettings status: %w", err)
+		}
+		if biosChange {
+			return a.addRebootAnnotation(ctx, bmh)
+		}
 	}
+
+	// If only firmware annotation is present
+	if hasFirmwareAnnotation {
+		firmwareChange, err = a.isHostFirmwareComponentsChangeDetectedAndValid(ctx, bmh)
+		if err != nil {
+			return fmt.Errorf("failed to evaluate HostFirmwareComponents status: %w", err)
+		}
+		if firmwareChange {
+			return a.addRebootAnnotation(ctx, bmh)
+		}
+	}
+
 	return nil
 }
 
