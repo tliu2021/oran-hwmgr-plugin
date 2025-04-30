@@ -64,14 +64,24 @@ func convertToFirmwareUpdates(spec pluginv1alpha1.HardwareProfileSpec) []metal3v
 	return updates
 }
 
-func (a *Adaptor) isHostFirmwareComponentsChangeDetected(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost) (bool, error) {
-	hfc := &metal3v1alpha1.HostFirmwareComponents{}
-	err := a.Client.Get(ctx, types.NamespacedName{Name: bmh.Name, Namespace: bmh.Namespace}, hfc)
+func (a *Adaptor) isHostFirmwareComponentsChangeDetectedAndValid(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost) (bool, error) {
+	hfc, err := a.getHostFirmwareComponents(ctx, bmh.Name, bmh.Namespace)
 
 	if err != nil {
 		return false, fmt.Errorf("failed to get HostFirmwareComponents %s/%s: %w", bmh.Namespace, bmh.Name, err)
 	}
-	return meta.IsStatusConditionTrue(hfc.Status.Conditions, string(metal3v1alpha1.HostFirmwareComponentsChangeDetected)), nil
+
+	changeDetectedCond := meta.FindStatusCondition(hfc.Status.Conditions, string(metal3v1alpha1.HostFirmwareComponentsChangeDetected))
+	if changeDetectedCond == nil {
+		return false, fmt.Errorf("failed to get HostFirmwareComponents %s condition %s/%s: %w",
+			metal3v1alpha1.FirmwareSettingsChangeDetected, bmh.Namespace, bmh.Name, err)
+	}
+
+	changeDetected := changeDetectedCond.Status == metav1.ConditionTrue
+	valid := meta.IsStatusConditionTrue(hfc.Status.Conditions, string(metal3v1alpha1.HostFirmwareComponentsValid))
+	observed := changeDetectedCond.ObservedGeneration == hfc.Generation
+
+	return changeDetected && valid && observed, nil
 }
 
 func isVersionChangeDetected(ctx context.Context, logger *slog.Logger, status *metal3v1alpha1.HostFirmwareComponentsStatus,
@@ -89,7 +99,7 @@ func isVersionChangeDetected(ctx context.Context, logger *slog.Logger, status *m
 		if fw, exists := firmwareMap[component.Component]; exists {
 			// Skip if firmware spec is empty
 			if fw.IsEmpty() {
-				logger.DebugContext(ctx, "Skipping firmware update due to empty firmware spec",
+				logger.InfoContext(ctx, "Skipping firmware update due to empty firmware spec",
 					slog.String("component", component.Component))
 				continue
 			}
@@ -104,7 +114,14 @@ func isVersionChangeDetected(ctx context.Context, logger *slog.Logger, status *m
 					slog.String("component", component.Component),
 					slog.String("url", fw.URL))
 				updateRequired = true
+			} else {
+				logger.InfoContext(ctx, "No version change detected",
+					slog.String("current", component.CurrentVersion),
+					slog.String("desired", fw.Version),
+					slog.Any("spec", spec),
+					slog.Any("hfc_status", status))
 			}
+
 		}
 	}
 
@@ -136,8 +153,8 @@ func (a *Adaptor) createHostFirmwareComponents(ctx context.Context, bmh *metal3v
 func (a *Adaptor) updateHostFirmwareComponents(ctx context.Context, name types.NamespacedName, updates []metal3v1alpha1.FirmwareUpdate) error {
 	// nolint: wrapcheck
 	return retry.OnError(retry.DefaultRetry, errors.IsConflict, func() error {
-		hfc := &metal3v1alpha1.HostFirmwareComponents{}
-		if err := a.Get(ctx, name, hfc); err != nil {
+		hfc, err := a.getHostFirmwareComponents(ctx, name.Name, name.Namespace)
+		if err != nil {
 			return fmt.Errorf("failed to fetch HostFirmwareComponents %s/%s: %w", name.Namespace, name.Name, err)
 		}
 		hfc.Spec.Updates = updates
@@ -180,12 +197,7 @@ func (a *Adaptor) IsFirmwareUpdateRequired(ctx context.Context, bmh *metal3v1alp
 func (a *Adaptor) getOrCreateHostFirmwareComponents(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost,
 	spec pluginv1alpha1.HardwareProfileSpec) (*metal3v1alpha1.HostFirmwareComponents, bool, error) {
 
-	hfc := &metal3v1alpha1.HostFirmwareComponents{}
-	err := a.Client.Get(ctx, types.NamespacedName{
-		Name:      bmh.Name,
-		Namespace: bmh.Namespace,
-	}, hfc)
-
+	hfc, err := a.getHostFirmwareComponents(ctx, bmh.Name, bmh.Namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			newHFC, err := a.createHostFirmwareComponents(ctx, bmh, spec)
@@ -195,8 +207,18 @@ func (a *Adaptor) getOrCreateHostFirmwareComponents(ctx context.Context, bmh *me
 			a.Logger.InfoContext(ctx, "Successfully created HostFirmwareComponents", slog.String("HFC", bmh.Name))
 			return newHFC, true, nil
 		}
-		return nil, false, fmt.Errorf("failed to get HostFirmwareComponents %s/%s: %w", bmh.Namespace, bmh.Name, err)
+		return nil, false, err
 	}
 
 	return hfc, false, nil
+}
+
+func (a *Adaptor) getHostFirmwareComponents(ctx context.Context, name, namespace string) (*metal3v1alpha1.HostFirmwareComponents, error) {
+	hfc := &metal3v1alpha1.HostFirmwareComponents{}
+	err := a.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, hfc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get HostFirmwareComponents %s/%s: %w", namespace, name, err)
+	}
+
+	return hfc, nil
 }

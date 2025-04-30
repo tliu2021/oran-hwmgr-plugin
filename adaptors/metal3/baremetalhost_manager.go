@@ -522,13 +522,13 @@ func (a *Adaptor) evaluateCRForReboot(ctx context.Context, bmh *metal3v1alpha1.B
 
 	switch annotation {
 	case BiosUpdateNeededAnnotation:
-		changeDetected, err = a.isFirmwareSettingsChangeDetected(ctx, bmh)
+		changeDetected, err = a.isFirmwareSettingsChangeDetectedAndValid(ctx, bmh)
 		if err != nil {
 			return fmt.Errorf("failed to evaluate FirmwareSettings status: %w", err)
 		}
 
 	case FirmwareUpdateNeededAnnotation:
-		changeDetected, err = a.isHostFirmwareComponentsChangeDetected(ctx, bmh)
+		changeDetected, err = a.isHostFirmwareComponentsChangeDetectedAndValid(ctx, bmh)
 		if err != nil {
 			return fmt.Errorf("failed to evaluate HostFirmwareComponents status: %w", err)
 		}
@@ -576,6 +576,11 @@ func (a *Adaptor) processBMHUpdateCase(ctx context.Context, node *hwmgmtv1alpha1
 		a.Logger.InfoContext(ctx,
 			fmt.Sprintf("BMH transitioned to 'Preparing' state for %s update", uc.LogLabel),
 			slog.String("BMH", bmh.Name))
+	}
+
+	if bmh.Status.OperationalStatus == metal3v1alpha1.OperationalStatusError {
+		a.Logger.InfoContext(ctx, "BMH in error state", slog.String("BMH", bmh.Name))
+		return fmt.Errorf("unable to initiate update for BMH %s/%s", bmh.Namespace, bmh.Name)
 	}
 
 	// Remove the update-needed annotation from the BMH.
