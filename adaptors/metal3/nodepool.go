@@ -207,7 +207,8 @@ func (a *Adaptor) handleInProgressUpdate(ctx context.Context, nodelist *hwmgmtv1
 }
 
 // initiateNodeUpdate starts the update process for the given node by processing the new hardware profile,
-func (a *Adaptor) initiateNodeUpdate(ctx context.Context, node *hwmgmtv1alpha1.Node, newHwProfile string) (ctrl.Result, error) {
+func (a *Adaptor) initiateNodeUpdate(ctx context.Context, node *hwmgmtv1alpha1.Node, newHwProfile string,
+	nodepool *hwmgmtv1alpha1.NodePool) (ctrl.Result, error) {
 
 	bmh, err := a.getBMHForNode(ctx, node)
 	if err != nil {
@@ -239,6 +240,9 @@ func (a *Adaptor) initiateNodeUpdate(ctx context.Context, node *hwmgmtv1alpha1.N
 		if err := a.applyPreChangeAnnotation(ctx, bmh); err != nil {
 			return ctrl.Result{}, fmt.Errorf("failed to apply pre-change annotation for BMH %s/%s: %w", bmh.Namespace, bmh.Name, err)
 		}
+		if result, err := a.setAwaitConfigCondition(ctx, nodepool); err != nil {
+			return result, err
+		}
 		// Return a medium interval requeue to allow time for the update to progress.
 		return utils.RequeueWithMediumInterval(), nil
 	}
@@ -267,7 +271,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 		}
 
 		// Initiate the update process for the selected node.
-		res, err := a.initiateNodeUpdate(ctx, node, newHwProfile)
+		res, err := a.initiateNodeUpdate(ctx, node, newHwProfile, nodepool)
 		if err != nil {
 			return ctrl.Result{}, fmt.Errorf("failed to initiate node update for node %s: %w", node.Name, err)
 		}
@@ -329,20 +333,36 @@ func (a *Adaptor) HandleNodePoolSpecChanged(
 	configuredCondition := meta.FindStatusCondition(
 		nodepool.Status.Conditions,
 		string(hwmgmtv1alpha1.Configured))
+	// Set a default status that will be updated during the configuration process
 	if configuredCondition == nil {
-		if err := utils.UpdateNodePoolStatusCondition(
-			ctx,
-			a.Client,
-			nodepool,
-			hwmgmtv1alpha1.Configured,
-			hwmgmtv1alpha1.ConfigUpdate,
-			metav1.ConditionFalse,
-			string(hwmgmtv1alpha1.AwaitConfig)); err != nil {
-			return utils.RequeueWithMediumInterval(),
-				fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)
+		if result, err := a.setAwaitConfigCondition(ctx, nodepool); err != nil {
+			return result, err
 		}
 	}
 	return a.handleNodePoolConfiguring(ctx, nodepool)
+}
+
+func (a *Adaptor) setAwaitConfigCondition(
+	ctx context.Context,
+	nodepool *hwmgmtv1alpha1.NodePool,
+) (ctrl.Result, error) {
+	err := utils.UpdateNodePoolStatusCondition(
+		ctx,
+		a.Client,
+		nodepool,
+		hwmgmtv1alpha1.Configured,
+		hwmgmtv1alpha1.ConfigUpdate,
+		metav1.ConditionFalse,
+		string(hwmgmtv1alpha1.AwaitConfig),
+	)
+	if err != nil {
+		return utils.RequeueWithMediumInterval(), fmt.Errorf(
+			"failed to update status for NodePool %s: %w",
+			nodepool.Name,
+			err,
+		)
+	}
+	return ctrl.Result{}, nil
 }
 
 // ReleaseNodePool frees resources allocated to a NodePool
