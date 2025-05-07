@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -126,4 +127,31 @@ func FindNodeConfigInProgress(nodelist *hwmgmtv1alpha1.NodeList) *hwmgmtv1alpha1
 	}
 
 	return nil
+}
+
+// SetNodeUpdatingStatus sets the node Configured condition
+func SetNodeUpdatingStatus(
+	ctx context.Context,
+	c client.Client,
+	nodename, namespace string,
+	conditionStatus metav1.ConditionStatus,
+	reason, message string,
+) error {
+	// nolint: wrapcheck
+	return retry.OnError(retry.DefaultRetry, errors.IsConflict, func() error {
+		node := &hwmgmtv1alpha1.Node{}
+		if err := c.Get(ctx, types.NamespacedName{Name: nodename, Namespace: namespace}, node); err != nil {
+			return fmt.Errorf("failed to fetch Node: %w", err)
+		}
+
+		SetStatusCondition(
+			&node.Status.Conditions,
+			string(hwmgmtv1alpha1.Configured), // condition type remains the same
+			reason,
+			conditionStatus,
+			message,
+		)
+
+		return c.Status().Update(ctx, node)
+	})
 }
