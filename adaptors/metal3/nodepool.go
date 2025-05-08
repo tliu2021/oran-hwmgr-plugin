@@ -181,6 +181,11 @@ func (a *Adaptor) handleInProgressUpdate(ctx context.Context, nodelist *hwmgmtv1
 
 		// Update the node's status to reflect the new hardware profile.
 		node.Status.HwProfile = node.Spec.HwProfile
+		utils.SetStatusCondition(&node.Status.Conditions,
+			string(hwmgmtv1alpha1.Configured),
+			string(hwmgmtv1alpha1.Completed),
+			metav1.ConditionTrue,
+			string(hwmgmtv1alpha1.ConfigSuccess))
 		if err := utils.UpdateK8sCRStatus(ctx, a.Client, node); err != nil {
 			return ctrl.Result{}, true, fmt.Errorf("failed to update status for node %s: %w", node.Name, err)
 		}
@@ -199,6 +204,10 @@ func (a *Adaptor) handleInProgressUpdate(ctx context.Context, nodelist *hwmgmtv1
 
 	if bmh.Status.OperationalStatus == metal3v1alpha1.OperationalStatusError {
 		a.Logger.InfoContext(ctx, "BMH update failed", slog.String("BMH", bmh.Name))
+		if err := utils.SetNodeUpdatingStatus(ctx, a.Client, node.Name, node.Namespace, metav1.ConditionFalse,
+			string(hwmgmtv1alpha1.Failed), BmhServicingErr); err != nil {
+			a.Logger.ErrorContext(ctx, "failed to update node status", slog.String("node", node.Name), slog.String("error", err.Error()))
+		}
 		return ctrl.Result{}, false, fmt.Errorf("failed to apply changes for BMH %s/%s", bmh.Namespace, bmh.Name)
 	}
 
@@ -234,7 +243,7 @@ func (a *Adaptor) initiateNodeUpdate(ctx context.Context, node *hwmgmtv1alpha1.N
 		return utils.RequeueWithShortInterval(), fmt.Errorf("failed to patch Node %s in namespace %s: %w", node.Name, node.Namespace, err)
 	}
 
-	updateRequired, err := a.processHwProfile(ctx, bmh, node.Name, true)
+	updateRequired, err := a.processHwProfile(ctx, bmh, newHwProfile, true)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to process hardware profile for node %s: %w", node.Name, err)
 	}
@@ -247,6 +256,10 @@ func (a *Adaptor) initiateNodeUpdate(ctx context.Context, node *hwmgmtv1alpha1.N
 		}
 		if result, err := a.setAwaitConfigCondition(ctx, nodepool); err != nil {
 			return result, err
+		}
+		if err := utils.SetNodeUpdatingStatus(ctx, a.Client, node.Name, node.Namespace, metav1.ConditionFalse,
+			string(hwmgmtv1alpha1.InProgress), "Update Requested"); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to update node status (%s): %w", node.Name, err)
 		}
 		// Return a medium interval requeue to allow time for the update to progress.
 		return utils.RequeueWithMediumInterval(), nil
@@ -306,7 +319,7 @@ func (a *Adaptor) handleNodePoolConfiguring(
 			a.Logger.InfoContext(ctx, "Not handled", slog.String("error", err.Error()))
 			if err := utils.UpdateNodePoolStatusCondition(ctx, a.Client, nodepool,
 				hwmgmtv1alpha1.Configured, hwmgmtv1alpha1.Failed, metav1.ConditionFalse,
-				"Servicing Error"); err != nil {
+				BmhServicingErr); err != nil {
 				a.Logger.InfoContext(ctx, "failed to update nodepool status", slog.String("error", err.Error()))
 				return utils.RequeueWithMediumInterval(),
 					fmt.Errorf("failed to update status for NodePool %s: %w", nodepool.Name, err)

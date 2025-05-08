@@ -16,7 +16,6 @@ import (
 	metal3v1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
 	pluginv1alpha1 "github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1"
 	"github.com/openshift-kni/oran-hwmgr-plugin/internal/controller/utils"
-	"github.com/openshift-kni/oran-hwmgr-plugin/internal/logging"
 	hwmgmtv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,6 +51,7 @@ const (
 	MetaTypeAnnotation             = "annotation"
 	OpAdd                          = "add"
 	OpRemove                       = "remove"
+	BmhServicingErr                = "BMH Servicing Error"
 )
 
 // Struct definitions for the nodelist configmap
@@ -408,23 +408,17 @@ func (a *Adaptor) removePreChangeAnnotation(ctx context.Context, bmh *metal3v1al
 	return nil
 }
 
-func (a *Adaptor) processHwProfile(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost, nodeName string, postInstall bool) (bool, error) {
-	node, err := utils.GetNode(ctx, a.Logger, a.NoncachedClient, a.Namespace, nodeName)
-	if err != nil {
-		return false, fmt.Errorf("failed to get node %s/%s: %w", a.Namespace, nodeName, err)
-	}
+func (a *Adaptor) processHwProfile(ctx context.Context, bmh *metal3v1alpha1.BareMetalHost, profileName string, postInstall bool) (bool, error) {
 
-	ctx = logging.AppendCtx(ctx, slog.String("hwprofile", node.Spec.HwProfile))
-	a.Logger.InfoContext(ctx, "Retrieving hwprofile")
-
+	var err error
 	name := types.NamespacedName{
-		Name:      node.Spec.HwProfile,
+		Name:      profileName,
 		Namespace: a.Namespace,
 	}
 
 	hwProfile := &pluginv1alpha1.HardwareProfile{}
 	if err := a.Client.Get(ctx, name, hwProfile); err != nil {
-		return false, fmt.Errorf("unable to find HardwareProfile CR (%s): %w", node.Spec.HwProfile, err)
+		return false, fmt.Errorf("unable to find HardwareProfile CR (%s): %w", profileName, err)
 	}
 
 	// Check if BIOS update is required
