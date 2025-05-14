@@ -32,17 +32,32 @@ func (a *Adaptor) GetNodeList(ctx context.Context) (*hwmgmtv1alpha1.NodeList, er
 
 // CreateNode creates a Node CR with specified attributes
 func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodePool, cloudID, nodename, nodeId, nodeNs, groupname, hwprofile string) error {
-	a.Logger.InfoContext(ctx, "Creating node",
+	a.Logger.InfoContext(ctx, "Ensuring node exists",
 		slog.String("nodegroup name", groupname),
 		slog.String("nodename", nodename),
 		slog.String("nodeId", nodeId))
+
+	nodeKey := types.NamespacedName{
+		Name:      nodename,
+		Namespace: a.Namespace,
+	}
+
+	existing := &hwmgmtv1alpha1.Node{}
+	err := a.Client.Get(ctx, nodeKey, existing)
+	if err == nil {
+		a.Logger.InfoContext(ctx, "Node already exists, skipping create", slog.String("nodename", nodename))
+		return nil
+	}
+
+	if !errors.IsNotFound(err) {
+		return fmt.Errorf("failed to check if node exists: %w", err)
+	}
 
 	blockDeletion := true
 	node := &hwmgmtv1alpha1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nodename,
 			Namespace: a.Namespace,
-			Labels:    map[string]string{BmhNamespaceLabel: nodeNs},
 			OwnerReferences: []metav1.OwnerReference{{
 				APIVersion:         nodepool.APIVersion,
 				Kind:               nodepool.Kind,
@@ -56,6 +71,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 			GroupName:   groupname,
 			HwProfile:   hwprofile,
 			HwMgrId:     nodepool.Spec.HwMgrId,
+			HwMgrNodeNs: nodeNs,
 			HwMgrNodeId: nodeId,
 		},
 	}
@@ -64,6 +80,7 @@ func (a *Adaptor) CreateNode(ctx context.Context, nodepool *hwmgmtv1alpha1.NodeP
 		return fmt.Errorf("failed to create Node: %w", err)
 	}
 
+	a.Logger.InfoContext(ctx, "Node created", slog.String("nodename", nodename))
 	return nil
 }
 
